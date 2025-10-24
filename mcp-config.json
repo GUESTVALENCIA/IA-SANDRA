@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "sandra-orchestrator": {
+      "command": "node",
+      "args": ["./mcp/orchestrator.js"],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+      }
+    },
+    "sandra-dev-agent": {
+      "command": "node",
+      "args": ["./mcp/agents/dev-agent.js"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "NETLIFY_AUTH_TOKEN": "${NETLIFY_AUTH_TOKEN}"
+      }
+    },
+    "sandra-voice-agent": {
+      "command": "node",
+      "args": ["./mcp/agents/voice-agent.js"],
+      "env": {
+        "HEYGEN_API_KEY": "${HEYGEN_API_KEY}",
+        "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY}",
+        "CARTESIA_API_KEY": "${CARTESIA_API_KEY}",
+        "DEEPGRAM_API_KEY": "${DEEPGRAM_API_KEY}"
+      }
+    },
+    "sandra-ai-agent": {
+      "command": "node",
+      "args": ["./mcp/agents/ai-agent.js"],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "GROQ_API_KEY": "${GROQ_API_KEY}"
+      }
+    },
+    "sandra-business-agent": {
+      "command": "node",
+      "args": ["./mcp/agents/business-agent.js"],
+      "env": {
+        "PAYPAL_CLIENT_ID": "${PAYPAL_CLIENT_ID}",
+        "PAYPAL_CLIENT_SECRET": "${PAYPAL_CLIENT_SECRET}",
+        "AIRTABLE_TOKEN": "${AIRTABLE_TOKEN}",
+        "SUPABASE_TOKEN": "${SUPABASE_TOKEN}"
+      }
+    },
+    "sandra-comms-agent": {
+      "command": "node",
+      "args": ["./mcp/agents/comms-agent.js"],
+      "env": {
+        "META_ACCESS_TOKEN": "${META_ACCESS_TOKEN}",
+        "TWILIO_SID": "${TWILIO_SID}",
+        "WHATSAPP_SANDRA": "${WHATSAPP_SANDRA}"
+      }
+    }
+  }
+}
