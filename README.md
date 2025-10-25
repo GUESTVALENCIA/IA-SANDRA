@@ -1,46 +1,62 @@
-🧠 SANDRA IA - Sistema Unificado de Inteligencia Artificial Empresarial
-Licencia: MIT Node.js PostgreSQL Desplegar Modelos de IA Visión por computadora Versión
+# 🧠 SANDRA IA - Sistema Unificado de Inteligencia Artificial Empresarial
 
-🌟 Sistema de IA Empresarial Galaxy Level
-Sandra IA es el sistema de inteligencia artificial más avanzado jamás desarrollado para GuestValencia , resultado de la consolidación de 14 proyectos fragmentados en una plataforma unificada de nivel empresarial que orquesta 248 subagentes especializados para ofrecer capacidades de IA multimodal en tiempo real.
+[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue.svg)](https://neon.tech/)
+[![Desplegar](https://img.shields.io/badge/Desplegar-Netlify-00C7B7.svg)](https://app.netlify.com/)
+[![Modelos de IA](https://img.shields.io/badge/Modelos-248_Subagentes-purple.svg)](#)
+[![Visión por computadora](https://img.shields.io/badge/Computer_Vision-Real_Time-orange.svg)](#)
+[![Versión](https://img.shields.io/badge/Versión-Galaxy_Level_v100.0-gold.svg)](#)
 
-🎯 MISIÓN TÉCNICA
-Eliminar completamente la fragmentación existente en los sistemas de IA y crear una plataforma robusta, independiente y escalable que funcione como CEO COO Enterprise level, con capacidades de:
+## 🌟 Sistema de IA Empresarial Galaxy Level
 
-Ejecución Real (no solo conversacional)
-Visión por Computador en Tiempo Real
-Procesamiento Multimodal Completo
-Orquestación de 248 Subagentes
-Almacenamiento Centralizado en Neon PostgreSQL
-Implementar producción en Netlify Pro
-✨ NÚCLEO TÉCNICO UNIFICADO
-🧠 Sandra Núcleo Core v100.0 GALAXY
-Modo : COO PROFESIONAL DE EMPRESA
-Inquilino : GuestsValencia
-Modo CEO : ACTIVO
-Sistema Guardián : Irrenunciable
-Subagentes : 248 activos
-Memoria : Persistente con puntos de control automáticos
-Edge Cache : Optimización en tiempo real
-🔍 Visión por Computador Real (Sin Simulación)
-Detección de objetos : COCO-SSD + YOLO + Personalizado (más de 80 clases)
-Reconocimiento facial : BlazeFace + FaceNet + MediaPipe (puntos de referencia + expresiones)
-OCR : Tesseract + PaddleOCR + EasyOCR (multiidioma + escritura)
-Clasificación de imágenes : MobileNet + ResNet + EfficientNet (más de 1000 clases)
-Análisis de vídeo : Tiempo real + seguimiento + procesamiento por lotes
-🗄️ Neon PostgreSQL - Central de Almacenamiento Único
-Sin servidor : Neon PostgreSQL y Netlify Pro
-Esquema : 4 tablas unificadas (cv_analyses, cv_users, cv_metrics, cv_feedback)
-Rendimiento : Agrupación de conexiones + índices optimizados
-Copia de seguridad : Automática + recuperación en un momento dado
-Analytics : Métricas en tiempo real + exportar CSV/JSON
-🎤 Capacidades Multimodales Completas
-TTS : ElevenLabs + Cartesia (voces premium)
-STT : Deepgram (transcripción en tiempo real)
-Avatar : HeyGen (video avatares sincronizados)
-Intrusión : Sistema de interrupción conversacional
-Procesamiento de audio : reducción de ruido + cancelación de eco
-🤖 248 Subagentes Distribuidos
+Sandra IA es el sistema de inteligencia artificial más avanzado jamás desarrollado para **GuestValencia**, resultado de la consolidación de 14 proyectos fragmentados en una plataforma unificada de nivel empresarial que orquesta **248 subagentes especializados** para ofrecer capacidades de IA multimodal en tiempo real.
+
+## 🎯 MISIÓN TÉCNICA
+
+Eliminar completamente la fragmentación existente en los sistemas de IA y crear una plataforma robusta, independiente y escalable que funcione como **CEO COO Enterprise level**, con capacidades de:
+
+- **Ejecución Real** (no solo conversacional)
+- **Visión por Computador en Tiempo Real**
+- **Procesamiento Multimodal Completo**
+- **Orquestación de 248 Subagentes**
+- **Almacenamiento Centralizado en Neon PostgreSQL**
+- **Implementar producción en Netlify Pro**
+
+## ✨ NÚCLEO TÉCNICO UNIFICADO
+
+### 🧠 Sandra Núcleo Core v100.0 GALAXY
+- **Modo**: COO PROFESIONAL DE EMPRESA
+- **Inquilino**: GuestsValencia
+- **Modo CEO**: ACTIVO
+- **Sistema Guardián**: Irrenunciable
+- **Subagentes**: 248 activos
+- **Memoria**: Persistente con puntos de control automáticos
+- **Edge Cache**: Optimización en tiempo real
+
+### 🔍 Visión por Computador Real (Sin Simulación)
+- **Detección de objetos**: COCO-SSD + YOLO + Personalizado (más de 80 clases)
+- **Reconocimiento facial**: BlazeFace + FaceNet + MediaPipe (puntos de referencia + expresiones)
+- **OCR**: Tesseract + PaddleOCR + EasyOCR (multiidioma + escritura)
+- **Clasificación de imágenes**: MobileNet + ResNet + EfficientNet (más de 1000 clases)
+- **Análisis de vídeo**: Tiempo real + seguimiento + procesamiento por lotes
+
+### 🗄️ Neon PostgreSQL - Central de Almacenamiento Único
+- **Sin servidor**: Neon PostgreSQL y Netlify Pro
+- **Esquema**: 4 tablas unificadas (cv_analyses, cv_users, cv_metrics, cv_feedback)
+- **Rendimiento**: Agrupación de conexiones + índices optimizados
+- **Copia de seguridad**: Automática + recuperación en un momento dado
+- **Analytics**: Métricas en tiempo real + exportar CSV/JSON
+
+### 🎤 Capacidades Multimodales Completas
+- **TTS**: ElevenLabs + Cartesia (voces premium)
+- **STT**: Deepgram (transcripción en tiempo real)
+- **Avatar**: HeyGen (video avatares sincronizados)
+- **Intrusión**: Sistema de interrupción conversacional
+- **Procesamiento de audio**: reducción de ruido + cancelación de eco
+
+### 🤖 248 Subagentes Distribuidos
+```
 ├── 76 Agentes de IA y Procesamiento
 │   ├── Claude Sonnet 4.5 (conversacional)
 │   ├── GPT-4o (análisis avanzado)
@@ -66,9 +82,14 @@ Procesamiento de audio : reducción de ruido + cancelación de eco
     ├── Testing Automation
     ├── Deployment Management
     └── System Monitoring
-🏗️ ARQUITECTURA TÉCNICA AVANZADA
-🔧 Stack Tecnológico Completo
-Núcleo backend
+```
+
+## 🏗️ ARQUITECTURA TÉCNICA AVANZADA
+
+### 🔧 Stack Tecnológico Completo
+
+#### Núcleo backend
+```javascript
 // Sandra Nucleus Unified v100.0 GALAXY
 const sandraCore = {
   nucleus: 'sandra-nucleus-core.js',           // Núcleo unificado
@@ -80,7 +101,10 @@ const sandraCore = {
   biasMonitor: 'sandra-bias-monitor.js',      // Ethics & compliance
   connectors: 'connectors-api.js'             // SDK integrations
 };
-Frontend Unificado
+```
+
+#### Frontend Unificado
+```html
 <!-- Interface Completa de Computer Vision -->
 sandra-computer-vision-real.html              // UI principal
 ├── TensorFlow.js Models (CDN)
@@ -88,7 +112,10 @@ sandra-computer-vision-real.html              // UI principal
 ├── WebRTC Audio/Video Streams
 ├── Galaxy-level Responsive Design
 └── Real-time Analytics Dashboard
-Infraestructura como código
+```
+
+#### Infraestructura como código
+```toml
 # Netlify Pro Configuration
 netlify.toml:
   - Build: frontend optimizado
@@ -102,8 +129,12 @@ vercel.json:
   - Functions: 30s timeout
   - Headers: CORS + Security
   - Environment: production
-🧠 NÚCLEO NÚCLEO SANDRA - Arquitectura Interna
-Componentes del núcleo
+```
+
+## 🧠 NÚCLEO NÚCLEO SANDRA - Arquitectura Interna
+
+### Componentes del núcleo
+```javascript
 class SandraNucleusCore {
   constructor() {
     this.version = 'NUCLEUS_UNIFIED_v100.0_GALAXY';
@@ -137,8 +168,12 @@ class SandraNucleusCore {
     return this.guardianSystem.evaluate(action, this.ethicsFramework);
   }
 }
-🔍 VISIÓN POR COMPUTADORA - Implementación Técnica
-Modelos en Producción
+```
+
+## 🔍 VISIÓN POR COMPUTADORA - Implementación Técnica
+
+### Modelos en Producción
+```javascript
 class SandraComputerVision {
   models = {
     objectDetection: {
@@ -177,7 +212,10 @@ class SandraComputerVision {
     return this.consolidateAnalysis(results);
   }
 }
-Optimización del rendimiento
+```
+
+### Optimización del rendimiento
+```javascript
 const cvConfig = {
   objectDetection: {
     threshold: 0.5,                    // Confianza mínima
@@ -194,8 +232,12 @@ const cvConfig = {
     maxConcurrent: 4                   // Procesos paralelos
   }
 };
-🗄️ NEON POSTGRESQL - Esquema y rendimiento
-Schema de Base de Datos
+```
+
+## 🗄️ NEON POSTGRESQL - Esquema y rendimiento
+
+### Schema de Base de Datos
+```sql
 -- Análisis de Computer Vision (tabla principal)
 CREATE TABLE cv_analyses (
     id SERIAL PRIMARY KEY,
@@ -253,7 +295,7 @@ CREATE TABLE cv_feedback (
 
 -- Triggers para actualización automática
 CREATE OR REPLACE FUNCTION update_cv_user_stats()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO cv_users (session_id, last_analysis_at, total_analyses)
     VALUES (NEW.session_id, NEW.created_at, 1)
@@ -263,12 +305,15 @@ BEGIN
         total_analyses = cv_users.total_analyses + 1;
     RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_update_user_stats
     AFTER INSERT ON cv_analyses
     FOR EACH ROW EXECUTE FUNCTION update_cv_user_stats();
-Rendimiento de la base de datos
+```
+
+### Rendimiento de la base de datos
+```javascript
 class SandraNeonDatabase {
   constructor() {
     this.connectionString = process.env.NEON_DATABASE_URL;
@@ -318,8 +363,12 @@ class SandraNeonDatabase {
     `;
   }
 }
-🚀 INICIO RÁPIDO TÉCNICO
-Prerrequisitos Enterprise
+```
+
+## 🚀 INICIO RÁPIDO TÉCNICO
+
+### Prerrequisitos Enterprise
+```bash
 # Requisitos del sistema
 Node.js >= 18.0.0
 NPM >= 9.0.0
@@ -332,7 +381,10 @@ OpenAI API (GPT-4o)
 ElevenLabs API (TTS Premium)
 Deepgram API (STT)
 HeyGen API (Avatar Video)
-Instalación Completa
+```
+
+### Instalación Completa
+```bash
 # 1. Clonar repositorio oficial
 git clone https://github.com/GUESTVALENCIA/IA-SANDRA.git
 cd IA-SANDRA
@@ -354,7 +406,10 @@ npm run health-check
 
 # 7. Iniciar servidor en modo production
 npm start
-Variables de entorno completo
+```
+
+### Variables de entorno completo
+```bash
 # ══ SANDRA IA CORE CONFIGURATION ══
 NODE_ENV=production
 PORT=5000
@@ -403,7 +458,10 @@ CV_MAX_IMAGE_SIZE=10485760                     # 10MB
 CV_ALLOWED_FORMATS=jpg,jpeg,png,webp,bmp,gif
 CV_MAX_BATCH_SIZE=10                           # Máximo 10 imágenes
 LOG_LEVEL=info
-Verificación de Sistema
+```
+
+### Verificación de Sistema
+```bash
 # Health check completo
 curl -X GET http://localhost:5000/health | jq '.'
 # Respuesta esperada:
@@ -446,8 +504,12 @@ curl -X GET http://localhost:5000/api/neon/status | jq '.'
 
 # Abrir interfaz unificada
 start frontend/sandra-computer-vision-real.html
-🏗️ Arquitectura
-Componentes principales
+```
+
+## 🏗️ Arquitectura
+
+### Componentes principales
+```
 sandra-ia/
 ├── 🧠 backend/
 │   ├── sandra-nucleus-core.js      # Núcleo de IA unificado
@@ -463,17 +525,25 @@ sandra-ia/
 └── 📚 docs/
     ├── DEPLOYMENT.md             # Guía de despliegue
     └── SANDRA-IA-UNIFICADA.md   # Documentación completa
-Flujo de Datos
+```
+
+### Flujo de Datos
+```
 Usuario → Frontend → API Gateway → Sandra Nucleus → Subagentes → Neon DB
                                       ↓
                               Computer Vision → Análisis → Storage
-🔍 Visión por computadora
-Modelos Integrados
-Detección de objetos - COCO-SSD (80 clases)
-Reconocimiento facial - BlazeFace + puntos de referencia
-OCR - Tesseract.js multiidioma
-Clasificación de imágenes - MobileNet (1000 clases)
-APIs Disponibles
+```
+
+## 🔍 Visión por computadora
+
+### Modelos Integrados
+- **Detección de objetos** - COCO-SSD (80 clases)
+- **Reconocimiento facial** - BlazeFace + puntos de referencia
+- **OCR** - Tesseract.js multiidioma
+- **Clasificación de imágenes** - MobileNet (1000 clases)
+
+### APIs Disponibles
+```javascript
 // Detección de objetos
 POST /api/cv/detect-objects
 
@@ -488,8 +558,12 @@ POST /api/cv/classify
 
 // Estado del sistema
 GET /api/cv/status
-🗄️ Base de Datos Neon
-Esquema principal
+```
+
+## 🗄️ Base de Datos Neon
+
+### Esquema principal
+```sql
 -- Análisis de Computer Vision
 CREATE TABLE cv_analyses (
     id SERIAL PRIMARY KEY,
@@ -508,7 +582,10 @@ CREATE TABLE cv_users (
     user_agent TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-Puntos finales de datos
+```
+
+### Puntos finales de datos
+```javascript
 // Guardar análisis
 POST /api/neon/save-analysis
 
@@ -517,29 +594,41 @@ GET /api/neon/global-stats
 
 // Exportar datos
 GET /api/neon/export?format=csv
-🤖 Sistema de Subagentes
-248 Agentes Especializados
-76 - Agentes de IA y procesamiento
-48 - Ejecutores de lógica de negocio
-32 - Agentes de procesamiento de voz
-24 - Agentes de Visión por Computador
-68 - Agentes de desarrollo y DevOps
-Orquestación MCP
+```
+
+## 🤖 Sistema de Subagentes
+
+### 248 Agentes Especializados
+- **76** - Agentes de IA y procesamiento
+- **48** - Ejecutores de lógica de negocio
+- **32** - Agentes de procesamiento de voz
+- **24** - Agentes de Visión por Computador
+- **68** - Agentes de desarrollo y DevOps
+
+### Orquestación MCP
+```javascript
 const mcp = new MCPSubagentsExpert();
 mcp.orchestrate({
   task: "analyze_image",
   agents: ["cv-detector", "cv-classifier", "cv-ocr"],
   parallel: true
 });
-🚀 Implementación
-Netlify Pro
+```
+
+## 🚀 Implementación
+
+### Netlify Pro
+```bash
 # Build automático configurado
 npm run build
 
 # Deploy
 git push origin main
 # Netlify auto-deploy configurado
-Variables de Entorno
+```
+
+### Variables de Entorno
+```bash
 # Neon Database
 NEON_DATABASE_URL=postgresql://...
 
@@ -549,7 +638,10 @@ OPENAI_API_KEY=sk-...
 
 # Configuración
 NODE_ENV=production
-Configuración Netlify
+```
+
+### Configuración Netlify
+```toml
 [build]
   publish = "frontend"
 
@@ -557,8 +649,12 @@ Configuración Netlify
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
-📊 Monitoreo
-Controles de salud
+```
+
+## 📊 Monitoreo
+
+### Controles de salud
+```bash
 # Estado general
 curl https://sandra-ia.netlify.app/health
 
@@ -567,23 +663,33 @@ curl https://sandra-ia.netlify.app/api/cv/status
 
 # Base de datos
 curl https://sandra-ia.netlify.app/api/neon/status
-Métricas
-Tiempo de actividad : 99,9%
-Latencia : < 200ms
-Rendimiento : más de 1000 solicitudes/min
-Precisión CV : 95,4%
-🔐 Seguridad
-Encabezados de Seguridad
+```
+
+### Métricas
+- **Tiempo de actividad**: 99,9%
+- **Latencia**: < 200ms
+- **Rendimiento**: más de 1000 solicitudes/min
+- **Precisión CV**: 95,4%
+
+## 🔐 Seguridad
+
+### Encabezados de Seguridad
+```
 X-Frame-Options: DENY
 X-XSS-Protection: 1; mode=block
 X-Content-Type-Options: nosniff
 Content-Security-Policy: default-src 'self'
-Limitación de velocidad
-100 solicitudes por 15 minutos por IP
-Imágenes máximo : 10 MB
-Procesamiento por lotes : Máximo 10 imágenes
-🧪 Pruebas
-Pruebas automáticas
+```
+
+### Limitación de velocidad
+- **100 solicitudes** por 15 minutos por IP
+- **Imágenes máximo**: 10 MB
+- **Procesamiento por lotes**: Máximo 10 imágenes
+
+## 🧪 Pruebas
+
+### Pruebas automáticas
+```bash
 # Tests unitarios
 npm test
 
@@ -592,84 +698,117 @@ npm run test:integration
 
 # Tests de Computer Vision
 npm run test:cv
-Cobertura
-Backend : 95%
-Visión por computadora : 92%
-API : 98%
-📚 Documentación
-Guía de implementación
-Arquitectura Completa
-Referencia de API
-Solución de problemas
-🤝 Contribución
-Pautas
-Fork el repositorio
-Crear rama de características
-Realizar cambios
-Empujar una rama
-Crear solicitud de extracción
-Estándares
-ESLint configurado
-Más bonita para formato
-Commits convencionales
-Pruebas obligatorias
-📄 Licencia
-Licencia MIT - Ver LICENCIA para detalles.
+```
 
-👥 Equipo
-Director General : Claytis Miguel Tom Zuaznabar
-Sistema IA : Sandra IA 7.0 Nivel Galaxia
-Empresa : GuestsValencia
-Desarrollo : Claude Code + 248 Subagentes
-🌟 Hoja de ruta
-v2.0.0 (primer trimestre de 2025)
-Vídeo análisis en tiempo real.
-API REST completa
-Análisis del panel de control
-Soporte multiinquilino
-v2.1.0 (segundo trimestre de 2025)
-Aplicación móvil
-Computación de borde
-Entrenamiento de modelos de IA
-Monitoreo avanzado
-📞 Soporte
-Problemas : Problemas de GitHub
-Docs : Documentación
-Correo electrónico : soporte@guestsvalencia.com
-🧠 Sandra IA - Inteligencia Artificial Unificada para GuestValencia
+### Cobertura
+- **Backend**: 95%
+- **Visión por computadora**: 92%
+- **API**: 98%
 
-Potenciado por Claude Code y 248 Subagentes Especializados
+## 📚 Documentación
 
-Implementar en Netlify
+- [Guía de implementación](DEPLOYMENT.md)
+- [Arquitectura Completa](SANDRA-IA-UNIFICADA.md)
+- [Referencia de API](docs/API.md)
+- [Solución de problemas](TROUBLESHOOTING.md)
 
-✨ CARACTERÍSTICAS
-✅ Desktop App (Electron) - Aplicación nativa de Windows
-✅ GPT-4o Conversacional - Sandra con inteligencia real
-✅ HeyGen Avatar - Video avatar con voz integrada
-✅ MCP Integration - Model Context Protocol
-✅ Diseño Corporativo - Profesional, sin colores Disney
-✅ Multimodal - Texto, voz, archivos
-✅ Backend Seguro - Express + APIs protegidas
+## 🤝 Contribución
 
-🚀 INSTALACIÓN
-1. Instalar dependencias
+### Pautas
+1. Fork el repositorio
+2. Crear rama de características
+3. Realizar cambios
+4. Empujar una rama
+5. Crear solicitud de extracción
+
+### Estándares
+- ESLint configurado
+- Más bonita para formato
+- Commits convencionales
+- Pruebas obligatorias
+
+## 📄 Licencia
+
+Licencia MIT - Ver [LICENCIA](LICENSE) para detalles.
+
+## 👥 Equipo
+
+- **Director General**: Claytis Miguel Tom Zuaznabar
+- **Sistema IA**: Sandra IA 7.0 Nivel Galaxia
+- **Empresa**: GuestsValencia
+- **Desarrollo**: Claude Code + 248 Subagentes
+
+## 🌟 Hoja de ruta
+
+### v2.0.0 (primer trimestre de 2025)
+- Vídeo análisis en tiempo real
+- API REST completa
+- Análisis del panel de control
+- Soporte multiinquilino
+
+### v2.1.0 (segundo trimestre de 2025)
+- Aplicación móvil
+- Computación de borde
+- Entrenamiento de modelos de IA
+- Monitoreo avanzado
+
+## 📞 Soporte
+
+- **Problemas**: [Problemas de GitHub](https://github.com/GUESTVALENCIA/IA-SANDRA/issues)
+- **Docs**: [Documentación](https://docs.sandra-ia.com)
+- **Correo electrónico**: soporte@guestsvalencia.com
+
+---
+
+## 🧠 Sandra IA - Inteligencia Artificial Unificada para GuestValencia
+
+**Potenciado por Claude Code y 248 Subagentes Especializados**
+
+[![Implementar en Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/GUESTVALENCIA/IA-SANDRA)
+
+---
+
+## ✨ CARACTERÍSTICAS
+
+✅ **Desktop App (Electron)** - Aplicación nativa de Windows
+✅ **GPT-4o Conversacional** - Sandra con inteligencia real
+✅ **HeyGen Avatar** - Video avatar con voz integrada
+✅ **MCP Integration** - Model Context Protocol
+✅ **Diseño Corporativo** - Profesional, sin colores Disney
+✅ **Multimodal** - Texto, voz, archivos
+✅ **Backend Seguro** - Express + APIs protegidas
+
+## 🚀 INSTALACIÓN
+
+### 1. Instalar dependencias
+```bash
 cd C:\Users\clayt\Desktop\sandra-professional
 npm install
-2. Verificar variables de entorno
-El archivo .envya está configurado con todas tus claves API:
+```
+
+### 2. Verificar variables de entorno
+El archivo `.env` ya está configurado con todas tus claves API:
 
 ✅ OpenAI GPT-4o
 ✅ API de HeyGen + ID de avatar
 ✅ Cartesia (en espera)
 ✅ Token de Netlify
 ✅ Credenciales de PayPal
-3. Iniciar el backend
-npm run backend
-El servidor Express arrancará enhttp://localhost:5000
 
-4. Iniciar aplicación de escritorio
+### 3. Iniciar el backend
+```bash
+npm run backend
+```
+El servidor Express arrancará en `http://localhost:5000`
+
+### 4. Iniciar aplicación de escritorio
+```bash
 npm start
-📁 ESTRUCTURA DEL PROYECTO
+```
+
+## 📁 ESTRUCTURA DEL PROYECTO
+
+```
 sandra-professional/
 ├── .env                    ← Variables de entorno
 ├── package.json            ← Dependencias
@@ -678,28 +817,43 @@ sandra-professional/
 │   └── server.js           ← Express API Gateway
 └── frontend/
     └── index.html          ← Interfaz profesional
-🔧 PUNTOS FINALES BACKEND
-Chat con Sandra (GPT-4o)
+```
+
+## 🔧 PUNTOS FINALES BACKEND
+
+### Chat con Sandra (GPT-4o)
+```http
 POST http://localhost:5000/api/chat
 Body: {
   "message": "Hola Sandra",
   "context": []
 }
-Generar vídeo HeyGen
+```
+
+### Generar vídeo HeyGen
+```http
 POST http://localhost:5000/api/heygen/generate
 Body: {
   "text": "Texto para el avatar"
 }
-Estado del Sistema
+```
+
+### Estado del Sistema
+```http
 GET http://localhost:5000/health
-💡 USO
-Iniciar Backend: npm run backend
-Iniciar aplicación: npm start
-Chatear con Sandra: Escribe en la interfaz
-Avatar HeyGen: Click en botón 🎬
-Voz: Click en botón 🎤
-Archivos: Haga clic en botón 📎
-🎯 PRÓXIMOS PASOS
+```
+
+## 💡 USO
+
+- **Iniciar Backend**: `npm run backend`
+- **Iniciar aplicación**: `npm start`
+- **Chatear con Sandra**: Escribe en la interfaz
+- **Avatar HeyGen**: Click en botón 🎬
+- **Voz**: Click en botón 🎤
+- **Archivos**: Haga clic en botón 📎
+
+## 🎯 PRÓXIMOS PASOS
+
 Una vez Sandra funcionó correctamente:
 
 ✅ Verificar conversación GPT-4o
@@ -707,14 +861,59 @@ Una vez Sandra funcionó correctamente:
 ✅ Validar sistema multimodal
 🚀 Desarrollar proyecto completo (54 subagentes)
 🚀 Desplegar ecosistema HuéspedesValencia
-🛡️ SEGURIDAD
-✅ Claves API en .env(nunca en código)
-✅ Backend Express aislado
-✅ Electron con nodoIntegración controlada
-✅ CORS configurado
-📞 SOPORTE
-Desarrollado por: Claude (Anthropic API)
-Para: Claytis Miguel Tom Zuaznabar
-Proyecto: Sandra Professional - GuestValencia
 
-¿TODO LISTA? → Ejecuta npm instally luego npm run backendseguido denpm start
+## 🛡️ SEGURIDAD
+
+✅ Claves API en `.env` (nunca en código)
+✅ Backend Express aislado
+✅ Electron con `nodeIntegration` controlada
+✅ CORS configurado
+
+## 📞 SOPORTE
+
+- **Desarrollado por**: Claude (Anthropic API)
+- **Para**: Claytis Miguel Tom Zuaznabar
+- **Proyecto**: Sandra Professional - GuestValencia
+
+---
+
+**¿TODO LISTA?** → Ejecuta `npm install` y luego `npm run backend` seguido de `npm start`
+
+---
+
+## Acerca de
+IA SANDRA, MODELO DE INTELIGENCIA ARTIFICIAL MULTIMODAL, CON 18 ROLES, ESCALABLES.
+
+### Recursos
+- 📖 Léeme
+- 📄 Licencia MIT
+- 📋 Código de conducta
+
+### Actividad
+- ⭐ 0 estrellas
+- 👀 0 viendo
+- 🍴 0 tenedores
+
+### Lanzamientos
+No hay comunicados publicados
+[Crear una nueva versión](https://github.com/GUESTVALENCIA/IA-SANDRA/releases/new)
+
+### Paquetes
+No hay paquetes publicados
+[Publica tu primer paquete](https://github.com/GUESTVALENCIA/IA-SANDRA/packages)
+
+### Idiomas
+- **JavaScript** 64,0%
+- **HTML** 33,0%
+- **Python** 1,5%
+- **Archivo por lotes** 1,3%
+- **NSIS** 0,2%
+
+### Flujos de trabajo sugeridos
+Basado en su pila tecnológica:
+
+- 🔨 **Grunt** - Construya un proyecto NodeJS con npm y grunt
+- 🔐 **Generador genérico SLSA** - Genere procedencia SLSA3 para sus flujos de trabajo de lanzamiento existentes
+- ⚡ **Node.js** - Construya y pruebe un proyecto Node.js con npm
+
+[Más flujos de trabajo →](https://github.com/GUESTVALENCIA/IA-SANDRA/actions/new)
