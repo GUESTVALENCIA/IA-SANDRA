@@ -1,6 +1,8 @@
 // backend/orchestrator.js
 const logger = require('./logger');
 const { withLogging } = require('./orchestrator-logging');
+const { safeLLM } = require('../llm/safe-llm');
+const metrics = require('./metrics');
 
 // Simple orchestrator functionality for demonstration
 class Orchestrator {
@@ -28,16 +30,28 @@ class Orchestrator {
 
   async executeAgent(agentName, params) {
     logger.info({ agentName, params }, 'Executing agent');
-    
-    // Simulate agent execution
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    return {
-      agent: agentName,
-      status: 'completed',
-      result: `Agent ${agentName} executed successfully`,
-      timestamp: new Date().toISOString()
-    };
+
+    try {
+      // Use safeLLM for agent execution
+      const prompt = `Execute agent ${agentName} with parameters: ${JSON.stringify(params)}`;
+      const result = await safeLLM(prompt, {
+        timeout: 30000,
+        retries: 2,
+        systemMessage: "You are an AI agent orchestrator. Output only JSON with agent execution results."
+      });
+
+      metrics.incrementOrchestratorSuccess();
+
+      return {
+        agent: agentName,
+        status: 'completed',
+        result: result,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      metrics.incrementOrchestratorFailure();
+      throw error;
+    }
   }
 
   async executeTask(task) {
