@@ -9,7 +9,51 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMyNTYzRUIiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik04IDJMMTQgOEw4IDE0TDIgOEw4IDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Standard Icons -->
+    <link rel="icon" type="image/x-icon" href="/icons/sandra-icon.svg">
+    <link rel="icon" type="image/svg+xml" href="/icons/sandra-icon.svg">
+
+    <!-- iOS Specific Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sandra IA">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Sandra IA Galaxy">
+
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/sandra-icon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/sandra-icon.svg">
+
+    <!-- iOS Splash Screens -->
+    <link rel="apple-touch-startup-image" href="/icons/sandra-icon.svg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/sandra-icon.svg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/sandra-icon.svg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/icons/sandra-icon.svg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#2563EB">
+    <meta name="msapplication-TileColor" content="#2563EB">
+    <meta name="msapplication-navbutton-color" content="#2563EB">
+
+    <!-- PWA Display -->
+    <meta name="display-mode" content="standalone">
+
+    <!-- iOS Safe Area -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
+    <!-- Disable iOS Link Preview -->
+    <meta name="format-detection" content="telephone=no">
 
     <style>
         * {
@@ -1622,16 +1666,174 @@
             // Could implement error reporting here
         });
 
+        // PWA Installation Support
+        let deferredPrompt;
+        const installBtn = document.createElement('button');
+
         // Check for updates periodically (for PWA)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
                 .then(registration => {
-                    console.log('ServiceWorker registered:', registration);
+                    console.log('Sandra IA SW: ServiceWorker registered:', registration);
+
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New version available
+                                showUpdateNotification();
+                            }
+                        });
+                    });
                 })
                 .catch(error => {
-                    console.log('ServiceWorker registration failed:', error);
+                    console.log('Sandra IA SW: ServiceWorker registration failed:', error);
                 });
         }
+
+        // PWA Install Prompt (for supported browsers)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallButton();
+        });
+
+        // iOS PWA Detection and Install Guide
+        function detectIOSAndShowInstallGuide() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isPWA = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+
+            if (isIOS && !isPWA) {
+                showIOSInstallInstructions();
+            }
+        }
+
+        function showIOSInstallInstructions() {
+            // Create iOS install banner
+            const iosBanner = document.createElement('div');
+            iosBanner.id = 'ios-install-banner';
+            iosBanner.innerHTML = `
+                <div style="
+                    position: fixed;
+                    bottom: 20px;
+                    left: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #2563EB, #1E40AF);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    text-align: center;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                ">
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+                        📱 Instala Sandra IA en tu iPhone
+                    </div>
+                    <div style="font-size: 14px; margin-bottom: 16px; opacity: 0.9;">
+                        Toca el botón "Compartir" ↗️ en Safari y selecciona "Añadir a pantalla de inicio"
+                    </div>
+                    <button onclick="document.getElementById('ios-install-banner').remove()"
+                            style="
+                                background: rgba(255,255,255,0.2);
+                                border: none;
+                                color: white;
+                                padding: 8px 16px;
+                                border-radius: 8px;
+                                font-size: 14px;
+                                cursor: pointer;
+                            ">
+                        Entendido
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(iosBanner);
+        }
+
+        function showInstallButton() {
+            installBtn.textContent = '📱 Instalar App';
+            installBtn.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #2563EB, #1E40AF);
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 12px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                z-index: 9999;
+                box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+                transition: transform 0.2s ease;
+            `;
+
+            installBtn.addEventListener('click', installPWA);
+            installBtn.addEventListener('mouseenter', () => {
+                installBtn.style.transform = 'scale(1.05)';
+            });
+            installBtn.addEventListener('mouseleave', () => {
+                installBtn.style.transform = 'scale(1)';
+            });
+
+            document.body.appendChild(installBtn);
+        }
+
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log('Sandra IA PWA: Install outcome:', outcome);
+                deferredPrompt = null;
+                installBtn.remove();
+            }
+        }
+
+        function showUpdateNotification() {
+            const updateBanner = document.createElement('div');
+            updateBanner.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 20px;
+                    left: 20px;
+                    right: 20px;
+                    background: #10B981;
+                    color: white;
+                    padding: 16px;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+                    z-index: 10001;
+                    text-align: center;
+                ">
+                    <div style="font-weight: 600; margin-bottom: 8px;">🚀 Nueva versión disponible</div>
+                    <button onclick="location.reload()"
+                            style="
+                                background: rgba(255,255,255,0.2);
+                                border: none;
+                                color: white;
+                                padding: 8px 16px;
+                                border-radius: 6px;
+                                cursor: pointer;
+                            ">
+                        Actualizar
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(updateBanner);
+        }
+
+        // Initialize PWA features
+        document.addEventListener('DOMContentLoaded', () => {
+            detectIOSAndShowInstallGuide();
+
+            // PWA status detection
+            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('Sandra IA: Running as PWA');
+                document.body.classList.add('pwa-mode');
+            }
+        });
     </script>
 </body>
 </html>
