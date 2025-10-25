@@ -1,0 +1,41 @@
+{
+  "name": "sandra-desktop",
+  "version": "7.0.0",
+  "description": "Sandra Dev Interface Desktop App - Galaxy Level",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "install-electron": "npm install electron --save-dev"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.sandraai.devinterface",
+    "productName": "Sandra Dev Interface",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "author": "Sandra IA Team",
+  "license": "MIT"
+}
