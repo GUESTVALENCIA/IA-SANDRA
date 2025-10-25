@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Sandra_IA_Galaxy" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="webView">
+                                <rect key="frame" x="0.0" y="59" width="393" height="759"/>
+                                <color key="backgroundColor" red="0.04" green="0.04" blue="0.04" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <wkWebViewConfiguration key="configuration">
+                                    <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
+                                    <wkPreferences key="preferences"/>
+                                </wkWebViewConfiguration>
+                            </wkWebView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="loadingIndicator">
+                                <rect key="frame" x="178" y="406" width="37" height="37"/>
+                                <color key="color" red="0" green="1" blue="0.533" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </activityIndicatorView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="webView" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="webView-leading"/>
+                            <constraint firstItem="webView" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="webView-trailing"/>
+                            <constraint firstItem="webView" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="webView-top"/>
+                            <constraint firstItem="webView" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="webView-bottom"/>
+                            <constraint firstItem="loadingIndicator" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="loading-centerX"/>
+                            <constraint firstItem="loadingIndicator" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="loading-centerY"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="webView" destination="webView" id="webView-outlet"/>
+                        <outlet property="loadingIndicator" destination="loadingIndicator" id="loading-outlet"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="20" y="20"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

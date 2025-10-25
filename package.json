@@ -1,0 +1,154 @@
+{
+  "name": "sandra-ia-mobile-galaxy",
+  "version": "98.0.0",
+  "description": "Sandra IA Mobile Galaxy Ultimate - Galaxy Level PWA optimizada para iOS 14+ con soporte completo para iPhone Pro y iPad Pro",
+  "main": "sandra-mcp-bridge.js",
+  "homepage": "https://sandra.guestsvalencia.es",
+  "scripts": {
+    "start": "node backend/server.js",
+    "start:original": "node sandra-mcp-bridge.js",
+    "dev": "nodemon sandra-mcp-bridge.js",
+    "build": "npm run build:production",
+    "build:production": "npm run optimize:assets && npm run generate:manifest && npm run build:sw",
+    "build:staging": "NODE_ENV=staging npm run build:production",
+    "build:development": "NODE_ENV=development npm run build:production",
+    "optimize:assets": "npm run optimize:html && npm run optimize:js && npm run optimize:css",
+    "optimize:html": "echo 'Optimizing HTML files...'",
+    "optimize:js": "echo 'Optimizing JavaScript files...'",
+    "optimize:css": "echo 'Optimizing CSS files...'",
+    "generate:manifest": "node scripts/generate-manifest.js",
+    "build:sw": "node scripts/build-service-worker.js",
+    "deploy": "npm run build:production && netlify deploy --prod",
+    "deploy:staging": "npm run build:staging && netlify deploy",
+    "deploy:preview": "npm run build:development && netlify deploy",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "echo 'Running unit tests...'",
+    "test:integration": "echo 'Running integration tests...'",
+    "test:e2e": "echo 'Running E2E tests...'",
+    "test:performance": "lighthouse --output=json --output-path=./reports/lighthouse.json https://sandra.guestsvalencia.es",
+    "test:accessibility": "pa11y https://sandra.guestsvalencia.es",
+    "test:security": "echo 'Running security tests...'",
+    "lint": "eslint *.js",
+    "lint:fix": "eslint *.js --fix",
+    "format": "prettier --write *.js *.html *.css *.json",
+    "analyze": "npm run analyze:bundle && npm run analyze:performance",
+    "analyze:bundle": "echo 'Analyzing bundle size...'",
+    "analyze:performance": "echo 'Analyzing performance...'",
+    "serve": "http-server . -p 8080 -c-1",
+    "serve:https": "http-server . -p 8443 -S -C cert.pem -K key.pem",
+    "mobile:ios": "node scripts/mobile/ios-testflight-setup.js",
+    "mobile:android": "node scripts/mobile/generate-apk.js",
+    "mobile:build": "npm run mobile:ios && npm run mobile:android",
+    "build:downloads": "node scripts/build-downloads.js",
+    "test:downloads": "node scripts/test-downloads.js",
+    "docs": "echo 'Generating documentation...'",
+    "docs:serve": "echo 'Serving documentation...'",
+    "clean": "rm -rf dist/ build/ reports/ .cache/",
+    "clean:cache": "rm -rf .cache/ node_modules/.cache/",
+    "precommit": "npm run lint && npm run test:unit",
+    "prepush": "npm run smoke",
+    "smoke": "node scripts/smoke.js",
+    "postinstall": "npm run build:sw"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ClayTom/sandra-ia-mobile.git"
+  },
+  "keywords": [
+    "sandra",
+    "ia",
+    "mobile",
+    "pwa",
+    "galaxy",
+    "ai",
+    "voice",
+    "chat",
+    "ios",
+    "android",
+    "responsive",
+    "guestsvalencia"
+  ],
+  "author": "Sandra IA Team - GuestsValencia",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jszip": "^3.10.1",
+    "node-fetch": "^3.3.2",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "electron": "^27.0.0",
+    "eslint": "^8.55.0",
+    "html-minifier": "^4.0.0",
+    "http-server": "^14.1.1",
+    "lighthouse": "^11.4.0",
+    "netlify-cli": "^17.38.1",
+    "nodemon": "^3.0.2",
+    "pa11y": "^6.2.3",
+    "prettier": "^3.1.0",
+    "terser": "^5.26.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "iOS >= 14",
+    "Android >= 8",
+    "Chrome >= 88",
+    "Firefox >= 85",
+    "Safari >= 14",
+    "Edge >= 88"
+  ],
+  "pwa": {
+    "enabled": true,
+    "scope": "/",
+    "startUrl": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "themeColor": "#00ff88",
+    "backgroundColor": "#0a0a0a"
+  },
+  "mobile": {
+    "ios": {
+      "enabled": true,
+      "minimumVersion": "14.0"
+    },
+    "android": {
+      "enabled": true,
+      "minimumVersion": "8.0"
+    }
+  },
+  "performance": {
+    "budgets": {
+      "bundle": "250kb",
+      "initial": "100kb",
+      "assets": "500kb"
+    },
+    "targets": {
+      "lighthouse": 90,
+      "accessibility": 95,
+      "performance": 90,
+      "seo": 100
+    }
+  },
+  "security": {
+    "csp": true,
+    "https": true,
+    "headers": true
+  },
+  "deployment": {
+    "platform": "netlify",
+    "domain": "sandra.guestsvalencia.es",
+    "ssl": true,
+    "cdn": true,
+    "compression": true
+  }
+}

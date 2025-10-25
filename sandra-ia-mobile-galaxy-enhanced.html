@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-title" content="Sandra IA">
+    <title>Sandra IA Mobile Galaxy - Galaxy Level Responsive</title>
+
+    <!-- Link to responsive utilities -->
+    <link rel="modulepreload" href="responsive-utils.js">
+
+    <style>
+        /* =================================================================== */
+        /* RESET Y VARIABLES CSS CUSTOM PROPERTIES */
+        /* =================================================================== */
+
+        :root {
+            /* Safe Areas para iOS 14+ (notch/Dynamic Island) */
+            --safe-area-inset-top: env(safe-area-inset-top, 0px);
+            --safe-area-inset-right: env(safe-area-inset-right, 0px);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+            /* Touch Target Sizes (iOS HIG 44px mínimo) */
+            --touch-target-min: 44px;
+            --touch-target-comfortable: 56px;
+
+            /* Spacing System Mobile-First */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* Typography Scale Optimized */
+            --font-xs: 12px;
+            --font-sm: 14px;
+            --font-md: 16px;
+            --font-lg: 18px;
+            --font-xl: 20px;
+            --font-2xl: 24px;
+
+            /* Color Scheme - Dark Mode Default */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #141a1e;
+            --bg-card: rgba(30, 30, 40, 0.95);
+            --bg-input: rgba(40, 40, 50, 0.9);
+
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --text-accent: #00ff88;
+
+            --border-primary: rgba(255, 255, 255, 0.1);
+            --border-accent: rgba(0, 255, 136, 0.3);
+
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #00ff88, #00aaff);
+            --gradient-bg: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+            --gradient-user: linear-gradient(135deg, #667eea, #764ba2);
+
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
+
+            /* Z-Index Scale */
+            --z-header: 100;
+            --z-sidebar: 90;
+            --z-modal: 110;
+            --z-toast: 120;
+
+            /* =================================================================== */
+            /* GALAXY LEVEL RESPONSIVE ENHANCEMENTS */
+            /* =================================================================== */
+
+            /* Extended Breakpoint System */
+            --breakpoint-xs: 320px;      /* iPhone SE, compact Android */
+            --breakpoint-sm: 375px;      /* iPhone 12/13/14 standard */
+            --breakpoint-md: 414px;      /* iPhone Pro Max, large Android */
+            --breakpoint-lg: 480px;      /* Extra large phones */
+            --breakpoint-xl: 568px;      /* Landscape phones */
+            --breakpoint-tablet: 768px;  /* iPad standard */
+            --breakpoint-tablet-lg: 1024px; /* iPad Pro */
+            --breakpoint-desktop: 1200px;
+
+            /* Dynamic Values (Updated by JavaScript) */
+            --touch-target-dynamic: var(--touch-target-min);
+            --font-scale: 1;
+            --spacing-base-dynamic: var(--spacing-md);
+            --content-margin-dynamic: var(--spacing-md);
+
+            /* Enhanced Safe Area Support */
+            --safe-area-top-extended: max(var(--safe-area-inset-top), 20px);
+            --safe-area-bottom-extended: max(var(--safe-area-inset-bottom), 20px);
+
+            /* Device-Specific Touch Targets */
+            --touch-target-phone-small: 48px;
+            --touch-target-phone-standard: 44px;
+            --touch-target-tablet: 52px;
+            --touch-target-desktop: 40px;
+
+            /* Adaptive Typography */
+            --font-scale-xs: 0.9;
+            --font-scale-sm: 1.0;
+            --font-scale-md: 1.05;
+            --font-scale-lg: 1.1;
+            --font-scale-tablet: 1.15;
+            --font-scale-desktop: 1.1;
+
+            /* Orientation-Specific Values */
+            --header-height-portrait: 60px;
+            --header-height-landscape: 44px;
+            --sidebar-width-portrait: 280px;
+            --sidebar-width-landscape: 320px;
+
+            /* Foldable Device Support */
+            --foldable-hinge-margin: 20px;
+            --foldable-content-padding: 24px;
+        }
+
+        /* Light Mode Variables (Auto-detect iOS) */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #f8f9fa;
+                --bg-secondary: #ffffff;
+                --bg-tertiary: #f1f3f4;
+                --bg-card: rgba(255, 255, 255, 0.95);
+                --bg-input: rgba(245, 245, 245, 0.9);
+
+                --text-primary: #1a1a1a;
+                --text-secondary: #666666;
+                --text-accent: #007c5a;
+
+                --border-primary: rgba(0, 0, 0, 0.1);
+                --border-accent: rgba(0, 124, 90, 0.3);
+
+                --gradient-bg: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Allow text selection for messages */
+        .message-content, .input-field {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        /* =================================================================== */
+        /* LAYOUT PRINCIPAL MOBILE-FIRST */
+        /* =================================================================== */
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: var(--font-md);
+            line-height: 1.5;
+
+            /* Safe Areas */
+            padding-top: var(--safe-area-inset-top);
+            padding-left: var(--safe-area-inset-left);
+            padding-right: var(--safe-area-inset-right);
+
+            /* GPU Acceleration */
+            transform: translateZ(0);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* =================================================================== */
+        /* GALAXY LEVEL DEVICE-SPECIFIC STYLES */
+        /* =================================================================== */
+
+        /* Small phones (< 375px) */
+        body.device-phone-small {
+            --touch-target-min: var(--touch-target-phone-small);
+            --spacing-md: 12px;
+            --spacing-lg: 20px;
+            --font-md: calc(var(--font-md) * var(--font-scale-xs));
+        }
+
+        body.device-phone-small .header {
+            padding: 12px 16px;
+            min-height: 52px;
+        }
+
+        body.device-phone-small .logo {
+            font-size: 18px;
+        }
+
+        body.device-phone-small .status-item {
+            font-size: 11px;
+            padding: 4px 8px;
+            min-height: 24px;
+        }
+
+        body.device-phone-small .message {
+            max-width: 85%;
+            font-size: 14px;
+        }
+
+        body.device-phone-small .input-field {
+            font-size: 14px;
+            padding: 12px 50px 12px 16px;
+        }
+
+        /* Standard phones (375-414px) */
+        body.device-phone-standard {
+            --touch-target-min: var(--touch-target-phone-standard);
+            --font-md: calc(var(--font-md) * var(--font-scale-sm));
+        }
+
+        body.device-phone-standard .message {
+            max-width: 80%;
+        }
+
+        /* Large phones (414-480px) */
+        body.device-phone-large {
+            --font-md: calc(var(--font-md) * var(--font-scale-md));
+        }
+
+        body.device-phone-large .message {
+            max-width: 75%;
+        }
+
+        body.device-phone-large .status-bar {
+            gap: 12px;
+        }
+
+        /* Extra large phones (480px+) */
+        body.device-phone-xlarge {
+            --font-md: calc(var(--font-md) * var(--font-scale-lg));
+            --spacing-lg: 28px;
+        }
+
+        body.device-phone-xlarge .header {
+            padding: 16px 24px;
+        }
+
+        body.device-phone-xlarge .message {
+            max-width: 70%;
+        }
+
+        /* Tablets */
+        body.device-tablet,
+        body.device-tablet-large {
+            --touch-target-min: var(--touch-target-tablet);
+            --font-md: calc(var(--font-md) * var(--font-scale-tablet));
+            --spacing-xl: 40px;
+        }
+
+        body.device-tablet .main-container,
+        body.device-tablet-large .main-container {
+            flex-direction: row;
+        }
+
+        body.device-tablet .sidebar,
+        body.device-tablet-large .sidebar {
+            position: static;
+            width: var(--sidebar-width-portrait);
+            transform: translateX(0);
+            border-right: 1px solid var(--border-primary);
+        }
+
+        body.device-tablet .sidebar-toggle,
+        body.device-tablet-large .sidebar-toggle {
+            display: none;
+        }
+
+        body.device-tablet .message,
+        body.device-tablet-large .message {
+            max-width: 65%;
+        }
+
+        /* Foldable devices */
+        body.device-foldable {
+            --content-margin-dynamic: var(--foldable-content-padding);
+        }
+
+        body.device-foldable .main-container {
+            display: grid;
+            grid-template-columns: 1fr var(--foldable-hinge-margin) 1fr;
+            gap: 0;
+            padding: 0;
+        }
+
+        body.device-foldable .chat-area {
+            grid-column: 1;
+        }
+
+        body.device-foldable .sidebar {
+            grid-column: 3;
+            position: static;
+            transform: none;
+            width: auto;
+        }
+
+        body.device-foldable .hinge-spacer {
+            grid-column: 2;
+            background: var(--bg-tertiary);
+            border-left: 1px solid var(--border-primary);
+            border-right: 1px solid var(--border-primary);
+        }
+
+        /* =================================================================== */
+        /* ORIENTATION-SPECIFIC ADAPTATIONS */
+        /* =================================================================== */
+
+        /* Portrait orientation optimizations */
+        body.orientation-portrait.device-phone-small .header,
+        body.orientation-portrait.device-phone-standard .header,
+        body.orientation-portrait.device-phone-large .header,
+        body.orientation-portrait.device-phone-xlarge .header {
+            min-height: var(--header-height-portrait);
+        }
+
+        /* Landscape orientation optimizations */
+        body.orientation-landscape .header {
+            padding: 8px 16px;
+            min-height: var(--header-height-landscape);
+        }
+
+        body.orientation-landscape .logo {
+            font-size: calc(var(--font-xl) * 0.9);
+        }
+
+        body.orientation-landscape .status-item {
+            font-size: 11px;
+            padding: 4px 8px;
+            min-height: 26px;
+        }
+
+        body.orientation-landscape .messages {
+            padding: 12px 16px;
+        }
+
+        body.orientation-landscape .input-area {
+            padding: 12px 16px;
+            padding-bottom: max(12px, var(--safe-area-inset-bottom));
+        }
+
+        body.orientation-landscape .message {
+            margin: 6px 0;
+        }
+
+        /* Landscape tablets - different behavior */
+        body.orientation-landscape.device-tablet .sidebar,
+        body.orientation-landscape.device-tablet-large .sidebar {
+            width: var(--sidebar-width-landscape);
+        }
+
+        /* Foldable landscape mode */
+        body.device-foldable.orientation-landscape .main-container {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr auto;
+        }
+
+        body.device-foldable.orientation-landscape .chat-area {
+            grid-row: 1;
+        }
+
+        body.device-foldable.orientation-landscape .sidebar {
+            grid-row: 2;
+            width: 100%;
+            height: 200px;
+            overflow-y: auto;
+        }
+
+        /* =================================================================== */
+        /* HEADER MOBILE-OPTIMIZED */
+        /* =================================================================== */
+
+        .header {
+            background: var(--bg-card);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 2px solid var(--text-accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: var(--z-header);
+            min-height: var(--touch-target-comfortable);
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .logo {
+            font-size: var(--font-xl);
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            flex: 1;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: var(--spacing-md);
+            font-size: var(--font-xs);
+            border: 1px solid var(--border-accent);
+            min-height: 28px;
+        }
+
+        /* =================================================================== */
+        /* CONTENEDOR PRINCIPAL - MOBILE LAYOUT */
+        /* =================================================================== */
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar colapsable para móvil */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            height: 100dvh;
+            background: var(--bg-secondary);
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: var(--z-sidebar);
+            overflow-y: auto;
+            padding: var(--spacing-xl) var(--spacing-lg);
+            border-right: 1px solid var(--border-primary);
+
+            /* Safe area para sidebar */
+            padding-top: max(var(--spacing-xl), var(--safe-area-inset-top));
+            padding-left: max(var(--spacing-lg), var(--safe-area-inset-left));
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: var(--spacing-md);
+            left: var(--spacing-md);
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-accent);
+            width: var(--touch-target-min);
+            height: var(--touch-target-min);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: calc(var(--z-sidebar) + 1);
+            backdrop-filter: blur(10px);
+            font-size: var(--font-lg);
+            cursor: pointer;
+            border: 1px solid var(--border-accent);
+        }
+
+        .sidebar-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+
+            /* Safe area para messages */
+            padding-bottom: max(var(--spacing-lg), var(--safe-area-inset-bottom));
+        }
+
+        .message {
+            display: flex;
+            margin: var(--spacing-md) 0;
+            max-width: 85%;
+            contain: content;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: 20px;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .message.user .message-content {
+            background: var(--gradient-user);
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+
+        .message.assistant .message-content {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            border-bottom-left-radius: 8px;
+        }
+
+        /* =================================================================== */
+        /* INPUT AREA MOBILE-OPTIMIZED */
+        /* =================================================================== */
+
+        .input-area {
+            padding: var(--spacing-lg);
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-primary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+
+            /* Safe area para input */
+            padding-bottom: max(var(--spacing-lg), var(--safe-area-inset-bottom));
+            padding-left: max(var(--spacing-lg), var(--safe-area-inset-left));
+            padding-right: max(var(--spacing-lg), var(--safe-area-inset-right));
+        }
+
+        .input-container {
+            position: relative;
+            max-width: 100%;
+        }
+
+        .input-field {
+            width: 100%;
+            background: var(--bg-input);
+            border: 2px solid var(--border-primary);
+            border-radius: 25px;
+            padding: var(--spacing-md) 120px var(--spacing-md) var(--spacing-lg);
+            color: var(--text-primary);
+            font-size: var(--font-md);
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            border-color: var(--text-accent);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .input-buttons {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .voice-btn, .send-btn, .file-btn {
+            width: var(--touch-target-min);
+            height: var(--touch-target-min);
+            border-radius: 50%;
+            border: none;
+            background: var(--gradient-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            font-size: var(--font-md);
+            min-height: var(--touch-target-dynamic);
+            min-width: var(--touch-target-dynamic);
+        }
+
+        .voice-btn:active, .send-btn:active, .file-btn:active {
+            transform: scale(0.95) translateZ(0);
+        }
+
+        .voice-btn {
+            background: var(--gradient-primary);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #ff4757, #ff6b7a);
+            animation: pulse 1.5s infinite;
+        }
+
+        .send-btn {
+            background: var(--gradient-primary);
+        }
+
+        .file-btn {
+            background: linear-gradient(135deg, #5352ed, #7289da);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 71, 87, 0); }
+        }
+
+        /* Enhanced Touch Target Optimization */
+        .touch-target {
+            min-height: var(--touch-target-dynamic);
+            min-width: var(--touch-target-dynamic);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .touch-target::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-height: var(--touch-target-dynamic);
+            min-width: var(--touch-target-dynamic);
+            z-index: -1;
+        }
+
+        /* =================================================================== */
+        /* RESPONSIVE BREAKPOINTS OPTIMIZED */
+        /* =================================================================== */
+
+        /* iPhone SE y similares (375px+) */
+        @media (min-width: 375px) {
+            :root {
+                --spacing-md: 18px;
+                --spacing-lg: 28px;
+                --font-md: 17px;
+                --font-lg: 19px;
+            }
+
+            .message {
+                max-width: 80%;
+            }
+
+            .input-field {
+                padding: var(--spacing-lg) 120px var(--spacing-lg) var(--spacing-lg);
+            }
+        }
+
+        /* iPhone Pro Max / Plus (414px+) */
+        @media (min-width: 414px) {
+            .message {
+                max-width: 75%;
+            }
+
+            .status-bar {
+                gap: var(--spacing-md);
+            }
+
+            .status-item {
+                padding: var(--spacing-sm) var(--spacing-md);
+            }
+        }
+
+        /* Tablets / iPad (768px+) */
+        @media (min-width: 768px) {
+            .main-container {
+                flex-direction: row;
+            }
+
+            .sidebar {
+                position: static;
+                width: var(--sidebar-width-portrait);
+                transform: translateX(0);
+                padding-top: var(--spacing-lg);
+                border-right: 1px solid var(--border-primary);
+            }
+
+            .sidebar-toggle {
+                display: none;
+            }
+
+            .chat-area {
+                flex: 1;
+            }
+
+            .message {
+                max-width: 70%;
+            }
+
+            .input-container {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+        }
+
+        /* iPad Pro (1024px+) */
+        @media (min-width: 1024px) {
+            .sidebar {
+                width: 380px;
+            }
+
+            .message {
+                max-width: 60%;
+            }
+
+            .input-container {
+                max-width: 1000px;
+            }
+
+            :root {
+                --font-md: 18px;
+                --font-lg: 20px;
+                --font-xl: 22px;
+            }
+        }
+
+        /* Landscape orientation */
+        @media (orientation: landscape) and (max-width: 767px) {
+            .header {
+                padding: var(--spacing-sm) var(--spacing-lg);
+                min-height: var(--touch-target-min);
+            }
+
+            .logo {
+                font-size: var(--font-lg);
+            }
+
+            .status-item {
+                font-size: 11px;
+                padding: 4px var(--spacing-sm);
+            }
+
+            .messages {
+                padding: var(--spacing-md);
+            }
+
+            .input-area {
+                padding: var(--spacing-md) var(--spacing-lg);
+            }
+        }
+
+        /* =================================================================== */
+        /* ADVANCED DEVICE-SPECIFIC OPTIMIZATIONS */
+        /* =================================================================== */
+
+        /* iPhone SE (320px) specific optimizations */
+        @media screen and (max-width: 320px) {
+            .header {
+                padding: 8px 12px;
+            }
+
+            .logo {
+                font-size: 16px;
+            }
+
+            .status-bar {
+                gap: 4px;
+            }
+
+            .status-item {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+
+            .message {
+                font-size: 13px;
+                padding: 10px 12px;
+            }
+
+            .input-field {
+                font-size: 13px;
+                padding: 10px 110px 10px 12px;
+            }
+        }
+
+        /* Galaxy Fold unfolded specific */
+        @media screen and (min-width: 512px) and (max-width: 673px) {
+            .main-container {
+                display: grid;
+                grid-template-columns: 1fr 20px 1fr;
+            }
+
+            .chat-area {
+                grid-column: 1;
+            }
+
+            .sidebar {
+                grid-column: 3;
+                position: static;
+                transform: none;
+                width: auto;
+            }
+        }
+
+        /* Enhanced Safe Area Handling */
+        @supports (top: env(safe-area-inset-top)) {
+            .header {
+                padding-top: max(var(--spacing-md), var(--safe-area-inset-top));
+            }
+
+            .input-area {
+                padding-bottom: max(var(--spacing-lg), var(--safe-area-inset-bottom));
+            }
+        }
+
+        /* iPhone notch handling */
+        @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+            .header {
+                padding-top: max(20px, var(--safe-area-inset-top));
+            }
+        }
+
+        /* iPhone Pro Max notch handling */
+        @media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
+            .header {
+                padding-top: max(20px, var(--safe-area-inset-top));
+            }
+        }
+
+        /* High DPI / Retina displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .avatar,
+            .voice-btn,
+            .send-btn,
+            .file-btn {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+        }
+
+        /* Reduce motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .sidebar {
+                transition: none;
+            }
+
+            .message {
+                animation: none;
+            }
+        }
+
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            :root {
+                --border-primary: rgba(255, 255, 255, 0.5);
+                --border-accent: var(--text-accent);
+            }
+
+            .input-field:focus {
+                outline: 2px solid var(--text-accent);
+            }
+
+            .touch-target {
+                border: 2px solid var(--text-primary);
+            }
+
+            .message {
+                border: 1px solid var(--border-primary);
+            }
+
+            .status-item {
+                background: var(--bg-secondary);
+                border: 2px solid var(--border-accent);
+            }
+        }
+
+        /* =================================================================== */
+        /* UTILITY CLASSES */
+        /* =================================================================== */
+
+        .hide-on-small {
+            display: block;
+        }
+
+        @media (max-width: 374px) {
+            .hide-on-small {
+                display: none;
+            }
+        }
+
+        .show-on-small {
+            display: none;
+        }
+
+        @media (max-width: 374px) {
+            .show-on-small {
+                display: block;
+            }
+        }
+
+        .phone-only {
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .phone-only {
+                display: none;
+            }
+        }
+
+        .tablet-only {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .tablet-only {
+                display: block;
+            }
+        }
+
+        .landscape-only {
+            display: none;
+        }
+
+        .orientation-landscape .landscape-only {
+            display: block;
+        }
+
+        .portrait-only {
+            display: block;
+        }
+
+        .orientation-landscape .portrait-only {
+            display: none;
+        }
+
+        /* =================================================================== */
+        /* LOADING & ANIMATION STATES */
+        /* =================================================================== */
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .message-typing {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Mobile-Optimized -->
+    <div class="header">
+        <div class="logo">🧠 Sandra IA Mobile Galaxy</div>
+        <div class="status-bar">
+            <div class="status-item">
+                <span>🟢</span>
+                <span>Online</span>
+            </div>
+            <div class="status-item hide-on-small">
+                <span>🎯</span>
+                <span>Galaxy</span>
+            </div>
+            <div class="status-item tablet-only">
+                <span>📱</span>
+                <span id="device-type">Auto</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar Toggle Button -->
+        <button class="sidebar-toggle phone-only" onclick="toggleSidebar()">☰</button>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <h3 style="color: var(--text-accent); margin-bottom: var(--spacing-lg);">Sandra IA Controls</h3>
+
+            <div style="margin-bottom: var(--spacing-lg);">
+                <h4 style="color: var(--text-secondary); margin-bottom: var(--spacing-sm);">Modo de Conversación</h4>
+                <button class="sidebar-btn active" onclick="setMode('chat')">💬 Chat de Texto</button>
+                <button class="sidebar-btn" onclick="setMode('voice')">🎤 Conversación de Voz</button>
+                <button class="sidebar-btn" onclick="setMode('video')">📹 Video Llamada</button>
+            </div>
+
+            <div style="margin-bottom: var(--spacing-lg);">
+                <h4 style="color: var(--text-secondary); margin-bottom: var(--spacing-sm);">Configuración</h4>
+                <button class="sidebar-btn" onclick="toggleSettings()">⚙️ Configuración</button>
+                <button class="sidebar-btn" onclick="toggleProfile()">👤 Perfil</button>
+                <button class="sidebar-btn" onclick="toggleHelp()">❓ Ayuda</button>
+            </div>
+
+            <div class="portrait-only">
+                <h4 style="color: var(--text-secondary); margin-bottom: var(--spacing-sm);">Responsivo</h4>
+                <div class="status-item" style="margin-bottom: var(--spacing-sm);">
+                    <span>📱</span>
+                    <span id="current-device">Detectando...</span>
+                </div>
+                <div class="status-item">
+                    <span>🔄</span>
+                    <span id="current-orientation">Portrait</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hinge spacer for foldable devices -->
+        <div class="hinge-spacer" style="display: none;"></div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="messages" id="messages">
+                <div class="message assistant">
+                    <div class="message-content">
+                        ¡Hola! Soy Sandra IA Mobile Galaxy, optimizada para todos los dispositivos. ¿En qué puedo ayudarte hoy?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea
+                        class="input-field"
+                        id="messageInput"
+                        placeholder="Escribe tu mensaje aquí..."
+                        rows="1"></textarea>
+                    <div class="input-buttons">
+                        <button class="file-btn touch-target" title="Adjuntar archivo">📎</button>
+                        <button class="voice-btn touch-target" id="voiceBtn" title="Grabar mensaje de voz">🎤</button>
+                        <button class="send-btn touch-target" onclick="sendMessage()" title="Enviar mensaje">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load responsive utilities -->
+    <script src="responsive-utils.js"></script>
+
+    <script>
+        // =================================================================== //
+        // SANDRA IA MOBILE GALAXY - ENHANCED RESPONSIVE FUNCTIONALITY
+        // =================================================================== //
+
+        // Global state
+        let isRecording = false;
+        let currentMode = 'chat';
+        let sidebarOpen = false;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeResponsiveFeatures();
+            setupEventListeners();
+            adjustTextarea();
+            updateDeviceInfo();
+        });
+
+        // Initialize responsive features
+        function initializeResponsiveFeatures() {
+            if (window.SandraResponsive) {
+                // Register callback for device changes
+                window.SandraResponsive.onDeviceChange((changeData) => {
+                    console.log('Device changed:', changeData);
+                    updateDeviceInfo();
+                    adjustLayoutForDevice();
+
+                    // Handle foldable device changes
+                    if (changeData.newDevice === 'foldable') {
+                        setupFoldableLayout();
+                    }
+                });
+
+                // Update CSS properties based on current device
+                window.SandraResponsive.updateCSSProperties();
+                updateDeviceInfo();
+            }
+        }
+
+        // Update device info display
+        function updateDeviceInfo() {
+            if (window.SandraResponsive) {
+                const deviceInfo = window.SandraResponsive.getDeviceInfo();
+
+                const deviceTypeEl = document.getElementById('device-type');
+                const currentDeviceEl = document.getElementById('current-device');
+                const currentOrientationEl = document.getElementById('current-orientation');
+
+                if (deviceTypeEl) {
+                    deviceTypeEl.textContent = deviceInfo.device.replace('device-', '').replace('-', ' ');
+                }
+
+                if (currentDeviceEl) {
+                    currentDeviceEl.textContent = deviceInfo.device.replace('device-', '').replace('-', ' ');
+                }
+
+                if (currentOrientationEl) {
+                    currentOrientationEl.textContent = deviceInfo.orientation;
+                }
+
+                // Update foldable hinge spacer visibility
+                const hingeSpacers = document.querySelectorAll('.hinge-spacer');
+                hingeSpacers.forEach(spacer => {
+                    spacer.style.display = deviceInfo.isFoldable ? 'block' : 'none';
+                });
+
+                console.log('Device Info Updated:', deviceInfo);
+            }
+        }
+
+        // Adjust layout for current device
+        function adjustLayoutForDevice() {
+            if (window.SandraResponsive) {
+                const deviceInfo = window.SandraResponsive.getDeviceInfo();
+
+                // Adjust sidebar for different devices
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    if (deviceInfo.isTablet) {
+                        sidebar.classList.remove('active');
+                        sidebarOpen = false;
+                    }
+                }
+
+                // Adjust input field for small screens
+                const messageInput = document.getElementById('messageInput');
+                if (messageInput && deviceInfo.device === 'device-phone-small') {
+                    messageInput.style.fontSize = '14px';
+                    messageInput.style.padding = '12px 110px 12px 16px';
+                }
+            }
+        }
+
+        // Setup foldable layout
+        function setupFoldableLayout() {
+            const mainContainer = document.querySelector('.main-container');
+            const chatArea = document.querySelector('.chat-area');
+            const sidebar = document.querySelector('.sidebar');
+
+            if (mainContainer && chatArea && sidebar) {
+                // Ensure grid layout for foldable
+                mainContainer.style.display = 'grid';
+                mainContainer.style.gridTemplateColumns = '1fr 20px 1fr';
+
+                // Show hinge spacer
+                const hingeSpacers = document.querySelectorAll('.hinge-spacer');
+                hingeSpacers.forEach(spacer => {
+                    spacer.style.display = 'block';
+                });
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const messageInput = document.getElementById('messageInput');
+            const voiceBtn = document.getElementById('voiceBtn');
+
+            // Auto-resize textarea
+            if (messageInput) {
+                messageInput.addEventListener('input', adjustTextarea);
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+
+            // Voice recording
+            if (voiceBtn) {
+                voiceBtn.addEventListener('click', toggleVoiceRecording);
+            }
+
+            // Handle orientation changes
+            window.addEventListener('orientationchange', function() {
+                setTimeout(() => {
+                    updateDeviceInfo();
+                    adjustLayoutForDevice();
+                }, 300);
+            });
+
+            // Handle resize for responsive updates
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    updateDeviceInfo();
+                    adjustLayoutForDevice();
+                }, 250);
+            });
+        }
+
+        // Auto-adjust textarea height
+        function adjustTextarea() {
+            const textarea = document.getElementById('messageInput');
+            if (textarea) {
+                textarea.style.height = 'auto';
+                const newHeight = Math.min(textarea.scrollHeight, 120);
+                textarea.style.height = newHeight + 'px';
+            }
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebarOpen = !sidebarOpen;
+
+            if (sidebarOpen) {
+                sidebar.classList.add('active');
+            } else {
+                sidebar.classList.remove('active');
+            }
+        }
+
+        // Send message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messagesContainer = document.getElementById('messages');
+
+            if (!messageInput || !messagesContainer) return;
+
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.innerHTML = `<div class="message-content">${message}</div>`;
+            messagesContainer.appendChild(userMessage);
+
+            // Clear input
+            messageInput.value = '';
+            adjustTextarea();
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate Sandra IA response
+            setTimeout(() => {
+                hideTypingIndicator();
+                addAssistantMessage(generateResponse(message));
+            }, 1000 + Math.random() * 2000);
+        }
+
+        // Generate Sandra IA response
+        function generateResponse(userMessage) {
+            const responses = [
+                "¡Excelente pregunta! Como Sandra IA Mobile Galaxy, estoy optimizada para ofrecerte la mejor experiencia en cualquier dispositivo.",
+                "Entiendo tu consulta. Mi sistema responsivo se adapta automáticamente a tu dispositivo para brindarte la mejor experiencia.",
+                "¡Perfecto! Detecté que estás usando un dispositivo móvil. Mi interfaz se ha optimizado específicamente para tu pantalla.",
+                "Como IA móvil de Galaxy Level, puedo ayudarte con eso. Mi diseño responsivo garantiza una experiencia fluida en todos los dispositivos.",
+                "¡Genial! Mi sistema de detección de dispositivos me permite adaptar la interfaz perfectamente a tu pantalla y orientación."
+            ];
+
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Add assistant message
+        function addAssistantMessage(message) {
+            const messagesContainer = document.getElementById('messages');
+
+            const assistantMessage = document.createElement('div');
+            assistantMessage.className = 'message assistant';
+            assistantMessage.innerHTML = `<div class="message-content">${message}</div>`;
+            messagesContainer.appendChild(assistantMessage);
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('messages');
+
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message assistant';
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.innerHTML = `
+                <div class="message-content">
+                    <div class="message-typing">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(typingIndicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Toggle voice recording
+        function toggleVoiceRecording() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            isRecording = !isRecording;
+
+            if (isRecording) {
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '⏹️';
+                voiceBtn.title = 'Detener grabación';
+
+                // Simulate recording
+                setTimeout(() => {
+                    if (isRecording) {
+                        toggleVoiceRecording();
+                        addAssistantMessage("He recibido tu mensaje de voz. Como Sandra IA Mobile Galaxy, puedo procesar audio en tiempo real.");
+                    }
+                }, 3000);
+            } else {
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '🎤';
+                voiceBtn.title = 'Grabar mensaje de voz';
+            }
+        }
+
+        // Mode setting functions
+        function setMode(mode) {
+            currentMode = mode;
+
+            // Update active button
+            const buttons = document.querySelectorAll('.sidebar-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            const modeText = {
+                'chat': '💬 Chat de Texto',
+                'voice': '🎤 Conversación de Voz',
+                'video': '📹 Video Llamada'
+            };
+
+            buttons.forEach(btn => {
+                if (btn.textContent.includes(modeText[mode].substring(2))) {
+                    btn.classList.add('active');
+                }
+            });
+
+            addAssistantMessage(`Modo cambiado a: ${modeText[mode]}. Mi interfaz responsiva se adapta automáticamente a cada modo.`);
+        }
+
+        // Placeholder functions for sidebar actions
+        function toggleSettings() {
+            addAssistantMessage("Configuración de Sandra IA Mobile Galaxy. Mi sistema responsivo mantiene todas las opciones accesibles en cualquier dispositivo.");
+        }
+
+        function toggleProfile() {
+            addAssistantMessage("Perfil de usuario. Mi diseño adaptativo asegura que tu información se vea perfecta en cualquier pantalla.");
+        }
+
+        function toggleHelp() {
+            addAssistantMessage("Ayuda de Sandra IA Mobile Galaxy. Estoy optimizada para todos los dispositivos: teléfonos pequeños, estándar, grandes, tablets y dispositivos plegables.");
+        }
+
+        // Add CSS for sidebar buttons
+        const sidebarStyle = document.createElement('style');
+        sidebarStyle.textContent = `
+            .sidebar-btn {
+                display: block;
+                width: 100%;
+                padding: 12px 16px;
+                margin-bottom: 8px;
+                background: var(--bg-card);
+                border: 1px solid var(--border-primary);
+                border-radius: 12px;
+                color: var(--text-primary);
+                text-align: left;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 14px;
+                min-height: var(--touch-target-min);
+            }
+
+            .sidebar-btn:hover {
+                background: var(--bg-tertiary);
+                border-color: var(--border-accent);
+            }
+
+            .sidebar-btn.active {
+                background: var(--gradient-primary);
+                border-color: var(--text-accent);
+                color: white;
+            }
+
+            .sidebar-btn:active {
+                transform: scale(0.98);
+            }
+        `;
+        document.head.appendChild(sidebarStyle);
+
+        // Performance optimization: Debounce resize events
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Enhanced responsive debugging (only in development)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            const debugDiv = document.createElement('div');
+            debugDiv.className = 'responsive-debug';
+            debugDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px;
+                font-size: 12px;
+                z-index: 9999;
+                font-family: monospace;
+            `;
+
+            function updateDebugInfo() {
+                if (window.SandraResponsive) {
+                    const info = window.SandraResponsive.getDeviceInfo();
+                    debugDiv.innerHTML = `
+                        W: ${info.dimensions.width} H: ${info.dimensions.height}<br>
+                        Device: ${info.device}<br>
+                        Orientation: ${info.orientation}<br>
+                        Touch: ${info.touchTargetSize}px<br>
+                        Scale: ${info.fontScale}
+                    `;
+                } else {
+                    debugDiv.innerHTML = `
+                        W: ${window.innerWidth} H: ${window.innerHeight}<br>
+                        Device: Not detected<br>
+                        Responsive Utils: Loading...
+                    `;
+                }
+            }
+
+            document.body.appendChild(debugDiv);
+            updateDebugInfo();
+
+            window.addEventListener('resize', debounce(updateDebugInfo, 100));
+            setInterval(updateDebugInfo, 5000);
+        }
+    </script>
+</body>
+</html>
