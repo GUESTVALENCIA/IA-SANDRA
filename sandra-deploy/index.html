@@ -1475,28 +1475,34 @@
             const originalText = btn.innerHTML;
             const messageEl = document.getElementById('ios-message');
 
-            btn.innerHTML = '<span class="loading"></span> Preparando descarga...';
+            btn.innerHTML = '<span class="loading"></span> Preparando instalación...';
             btn.disabled = true;
 
             setTimeout(() => {
-                // Simulate iOS download process
                 try {
-                    // Check if TestFlight is available
+                    // Check if iOS device
                     if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                        // iOS device detected
-                        window.open('https://testflight.apple.com/join/sandra-ia-galaxy', '_blank');
-                        showMessage(messageEl, 'success', '✅ Redirigiendo a TestFlight. Si TestFlight no está instalado, se instalará automáticamente desde App Store.');
+                        // iOS device detected - show PWA install instructions
+                        const isPWA = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+
+                        if (isPWA) {
+                            showMessage(messageEl, 'success', '✅ Sandra IA ya está instalada como aplicación.');
+                        } else {
+                            // Show iOS install banner
+                            showIOSInstallInstructions();
+                            showMessage(messageEl, 'info', '📱 Sigue las instrucciones que aparecieron abajo para instalar Sandra IA en tu iPhone.');
+                        }
                     } else {
                         // Not iOS device
-                        showMessage(messageEl, 'error', '⚠️ Este enlace es solo para dispositivos iOS. Por favor, accede desde tu iPhone o iPad.');
+                        showMessage(messageEl, 'error', '⚠️ Esta opción es solo para dispositivos iOS. Por favor, accede desde tu iPhone o iPad.');
                     }
                 } catch (error) {
-                    showMessage(messageEl, 'error', '❌ Error al abrir TestFlight. Inténtalo de nuevo o contacta soporte.');
+                    showMessage(messageEl, 'error', '❌ Error al preparar la instalación. Inténtalo de nuevo.');
                 }
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }, 2000);
+            }, 1000);
         }
 
         function downloadAndroid() {
@@ -1509,13 +1515,12 @@
 
             setTimeout(() => {
                 try {
-                    // Create download link for APK
-                    const link = document.createElement('a');
-                    link.href = 'https://sandra.guestsvalencia.es/downloads/sandra-ia-galaxy.apk';
-                    link.download = 'sandra-ia-galaxy.apk';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    // For now, show PWA install instructions for Android as well
+                    if (/Android/.test(navigator.userAgent)) {
+                        showMessage(messageEl, 'info', '📱 Para la mejor experiencia, instala esta página como PWA: Menú → "Añadir a pantalla de inicio".');
+                    } else {
+                        showMessage(messageEl, 'error', '⚠️ APK solo disponible para dispositivos Android. Accede desde tu teléfono Android.');
+                    }
 
                     showMessage(messageEl, 'success', '✅ Descarga iniciada. Busca sandra-ia-galaxy.apk en tu carpeta de Descargas y sigue las instrucciones de instalación.');
                 } catch (error) {
@@ -1532,15 +1537,16 @@
             const originalText = btn.innerHTML;
             const messageEl = document.getElementById('webapp-message');
 
-            btn.innerHTML = '<span class="loading"></span> Abriendo Web App...';
+            btn.innerHTML = '<span class="loading"></span> Iniciando Sandra IA...';
             btn.disabled = true;
 
             setTimeout(() => {
                 try {
-                    window.open('https://sandra.guestsvalencia.es/app', '_blank');
-                    showMessage(messageEl, 'success', '✅ Sandra IA Web App abierta en nueva pestaña. Permite permisos de cámara y micrófono para funcionalidad completa.');
+                    // Redirect to app interface (same page with app mode)
+                    window.location.href = window.location.href + '?mode=app';
+                    showMessage(messageEl, 'success', '✅ Iniciando Sandra IA Web App...');
                 } catch (error) {
-                    showMessage(messageEl, 'error', '❌ Error al abrir Web App. Verifica que tu navegador permita ventanas emergentes.');
+                    showMessage(messageEl, 'error', '❌ Error al iniciar Web App. Recarga la página e inténtalo de nuevo.');
                 }
 
                 btn.innerHTML = originalText;
