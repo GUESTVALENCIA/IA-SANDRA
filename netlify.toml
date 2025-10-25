@@ -188,40 +188,42 @@
 # PLUGINS AND OPTIMIZATION
 # ═══════════════════════════════════════════════════════════════════
 
+# Plugins temporarily disabled - need to be installed via package.json
 # Essential build plugins
-[[plugins]]
-  package = "@netlify/plugin-functions-install-core"
+# [[plugins]]
+#   package = "@netlify/plugin-functions-install-core"
 
 # PWA optimization plugin
-[[plugins]]
-  package = "netlify-plugin-pwa"
-  [plugins.inputs]
-    swSrc = "./sw.js"
-    swDest = "./sw.js"
+# [[plugins]]
+#   package = "netlify-plugin-pwa"
+#   [plugins.inputs]
+#     swSrc = "./sw.js"
+#     swDest = "./sw.js"
 
 # Performance optimization
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-  [plugins.inputs]
-    output_path = "reports/lighthouse"
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+#   [plugins.inputs]
+#     output_path = "reports/lighthouse"
 
 # Mobile optimization
-[[plugins]]
-  package = "netlify-plugin-webp"
-  [plugins.inputs]
-    quality = 85
+# [[plugins]]
+#   package = "netlify-plugin-webp"
+#   [plugins.inputs]
+#     quality = 85
 
 # ═══════════════════════════════════════════════════════════════════
 # EDGE FUNCTIONS FOR MOBILE PERFORMANCE
 # ═══════════════════════════════════════════════════════════════════
 
-[[edge_functions]]
-  function = "mobile-detector"
-  path = "/*"
+# Edge functions disabled temporarily
+# [[edge_functions]]
+#   function = "mobile-detector"
+#   path = "/*"
 
-[[edge_functions]]
-  function = "performance-optimizer"
-  path = "/api/*"
+# [[edge_functions]]
+#   function = "performance-optimizer"
+#   path = "/api/*"
 
 # ═══════════════════════════════════════════════════════════════════
 # FORMS (FOR CONTACT AND FEEDBACK)
