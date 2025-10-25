@@ -49,7 +49,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "command": "node",
       "args": ["C:\\Users\\clayt\\Desktop\\sandra-professional\\mcp\\orchestrator.js"],
       "env": {
-        "ANTHROPIC_API_KEY": "***REMOVED***",
+        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY",
         "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY"
       }
     },
@@ -75,7 +75,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "command": "node",
       "args": ["C:\\Users\\clayt\\Desktop\\sandra-professional\\mcp\\agents\\ai-agent.js"],
       "env": {
-        "ANTHROPIC_API_KEY": "***REMOVED***",
+        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY",
         "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY",
         "GROQ_API_KEY": "YOUR_GROQ_API_KEY"
       }

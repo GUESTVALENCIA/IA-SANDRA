@@ -22,7 +22,7 @@ sandra-professional/
 ```
 
 ### 3. INTEGRACIONES ACTIVAS
-- ✅ **OpenAI GPT-4o:** sk-proj-jlzuHVbxJOOZMP4rqK5E... (actualizada)
+- ✅ **OpenAI GPT-4o:** YOUR_OPENAI_API_KEY (configurada)
 - ✅ **HeyGen Avatar:** API + Avatar ID 306d1c6f1b014036b467ff70ea38d965
 - ✅ **Cartesia:** En standby
 - ❌ **ElevenLabs:** Desactivada (según instrucciones)
