@@ -50,7 +50,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "args": ["C:\\Users\\clayt\\Desktop\\sandra-professional\\mcp\\orchestrator.js"],
       "env": {
         "ANTHROPIC_API_KEY": "***REMOVED***",
-        "OPENAI_API_KEY": "***REMOVED***"
+        "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY"
       }
     },
     "sandra-dev-agent": {
@@ -65,10 +65,10 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "command": "node",
       "args": ["C:\\Users\\clayt\\Desktop\\sandra-professional\\mcp\\agents\\voice-agent.js"],
       "env": {
-        "HEYGEN_API_KEY": "M2IzYzcyOGY1ZmFhNGI5YmE5NzBlZTFiNDhmOTc3MDMtMTc1MzU4MDA1OA==",
-        "ELEVENLABS_API_KEY": "sk_972694e47b2a8ace6912f6689b8527b746cdf4bec9bae242",
-        "CARTESIA_API_KEY": "sk_car_67c5Tg8LMpR9G6unHvsvnw",
-        "DEEPGRAM_API_KEY": "30e9dbaec29dcde1b23a8bd9de31438c74f23522"
+        "HEYGEN_API_KEY": "YOUR_HEYGEN_API_KEY",
+        "ELEVENLABS_API_KEY": "YOUR_ELEVENLABS_API_KEY",
+        "CARTESIA_API_KEY": "YOUR_CARTESIA_API_KEY",
+        "DEEPGRAM_API_KEY": "YOUR_DEEPGRAM_API_KEY"
       }
     },
     "sandra-ai-agent": {
@@ -76,7 +76,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "args": ["C:\\Users\\clayt\\Desktop\\sandra-professional\\mcp\\agents\\ai-agent.js"],
       "env": {
         "ANTHROPIC_API_KEY": "***REMOVED***",
-        "OPENAI_API_KEY": "***REMOVED***",
+        "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY",
         "GROQ_API_KEY": "***REMOVED***"
       }
     },
