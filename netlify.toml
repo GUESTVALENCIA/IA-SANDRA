@@ -1,7 +1,0 @@
-[build]
-  publish = "sandra-deploy"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
