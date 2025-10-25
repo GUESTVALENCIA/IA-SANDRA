@@ -1,7 +1,16 @@
-const client = require('prom-client');
+// Try to load prom-client, fallback to simple implementation if not available
+let client, register;
 
-// Create a Registry which registers the metrics
-const register = new client.Registry();
+try {
+  client = require('prom-client');
+  // Create a Registry which registers the metrics
+  register = new client.Registry();
+} catch (error) {
+  console.warn('[METRICS] prom-client not available, using fallback implementation');
+  const fallback = require('./metrics-fallback');
+  module.exports = fallback;
+  return;
+}
 
 // Add a default label which is added to all metrics
 register.setDefaultLabels({

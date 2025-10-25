@@ -1,28 +1,23 @@
 // backend/server.js
-<<<<<<< HEAD
-const env = require('../config/env');
-const logger = require('./logger');
-=======
 const express = require('express');
 const env = require('../config/env');
 const logger = require('./logger');
 const metrics = require('./metrics');
->>>>>>> 92152f2f6324c2fba025f9e798014e14d7a75193
 
 // Initialize Sandra MCP Bridge with config
 require('dotenv').config();
 
-<<<<<<< HEAD
-=======
 const app = express();
 
 // Health Endpoint (GET /health)
 app.get('/health', (req, res) => {
   res.status(200).json({
+    service: 'Sandra Backend Server',
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    version: process.env.npm_package_version || '1.0.0'
+    version: process.env.npm_package_version || '1.0.0',
+    mode: 'GALAXY_ENTERPRISE'
   });
 });
 
@@ -56,36 +51,29 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
->>>>>>> 92152f2f6324c2fba025f9e798014e14d7a75193
 try {
   // Validate environment before starting
-  logger.info('Starting Sandra MCP Bridge with validated environment');
+  logger.info('Starting Sandra Backend Server with Galaxy Enterprise configuration');
   logger.info({ port: env.PORT, nodeEnv: env.NODE_ENV }, 'Environment loaded');
-<<<<<<< HEAD
-  
-  // Import and start the main bridge
-  require('../sandra-mcp-bridge');
-  
-=======
 
   // Start HTTP server for health checks and metrics
-  const server = app.listen(env.PORT || 3000, () => {
-    logger.info({ port: env.PORT || 3000 }, 'Health and metrics server started');
+  const server = app.listen(env.PORT || 3001, () => {
+    logger.info({ port: env.PORT || 3001 }, 'Sandra Backend Server started (Galaxy Enterprise Mode)');
   });
 
-  // Import and start the main bridge
-  require('../sandra-mcp-bridge');
+  // Import and start the main bridge (if not already running)
+  if (!process.env.SANDRA_MCP_BRIDGE_RUNNING) {
+    require('../sandra-mcp-bridge');
+  }
 
   // Graceful shutdown
   process.on('SIGTERM', () => {
     logger.info('SIGTERM received, shutting down gracefully');
     server.close(() => {
-      logger.info('HTTP server closed');
+      logger.info('Sandra Backend Server closed');
       process.exit(0);
     });
   });
-
->>>>>>> 92152f2f6324c2fba025f9e798014e14d7a75193
 } catch (error) {
   logger.fatal({ error: error.message, stack: error.stack }, 'Failed to start server');
   process.exit(1);
