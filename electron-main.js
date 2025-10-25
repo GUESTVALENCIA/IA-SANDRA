@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
 
-// Sandra Desktop App - No server needed!
+// Sandra Desktop App with Offline Mode – No server needed!
 class SandraDesktopApp {
     constructor() {
         this.mainWindow = null;
@@ -26,11 +26,51 @@ class SandraDesktopApp {
             autoHideMenuBar: true
         });
 
+        // Load the main UI
         this.mainWindow.loadFile('sandra-desktop.html');
-        
-        // DevTools for debugging
-        // this.mainWindow.webContents.openDevTools();
+
+        // Inject offline overlay and handlers once the page finishes loading
+        this.mainWindow.webContents.on('did-finish-load', () => {
+            // Only insert the overlay if it does not already exist
+            this.mainWindow.webContents.executeJavaScript(`
+                (function() {
+                    if (!document.getElementById('offline-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.id = 'offline-overlay';
+                        overlay.style.position = 'fixed';
+                        overlay.style.top = '0';
+                        overlay.style.left = '0';
+                        overlay.style.width = '100%';
+                        overlay.style.height = '100%';
+                        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                        overlay.style.color = '#fff';
+                        overlay.style.display = 'none';
+                        overlay.style.flexDirection = 'column';
+                        overlay.style.justifyContent = 'center';
+                        overlay.style.alignItems = 'center';
+                        overlay.style.zIndex = '9999';
+                        overlay.innerHTML = '<h2>Modo offline</h2><p>No hay conexión a Internet. Algunas funciones están deshabilitadas.</p>';
+                        document.body.appendChild(overlay);
+                    }
+                    function updateNetworkStatus() {
+                        const overlay = document.getElementById('offline-overlay');
+                        if (navigator.onLine) {
+                            overlay.style.display = 'none';
+                        } else {
+                            overlay.style.display = 'flex';
+                        }
+                    }
+                    window.addEventListener('online', updateNetworkStatus);
+                    window.addEventListener('offline', updateNetworkStatus);
+                    // Initial check
+                    updateNetworkStatus();
+                })();
+            `).catch((err) => {
+                console.error('Failed to inject offline handler:', err);
+            });
+        });
     }
+
     setupHandlers() {
         // File operations
         ipcMain.handle('create-file', async (event, filePath, content) => {
@@ -41,7 +81,6 @@ class SandraDesktopApp {
                 return { success: false, message: error.message };
             }
         });
-
         // Terminal operations
         ipcMain.handle('execute-command', async (event, command) => {
             return new Promise((resolve) => {
@@ -54,7 +93,6 @@ class SandraDesktopApp {
                 });
             });
         });
-
         // Git operations
         ipcMain.handle('git-status', async (event) => {
             return new Promise((resolve) => {
@@ -63,7 +101,8 @@ class SandraDesktopApp {
                 });
             });
         });
-    }}
+    }
+}
 
 // App initialization
 app.whenReady().then(() => {
