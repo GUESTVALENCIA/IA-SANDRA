@@ -141,7 +141,7 @@ AHORA: "✅ Reserva creada: ID #rec123ABC
 ## 🔗 APIS INTEGRADAS
 
 ### APIs Productivas Configuradas:
-- ✅ **GitHub API**: `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`
+- ✅ **GitHub API**: `YOUR_GITHUB_TOKEN`
 - ✅ **Netlify API**: `nfp_BguXWY1a87dAj2hLJvB2wy5ndvvkkCkm0b60`
 - ✅ **PayPal API**: `AYs9dULgQ12igjVhbMCFnXtBVcrmrJ25PWV949ZOFMFyEQTAS1eE7Bdm7iybUqnA0GSGZRl5q9Ar-wT8`
 - ✅ **Airtable API**: `pat0COYBApfvo5HPf.e5da58f2e2fdc694f92840a3a68a19c2673e6cd73ef41ed6c2cb6889150625fc`

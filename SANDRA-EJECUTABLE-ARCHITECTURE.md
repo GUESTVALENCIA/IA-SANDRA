@@ -306,7 +306,7 @@ console.log('✅ Archivo escrito: /path/to/file.js');
 ### APIs configuradas:
 ```env
 # DEVELOPMENT & DEPLOYMENT
-GITHUB_TOKEN=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
+GITHUB_TOKEN=YOUR_GITHUB_TOKEN
 NETLIFY_AUTH_TOKEN=nfp_BguXWY1a87dAj2hLJvB2wy5ndvvkkCkm0b60
 
 # PAYMENTS

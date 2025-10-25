@@ -57,7 +57,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "command": "node",
       "args": ["C:\\Users\\clayt\\Desktop\\sandra-professional\\mcp\\agents\\dev-agent.js"],
       "env": {
-        "GITHUB_TOKEN": "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",
+        "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN",
         "NETLIFY_AUTH_TOKEN": "nfp_BguXWY1a87dAj2hLJvB2wy5ndvvkkCkm0b60"
       }
     },
@@ -77,7 +77,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "env": {
         "ANTHROPIC_API_KEY": "***REMOVED***",
         "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY",
-        "GROQ_API_KEY": "***REMOVED***"
+        "GROQ_API_KEY": "YOUR_GROQ_API_KEY"
       }
     },
     "sandra-business-agent": {
@@ -94,7 +94,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "command": "node",
       "args": ["C:\\Users\\clayt\\Desktop\\sandra-professional\\mcp\\agents\\comms-agent.js"],
       "env": {
-        "META_ACCESS_TOKEN": "EAATkBfISk9cBPiszg5gmZAmq9GODrr3zeI9YHGSzSNFGebVMz8piNXlPy1Gzr0smXpr1ZCDMwrP8v0FCWuttmrWSQLxMcTY0OWC3LSHYVPcFm41uSBlVU9wSsuPZACk1zHuDUIo68jvFEfkzcSt3BLgRddLs9Rjl1NKSwufuUpkGZA5VCY8EYpGs94PHtatCAD75tswLMsyC19CWmI3C0PeieksEJpdSTBjjWUxZCpm4ZD",
+        "META_ACCESS_TOKEN": "YOUR_META_ACCESS_TOKEN",
         "TWILIO_SID": "AC38300ea2b028ab4a55d6487f6451f69b",
         "WHATSAPP_SANDRA": "+34624829117"
       }
