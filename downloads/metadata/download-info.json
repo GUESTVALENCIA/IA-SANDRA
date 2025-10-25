@@ -1,0 +1,93 @@
+{
+  "version": "98.0.0",
+  "build_timestamp": "2025-10-25T02:26:51.538Z",
+  "build_number": "9800",
+  "platforms": {
+    "android": {
+      "available": true,
+      "filename": "sandra-ia-galaxy.apk",
+      "size": 16784,
+      "formatted_size": "16.39 KB",
+      "download_url": "https://sandra.guestsvalencia.es/downloads/sandra-ia-galaxy.apk",
+      "requirements": {
+        "android_version": "8.0+",
+        "api_level": "26+",
+        "architecture": "ARM64, ARM32",
+        "storage": "50 MB"
+      },
+      "permissions": [
+        "Internet",
+        "Camera",
+        "Microphone",
+        "Storage",
+        "Vibration"
+      ]
+    },
+    "ios": {
+      "available": true,
+      "type": "TestFlight Beta",
+      "testflight_url": "https://testflight.apple.com/join/TUVQH62I",
+      "bundle_id": "com.guestsvalencia.sandra",
+      "requirements": {
+        "ios_version": "14.0+",
+        "device_compatibility": [
+          "iPhone",
+          "iPad",
+          "iPod Touch"
+        ],
+        "storage": "150 MB"
+      },
+      "beta_info": {
+        "group": "Sandra IA Beta Testers",
+        "max_testers": 10000,
+        "feedback_email": "soporte@guestsvalencia.es"
+      }
+    },
+    "pwa": {
+      "available": true,
+      "type": "Progressive Web App",
+      "url": "https://sandra.guestsvalencia.es",
+      "manifest_url": "https://sandra.guestsvalencia.es/manifest.json",
+      "requirements": {
+        "browser": "Chrome, Safari, Edge, Firefox",
+        "support": "Modern browsers with PWA support"
+      },
+      "features": [
+        "Offline capability",
+        "Push notifications",
+        "Home screen installation",
+        "Full screen experience"
+      ]
+    }
+  },
+  "installation_guides": {
+    "android": [
+      "Descarga el archivo APK",
+      "Habilita \"Fuentes desconocidas\" en Configuración",
+      "Localiza el archivo en Descargas",
+      "Toca el archivo APK para instalar",
+      "Otorga los permisos necesarios",
+      "Abre Sandra IA desde el menú"
+    ],
+    "ios": [
+      "Toca el enlace de TestFlight",
+      "Instala TestFlight si es necesario",
+      "Acepta la invitación beta",
+      "Instala Sandra IA desde TestFlight",
+      "Permite permisos de cámara y micrófono",
+      "Abre Sandra IA desde la pantalla de inicio"
+    ],
+    "pwa": [
+      "Visita sandra.guestsvalencia.es",
+      "Busca el botón \"Instalar\" en el navegador",
+      "O usa \"Añadir a pantalla de inicio\"",
+      "Confirma la instalación",
+      "Accede desde el icono instalado"
+    ]
+  },
+  "support": {
+    "email": "soporte@guestsvalencia.es",
+    "documentation": "https://sandra.guestsvalencia.es/docs",
+    "troubleshooting": "https://sandra.guestsvalencia.es/help"
+  }
+}

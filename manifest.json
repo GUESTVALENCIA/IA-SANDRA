@@ -1,0 +1,258 @@
+{
+  "name": "Sandra IA Mobile Galaxy Ultimate",
+  "short_name": "Sandra IA",
+  "description": "Inteligencia Artificial Galaxy Ultimate optimizada para iOS 14+ con soporte completo para iPhone Pro y iPad Pro - sandra.guestsvalencia.es",
+  "version": "98.0.0",
+  "start_url": "https://sandra.guestsvalencia.es/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#00ff88",
+  "background_color": "#0a0a0a",
+  "lang": "es",
+  "dir": "ltr",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "categories": [
+    "productivity",
+    "utilities",
+    "business",
+    "education",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIiByeD0iMTUiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSIzNiIgeT0iNDUiIGZpbGw9IiMwYTBhMGEiIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjciIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlM8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iNzIiIHkyPSI3MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBmZjg4Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYWFmZiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjEiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSI0OCIgeT0iNjAiIGZpbGw9IiMwYTBhMGEiIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzYiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlM8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iOTYiIHkyPSI5NiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBmZjg4Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYWFmZiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiByeD0iMjgiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSI2NCIgeT0iODAiIGZpbGw9IiMwYTBhMGEiIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDgiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlM8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iMTI4IiB5Mj0iMTI4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGZmODgiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBhYWZmIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgdmlld0JveD0iMCAwIDE0NCAxNDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNDQiIGhlaWdodD0iMTQ0IiByeD0iMzEiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSI3MiIgeT0iOTAiIGZpbGw9IiMwYTBhMGEiIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNTQiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlM8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iMTQ0IiB5Mj0iMTQ0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGZmODgiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBhYWZmIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUyIiBoZWlnaHQ9IjE1MiIgdmlld0JveD0iMCAwIDE1MiAxNTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTIiIGhlaWdodD0iMTUyIiByeD0iMzMiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSI3NiIgeT0iOTUiIGZpbGw9IiMwYTBhMGEiIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNTciIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlM8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iMTUyIiB5Mj0iMTUyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGZmODgiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBhYWZmIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+",
+      "sizes": "152x152",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMzkiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSI5MCIgeT0iMTEzIiBmaWxsPSIjMGEwYTBhIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjY4IiBmb250LXdlaWdodD0iNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5TPC90ZXh0Pgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjE4MCIgeTI9IjE4MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBmZjg4Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYWFmZiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSI5NiIgeT0iMTIwIiBmaWxsPSIjMGEwYTBhIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjcyIiBmb250LXdlaWdodD0iNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5TPC90ZXh0Pgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBmZjg4Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYWFmZiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzg0IiBoZWlnaHQ9IjM4NCIgdmlld0JveD0iMCAwIDM4NCAzODQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzODQiIGhlaWdodD0iMzg0IiByeD0iODUiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSIxOTIiIHk9IjI0MCIgZmlsbD0iIzBhMGEwYSIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtRm9udCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNDQiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlM8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iMzg0IiB5Mj0iMzg0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGZmODgiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBhYWZmIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEzIiBmaWxsPSJ1cmwoI2dyYWRpZW50MCkiLz4KPHRleHQgeD0iMjU2IiB5PSIzMjAiIGZpbGw9IiMwYTBhMGEiIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTkyIiBmb250LXdlaWdodD0iNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5TPC90ZXh0Pgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjUxMiIgeTI9IjUxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBmZjg4Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYWFmZiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzkwIiBoZWlnaHQ9Ijg0NCIgdmlld0JveD0iMCAwIDM5MCA4NDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzOTAiIGhlaWdodD0iODQ0IiBmaWxsPSIjMGEwYTBhIi8+CjxyZWN0IHg9IjIwIiB5PSI2MCIgd2lkdGg9IjM1MCIgaGVpZ2h0PSI2MCIgcng9IjE2IiBmaWxsPSIjMWExYTJlIi8+Cjx0ZXh0IHg9IjQwIiB5PSI5NSIgZmlsbD0iIzAwZmY4OCIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0iIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPvCfpJYgU2FuZHJhIElBIE1vYmlsZSBHYWxheHk8L3RleHQ+CjxyZWN0IHg9IjIwIiB5PSIxNDAiIHdpZHRoPSIzNTAiIGhlaWdodD0iNjI0IiByeD0iMTYiIGZpbGw9IiMxNDE0MWUiLz4KPHRleHQgeD0iNDAiIHk9IjE4MCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0iIGZvbnQtc2l6ZT0iMTQiPkNoYXQgY29uIFNhbmRyYS4uLiBTb3BvcnRlIHRleHRvLCB2b3osIGFyY2hpdm9zLi4uPC90ZXh0Pgo8cmVjdCB4PSIyMCIgeT0iNzY0IiB3aWR0aD0iMzUwIiBoZWlnaHQ9IjYwIiByeD0iMTYiIGZpbGw9IiMxYTFhMmUiLz4KPHJlY3QgeD0iNDAiIHk9Ijc4NCIgd2lkdGg9IjI3MCIgaGVpZ2h0PSIzMCIgcng9IjE1IiBmaWxsPSIjMjgyODRhIi8+CjxyZWN0IHg9IjMxMCIgeT0iNzg0IiB3aWR0aD0iNjAiIGhlaWdodD0iMzAiIHJ4PSIxNSIgZmlsbD0idXJsKCNncmFkaWVudDApIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iNjAiIHkyPSIzMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBmZjg4Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYWFmZiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "390x844",
+      "type": "image/svg+xml",
+      "label": "Sandra IA Mobile en iPhone 14 Pro",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODM0IiBoZWlnaHQ9IjExOTQiIHZpZXdCb3g9IjAgMCA4MzQgMTE5NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgzNCIgaGVpZ2h0PSIxMTk0IiBmaWxsPSIjMGEwYTBhIi8+CjxyZWN0IHg9IjIwIiB5PSI2MCIgd2lkdGg9Ijc5NCIgaGVpZ2h0PSI2MCIgcng9IjE2IiBmaWxsPSIjMWExYTJlIi8+Cjx0ZXh0IHg9IjQwIiB5PSI5NSIgZmlsbD0iIzAwZmY4OCIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0iIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPvCfpJYgU2FuZHJhIElBIE1vYmlsZSBHYWxheHk8L3RleHQ+CjxyZWN0IHg9IjIwIiB5PSIxNDAiIHdpZHRoPSI3OTQiIGhlaWdodD0iOTc0IiByeD0iMTYiIGZpbGw9IiMxNDE0MWUiLz4KPHRleHQgeD0iNDAiIHk9IjE4MCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0iIGZvbnQtc2l6ZT0iMTQiPkNoYXQgY29uIFNhbmRyYS4uLiBTb3BvcnRlIHRleHRvLCB2b3osIGFyY2hpdm9zLi4uPC90ZXh0Pgo8cmVjdCB4PSIyMCIgeT0iMTExNCIgd2lkdGg9Ijc5NCIgaGVpZ2h0PSI2MCIgcng9IjE2IiBmaWxsPSIjMWExYTJlIi8+CjxyZWN0IHg9IjQwIiB5PSIxMTM0IiB3aWR0aD0iNzE0IiBoZWlnaHQ9IjMwIiByeD0iMTUiIGZpbGw9IiMyODI4NGEiLz4KPHJlY3QgeD0iNzU0IiB5PSIxMTM0IiB3aWR0aD0iNjAiIGhlaWdodD0iMzAiIHJ4PSIxNSIgZmlsbD0idXJsKCNncmFkaWVudDApIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iNjAiIHkyPSIzMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBmZjg4Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYWFmZiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "834x1194",
+      "type": "image/svg+xml",
+      "label": "Sandra IA Mobile en iPad Pro 11\"",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nueva Conversación",
+      "short_name": "Nueva Chat",
+      "description": "Iniciar una nueva conversación con Sandra IA",
+      "url": "https://sandra.guestsvalencia.es/?action=new",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiMwMGZmODgiLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5KsPC90ZXh0Pgo8L3N2Zz4=",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Grabación de Voz",
+      "short_name": "Voz",
+      "description": "Iniciar grabación de voz directamente",
+      "url": "https://sandra.guestsvalencia.es/?action=voice",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiNmZjQ3NTciLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn46kPC90ZXh0Pgo8L3N2Zz4=",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Subir Archivo",
+      "short_name": "Archivo",
+      "description": "Subir archivo o imagen para analizar",
+      "url": "https://sandra.guestsvalencia.es/?action=upload",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiM2NjdlZWEiLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5OOPC90ZXh0Pgo8L3N2Zz4=",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Configuración",
+      "short_name": "Config",
+      "description": "Acceder a configuración y opciones",
+      "url": "https://sandra.guestsvalencia.es/?action=settings",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiNhYWFhYWEiLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7impnvuI88L3RleHQ+Cjwvc3ZnPg==",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+sandra",
+      "url": "https://sandra.guestsvalencia.es/?action=%s"
+    },
+    {
+      "protocol": "mailto",
+      "url": "https://sandra.guestsvalencia.es/?action=compose&to=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "https://sandra.guestsvalencia.es/?action=open",
+      "accept": {
+        "text/plain": [
+          ".txt"
+        ],
+        "text/markdown": [
+          ".md"
+        ],
+        "application/pdf": [
+          ".pdf"
+        ],
+        "image/*": [
+          ".jpg",
+          ".jpeg",
+          ".png",
+          ".gif",
+          ".webp",
+          ".svg"
+        ],
+        "audio/*": [
+          ".mp3",
+          ".wav",
+          ".m4a",
+          ".ogg"
+        ],
+        "video/*": [
+          ".mp4",
+          ".mov",
+          ".avi",
+          ".webm"
+        ]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "https://sandra.guestsvalencia.es/?action=share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "files",
+          "accept": [
+            "image/*",
+            "audio/*",
+            "video/*",
+            "text/*",
+            "application/pdf"
+          ]
+        }
+      ]
+    }
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "id": "https://sandra.guestsvalencia.es/",
+  "iarc_rating_id": "",
+  "sandra_config": {
+    "version": "98.0.0",
+    "api_version": "1.0.0",
+    "features": {
+      "chat": true,
+      "voice": true,
+      "video": true,
+      "files": true,
+      "avatar": true,
+      "offline": true
+    },
+    "ai_providers": [
+      "openai",
+      "groq",
+      "anthropic"
+    ],
+    "voice_providers": [
+      "elevenlabs",
+      "openai"
+    ],
+    "supported_languages": [
+      "es",
+      "en",
+      "fr",
+      "de",
+      "it"
+    ],
+    "mobile_optimized": true,
+    "ios_compatible": true,
+    "android_compatible": true
+  }
+}
