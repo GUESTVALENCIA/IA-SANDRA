@@ -86,7 +86,7 @@ Copia este bloque en tu archivo de configuración de Claude Desktop:
       "env": {
         "PAYPAL_CLIENT_ID": "AYs9dULgQ12igjVhbMCFnXtBVcrmrJ25PWV949ZOFMFyEQTAS1eE7Bdm7iybUqnA0GSGZRl5q9Ar-wT8",
         "PAYPAL_CLIENT_SECRET": "EEjIKqOQpLodh6VEpwt0z3YOE_xkk1sQ1J1DzSKXjfpKKGZ6WqjidWus3hcrIwpl3jyo6JpI2jHsg7mA",
-        "AIRTABLE_TOKEN": "pat0COYBApfvo5HPf.e5da58f2e2fdc694f92840a3a68a19c2673e6cd73ef41ed6c2cb6889150625fc",
+        "AIRTABLE_TOKEN": "YOUR_AIRTABLE_API_KEY",
         "SUPABASE_TOKEN": "sbp_e43ccf47a5b9916c951fb19066ae23c8eb30eed3"
       }
     },
