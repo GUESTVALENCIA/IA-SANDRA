@@ -84,7 +84,8 @@
       "Bash(git remote remove:*)",
       "Bash(grep:*)",
       "Bash(sort:*)",
-      "Bash(start error-monitoring-dashboard.html)"
+      "Bash(start error-monitoring-dashboard.html)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
