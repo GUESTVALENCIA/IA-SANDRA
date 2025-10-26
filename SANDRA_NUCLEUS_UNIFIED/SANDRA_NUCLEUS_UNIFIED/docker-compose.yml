@@ -1,0 +1,167 @@
+version: '3.9'
+
+services:
+  # ============================================================================
+  # BASE DE DATOS PRINCIPAL
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: sandra-postgres
+    environment:
+      POSTGRES_DB: sandra_nucleus
+      POSTGRES_USER: sandra_admin
+      POSTGRES_PASSWORD: SandraGalaxy2025!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sandra-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sandra_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # CACHE Y SESIONES
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: sandra-redis
+    command: redis-server --appendonly yes --requirepass SandraRedis2025
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sandra-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================================
+  # MOTOR PRINCIPAL SANDRA
+  # ============================================================================
+  sandra-core:
+    build: .
+    container_name: sandra-nucleus-core
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://sandra_admin:SandraGalaxy2025!@postgres:5432/sandra_nucleus
+      REDIS_URL: redis://:SandraRedis2025@redis:6379
+      PORT: 7777
+      WS_PORT: 7778
+      MCP_PORT: 7779
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
+      HEYGEN_API_KEY: ${HEYGEN_API_KEY}
+    ports:
+      - "7777:7777"    # HTTP API
+      - "7778:7778"    # WebSocket
+      - "7779:7779"    # MCP
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    networks:
+      - sandra-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # NGINX REVERSE PROXY
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: sandra-nginx
+    depends_on:
+      - sandra-core
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+      - ./public:/usr/share/nginx/html
+    networks:
+      - sandra-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # MONITORING - PROMETHEUS
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sandra-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - sandra-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # MONITORING - GRAFANA
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sandra-grafana
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: SandraGrafana2025
+      GF_INSTALL_PLUGINS: redis-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - sandra-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # MESSAGE QUEUE - RABBITMQ (Para subagentes)
+  # ============================================================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: sandra-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: sandra
+      RABBITMQ_DEFAULT_PASS: SandraRabbit2025
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - sandra-network
+    restart: unless-stopped
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  sandra-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+volumes:
+  postgres_data:
+  redis_data:
+  node_modules:
+  prometheus_data:
+  grafana_data:
+  rabbitmq_data:
