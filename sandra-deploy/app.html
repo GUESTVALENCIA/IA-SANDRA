@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui">
     <title>Sandra IA Galaxy</title>
 
     <!-- PWA Configuration -->
@@ -15,7 +15,15 @@
     <meta name="apple-mobile-web-app-title" content="Sandra IA">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -27,20 +35,27 @@
             overflow: hidden;
         }
 
-        /* PWA Status Bar */
+        /* PWA Status Bar - Enhanced for Dynamic Island */
         .status-bar {
             height: env(safe-area-inset-top);
             background: rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
-        /* Header */
+        /* Header - Optimized for iPhone X+ */
         .header {
             background: rgba(0, 255, 136, 0.1);
-            padding: 15px 20px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: max(env(safe-area-inset-top), 15px) 20px 15px 20px;
             border-bottom: 1px solid rgba(0, 255, 136, 0.2);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo {
@@ -73,12 +88,19 @@
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
+            will-change: transform;
+            transform: translateZ(0);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            overscroll-behavior: contain;
         }
 
         .message {
@@ -115,6 +137,16 @@
             padding: 12px 16px;
             color: #ffffff;
             font-size: 16px;
+            min-height: 44px;
+            -webkit-user-select: text;
+            user-select: text;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: rgba(0, 255, 136, 0.6);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
         }
 
         .chat-input::placeholder {
@@ -125,14 +157,23 @@
             background: linear-gradient(135deg, #00ff88 0%, #00aaff 100%);
             border: none;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
             color: #0a0a0a;
             font-size: 18px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95) translateZ(0);
         }
 
         .features-panel {
@@ -140,6 +181,10 @@
             border-radius: 15px;
             padding: 15px;
             margin-bottom: 15px;
+            will-change: transform;
+            transform: translateZ(0);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .features-grid {
@@ -158,11 +203,24 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-height: 48px;
+            min-width: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        .feature-btn:active {
+            background: rgba(0, 255, 136, 0.2);
+            transform: scale(0.97) translateZ(0);
         }
 
         .feature-btn:hover {
             background: rgba(0, 255, 136, 0.2);
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
         }
 
         .agents-counter {
@@ -187,10 +245,50 @@
             to { transform: rotate(360deg); }
         }
 
-        /* iOS Safe Area */
+        /* Enhanced iOS Safe Area Support */
         @supports (padding: env(safe-area-inset-bottom)) {
             .main-app {
-                padding-bottom: calc(20px + env(safe-area-inset-bottom));
+                padding-bottom: max(env(safe-area-inset-bottom), 20px);
+                padding-left: max(env(safe-area-inset-left), 20px);
+                padding-right: max(env(safe-area-inset-right), 20px);
+            }
+
+            .header {
+                padding-left: max(env(safe-area-inset-left), 20px);
+                padding-right: max(env(safe-area-inset-right), 20px);
+            }
+        }
+
+        /* Keyboard adaptation for mobile */
+        @media screen and (max-height: 500px) {
+            .features-panel {
+                display: none;
+            }
+            .main-app {
+                padding: 10px;
+            }
+        }
+
+        /* Dark mode optimization */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #000000 0%, #111111 100%);
+            }
+        }
+
+        /* High contrast accessibility */
+        @media (prefers-contrast: high) {
+            .feature-btn, .chat-input {
+                border-width: 2px;
+            }
+        }
+
+        /* Reduced motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
@@ -300,17 +398,130 @@
             }
         });
 
-        // PWA install detection
-        if (window.navigator.standalone) {
-            console.log('✅ Running as PWA - Sandra IA Galaxy Level');
+        // Enhanced PWA and Mobile Features
+        class SandraIAMobile {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupPWA();
+                this.setupMobileOptimizations();
+                this.setupAccessibility();
+                this.setupPerformanceMonitoring();
+            }
+
+            setupPWA() {
+                // PWA install detection
+                if (window.navigator.standalone) {
+                    console.log('✅ Running as PWA - Sandra IA Galaxy Level');
+                    document.body.classList.add('pwa-mode');
+                }
+
+                // Service Worker with enhanced error handling
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('✅ SW registered:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.log('❌ SW registration failed:', error);
+                        });
+                }
+            }
+
+            setupMobileOptimizations() {
+                // Prevent zoom on input focus (iOS)
+                const inputs = document.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.addEventListener('focus', () => {
+                        const viewport = document.querySelector('meta[name=viewport]');
+                        viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui';
+                    });
+                });
+
+                // Keyboard handling for mobile
+                window.addEventListener('resize', this.handleKeyboard.bind(this));
+
+                // Haptic feedback support
+                this.setupHapticFeedback();
+
+                // iOS-specific optimizations
+                if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                    this.setupiOSOptimizations();
+                }
+            }
+
+            handleKeyboard() {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
+
+            setupHapticFeedback() {
+                const buttons = document.querySelectorAll('.send-btn, .feature-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50); // Light haptic feedback
+                        }
+                    });
+                });
+            }
+
+            setupiOSOptimizations() {
+                // Prevent bounce scrolling
+                document.addEventListener('touchmove', (e) => {
+                    if (e.target.closest('.chat-messages')) return;
+                    e.preventDefault();
+                }, { passive: false });
+
+                // Status bar optimization
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => {
+                        window.scrollTo(0, 1);
+                    }, 100);
+                });
+            }
+
+            setupAccessibility() {
+                // Announce new messages for screen readers
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList') {
+                            const newMessages = mutation.addedNodes;
+                            newMessages.forEach((node) => {
+                                if (node.classList && node.classList.contains('message')) {
+                                    node.setAttribute('role', 'log');
+                                    node.setAttribute('aria-live', 'polite');
+                                }
+                            });
+                        }
+                    });
+                });
+
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    observer.observe(chatMessages, { childList: true });
+                }
+            }
+
+            setupPerformanceMonitoring() {
+                // Monitor memory usage (for debugging)
+                if (performance.memory) {
+                    setInterval(() => {
+                        const memory = performance.memory;
+                        if (memory.usedJSHeapSize > 50 * 1024 * 1024) { // 50MB threshold
+                            console.warn('🚨 High memory usage detected:', memory.usedJSHeapSize / 1024 / 1024, 'MB');
+                        }
+                    }, 30000);
+                }
+            }
         }
 
-        // Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js');
-        }
+        // Initialize Sandra IA Mobile enhancements
+        const sandraIAMobile = new SandraIAMobile();
 
-        console.log('🤖 Sandra IA Galaxy Level - PWA App Loaded');
+        console.log('🤖 Sandra IA Galaxy Level - PWA App Loaded with Mobile Optimizations');
     </script>
 </body>
 </html>
