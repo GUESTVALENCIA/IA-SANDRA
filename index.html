@@ -1243,12 +1243,12 @@
                     <div class="instructions">
                         <h4>Instrucciones de Instalación iOS:</h4>
                         <ol>
-                            <li><strong>TestFlight (Beta):</strong> Haz clic en el enlace de invitación que recibirás</li>
-                            <li><strong>Instala TestFlight:</strong> Si no tienes TestFlight, se instalará automáticamente desde App Store</li>
-                            <li><strong>Acepta la invitación:</strong> Abre TestFlight y acepta la invitación a Sandra IA</li>
-                            <li><strong>Descarga:</strong> Pulsa "Instalar" en TestFlight para descargar Sandra IA</li>
-                            <li><strong>Configuración:</strong> Permite permisos de micrófono y cámara para funcionalidad completa</li>
-                            <li><strong>¡Listo!</strong> Sandra IA estará disponible en tu pantalla de inicio</li>
+                            <li><strong>Abre Safari:</strong> Asegúrate de estar usando Safari (no Chrome u otros navegadores)</li>
+                            <li><strong>Carga la página:</strong> Espera a que esta página cargue completamente</li>
+                            <li><strong>Menú Compartir:</strong> Toca el icono de compartir (cuadrado con flecha hacia arriba)</li>
+                            <li><strong>Añadir a inicio:</strong> Selecciona "Añadir a pantalla de inicio" en el menú</li>
+                            <li><strong>Confirmar:</strong> Toca "Añadir" para instalar Sandra IA como app</li>
+                            <li><strong>¡Listo!</strong> Sandra IA aparecerá como app nativa en tu pantalla de inicio</li>
                         </ol>
                         <div class="message" id="ios-message"></div>
                     </div>
@@ -1530,28 +1530,36 @@
             const originalText = btn.innerHTML;
             const messageEl = document.getElementById('ios-message');
 
-            btn.innerHTML = '<span class="loading"></span> Preparando descarga...';
+            btn.innerHTML = '<span class="loading"></span> Preparando instalación...';
             btn.disabled = true;
 
             setTimeout(() => {
-                // Simulate iOS download process
                 try {
-                    // Check if TestFlight is available
                     if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                        // iOS device detected
-                        window.open('https://testflight.apple.com/join/sandra-ia-galaxy', '_blank');
-                        showMessage(messageEl, 'success', '✅ Redirigiendo a TestFlight. Si TestFlight no está instalado, se instalará automáticamente desde App Store.');
+                        // iOS device detected - show PWA installation instructions
+                        showMessage(messageEl, 'success', '📱 Para instalar Sandra IA: toca el botón Compartir (⬆️) en Safari → "Añadir a pantalla de inicio" → "Añadir". ¡Sandra IA aparecerá como app nativa!');
+
+                        // Try to trigger PWA install prompt if available
+                        if (window.deferredPrompt) {
+                            window.deferredPrompt.prompt();
+                            window.deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    showMessage(messageEl, 'success', '✅ Sandra IA se está instalando...');
+                                }
+                                window.deferredPrompt = null;
+                            });
+                        }
                     } else {
                         // Not iOS device
-                        showMessage(messageEl, 'error', '⚠️ Este enlace es solo para dispositivos iOS. Por favor, accede desde tu iPhone o iPad.');
+                        showMessage(messageEl, 'info', '💡 Estas instrucciones son específicas para iPhone/iPad. En tu dispositivo, usa "Instalar PWA" o accede desde iOS para la mejor experiencia.');
                     }
                 } catch (error) {
-                    showMessage(messageEl, 'error', '❌ Error al abrir TestFlight. Inténtalo de nuevo o contacta soporte.');
+                    showMessage(messageEl, 'error', '❌ Error en la instalación. Asegúrate de usar Safari en iOS y seguir las instrucciones manuales.');
                 }
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }, 2000);
+            }, 1500);
         }
 
         function downloadAndroid() {
