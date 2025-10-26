@@ -14,6 +14,7 @@ const metrics = require('./backend/metrics');
 const orchestrator = require('./backend/orchestrator');
 const { coordinationBridge } = require('./coordination-bridge');
 const { workflowOrchestrator } = require('./workflow-orchestrator');
+const { workflowOrchestratorGalaxyEnterprise } = require('./workflow-orchestrator-galaxy-enterprise');
 const { guardianProtocol } = require('./guardian-protocol');
 const { safeLLM } = require('./llm/safe-llm');
 const { errorCoordinatorEnterprise } = require('./error-coordinator-enterprise');
@@ -66,6 +67,9 @@ class MultiAgentCoordinator extends EventEmitter {
     // Initialize Galaxy Enterprise Task Distributor
     this.taskDistributor = new TaskDistributorGalaxyEnterprise();
 
+    // Initialize Galaxy Enterprise Workflow Orchestrator
+    this.workflowOrchestratorGalaxy = workflowOrchestratorGalaxyEnterprise;
+
     // Pool de agentes especializados (248+ agentes)
     this.agentEcosystem = new Map();
 
@@ -100,10 +104,13 @@ class MultiAgentCoordinator extends EventEmitter {
       // 8. Initialize Galaxy Enterprise Task Distributor
       await this.initializeTaskDistributor();
 
-      // 9. Activar real-time coordination
+      // 9. Initialize Galaxy Enterprise Workflow Orchestrator
+      await this.initializeWorkflowOrchestratorGalaxy();
+
+      // 10. Activar real-time coordination
       await this.activateRealTimeCoordination();
 
-      // 10. Conectar con Performance Monitor Galaxy Enterprise
+      // 11. Conectar con Performance Monitor Galaxy Enterprise
       await this.connectPerformanceMonitor();
 
       this.systemState.status = 'GALAXY_ENTERPRISE_ACTIVE';
@@ -1979,6 +1986,115 @@ Provide a unified, comprehensive synthesis that:
   }
 
   // ============================================================================
+  // GALAXY ENTERPRISE WORKFLOW ORCHESTRATOR INTEGRATION
+  // ============================================================================
+  async initializeWorkflowOrchestratorGalaxy() {
+    logger.info('[MULTI-AGENT COORDINATOR] Initializing Galaxy Enterprise Workflow Orchestrator');
+
+    try {
+      // Configurar integración bidireccional con Workflow Orchestrator Galaxy
+      this.workflowIntegration = {
+        orchestrator: this.workflowOrchestratorGalaxy,
+        connected: false,
+        activeWorkflows: new Map(),
+        workflowMetrics: {
+          totalExecuted: 0,
+          successRate: 0,
+          avgExecutionTime: 0
+        }
+      };
+
+      // Set up bidirectional event handling
+      this.setupWorkflowOrchestratorEvents();
+
+      // Connect Workflow Orchestrator with Task Distributor
+      if (this.taskDistributor && this.workflowOrchestratorGalaxy) {
+        // Provide Task Distributor instance to Workflow Orchestrator
+        this.workflowOrchestratorGalaxy.taskDistributor = this.taskDistributor;
+        logger.info('[MULTI-AGENT COORDINATOR] ✅ Workflow Orchestrator connected to Task Distributor');
+      }
+
+      // Connect Workflow Orchestrator with Performance Monitor
+      if (this.performanceIntegration?.monitor && this.workflowOrchestratorGalaxy) {
+        this.workflowOrchestratorGalaxy.performanceMonitor = this.performanceIntegration.monitor;
+        logger.info('[MULTI-AGENT COORDINATOR] ✅ Workflow Orchestrator connected to Performance Monitor');
+      }
+
+      this.workflowIntegration.connected = true;
+      logger.info('[MULTI-AGENT COORDINATOR] ✅ Galaxy Enterprise Workflow Orchestrator operational');
+
+    } catch (error) {
+      logger.error('[MULTI-AGENT COORDINATOR] Workflow Orchestrator initialization failed:', error);
+
+      this.workflowIntegration = {
+        orchestrator: null,
+        connected: false,
+        error: error.message
+      };
+
+      throw error;
+    }
+  }
+
+  setupWorkflowOrchestratorEvents() {
+    // Listen to workflow events from Galaxy Enterprise Orchestrator
+    if (this.workflowOrchestratorGalaxy.on) {
+      this.workflowOrchestratorGalaxy.on('workflow:started', (data) => {
+        this.workflowIntegration.activeWorkflows.set(data.instanceId, {
+          ...data,
+          startedAt: Date.now()
+        });
+        this.emit('workflow:started', data);
+      });
+
+      this.workflowOrchestratorGalaxy.on('workflow:completed', (data) => {
+        const workflow = this.workflowIntegration.activeWorkflows.get(data.instanceId);
+        if (workflow) {
+          workflow.completedAt = Date.now();
+          workflow.duration = workflow.completedAt - workflow.startedAt;
+          this.workflowIntegration.workflowMetrics.totalExecuted++;
+        }
+        this.workflowIntegration.activeWorkflows.delete(data.instanceId);
+        this.emit('workflow:completed', data);
+      });
+
+      this.workflowOrchestratorGalaxy.on('workflow:failed', (data) => {
+        this.workflowIntegration.activeWorkflows.delete(data.instanceId);
+        this.emit('workflow:failed', data);
+      });
+
+      this.workflowOrchestratorGalaxy.on('state:transition', (data) => {
+        this.emit('workflow:state-transition', data);
+      });
+
+      this.workflowOrchestratorGalaxy.on('saga:completed', (data) => {
+        this.emit('saga:completed', data);
+      });
+
+      this.workflowOrchestratorGalaxy.on('saga:compensated', (data) => {
+        this.emit('saga:compensated', data);
+      });
+
+      this.workflowOrchestratorGalaxy.on('human-task:created', (data) => {
+        this.emit('human-task:created', data);
+      });
+    }
+
+    // Forward Multi-Agent Coordinator events to Workflow Orchestrator
+    this.on('agent:task:completed', (data) => {
+      if (this.workflowOrchestratorGalaxy && this.workflowOrchestratorGalaxy.emit) {
+        this.workflowOrchestratorGalaxy.emit('agent:task:completed', data);
+      }
+    });
+
+    this.on('agent:status:changed', (data) => {
+      if (this.workflowOrchestratorGalaxy && this.workflowOrchestratorGalaxy.emit) {
+        this.workflowOrchestratorGalaxy.emit('agent:status:changed', data);
+      }
+    });
+  }
+
+  // ============================================================================
   // REAL-TIME COORDINATION
   // ============================================================================
   async activateRealTimeCoordination() {
@@ -3018,6 +3134,99 @@ Provide a unified, comprehensive synthesis that:
 
     logger.info('[MULTI-AGENT COORDINATOR] Distributing task via Galaxy Enterprise Task Distributor');
     return await this.taskDistributor.distributeTask(task);
+  }
+
+  // ============================================================================
+  // GALAXY ENTERPRISE WORKFLOW ORCHESTRATOR API
+  // ============================================================================
+  async executeWorkflow(processId, input = {}) {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    logger.info(`[MULTI-AGENT COORDINATOR] Executing workflow: ${processId}`);
+    return await this.workflowOrchestratorGalaxy.executeWorkflow(processId, input);
+  }
+
+  async executeSaga(sagaId, input = {}) {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    logger.info(`[MULTI-AGENT COORDINATOR] Executing saga: ${sagaId}`);
+    return await this.workflowOrchestratorGalaxy.executeSaga(sagaId, input);
+  }
+
+  getWorkflowStatus(instanceId) {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    return this.workflowOrchestratorGalaxy.getWorkflowStatus(instanceId);
+  }
+
+  async cancelWorkflow(instanceId, reason = 'User cancellation') {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    logger.info(`[MULTI-AGENT COORDINATOR] Cancelling workflow: ${instanceId}`);
+    return await this.workflowOrchestratorGalaxy.cancelWorkflow(instanceId, reason);
+  }
+
+  getWorkflowOrchestratorStatus() {
+    if (!this.workflowIntegration?.connected) {
+      return {
+        status: 'NOT_CONNECTED',
+        error: 'Workflow Orchestrator Galaxy Enterprise not initialized'
+      };
+    }
+
+    return {
+      status: this.workflowOrchestratorGalaxy.status,
+      name: this.workflowOrchestratorGalaxy.name,
+      version: this.workflowOrchestratorGalaxy.version,
+      mode: this.workflowOrchestratorGalaxy.mode,
+      metrics: this.workflowIntegration.workflowMetrics,
+      activeWorkflows: this.workflowIntegration.activeWorkflows.size,
+      systemMetrics: this.workflowOrchestratorGalaxy.getSystemMetrics()
+    };
+  }
+
+  async processEvent(event) {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    logger.debug(`[MULTI-AGENT COORDINATOR] Processing event: ${event.type}`);
+    return await this.workflowOrchestratorGalaxy.eventCorrelation.processEvent(event);
+  }
+
+  async createHumanTask(taskDefinition) {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    logger.info('[MULTI-AGENT COORDINATOR] Creating human task');
+    return await this.workflowOrchestratorGalaxy.humanTaskManager.createHumanTask(taskDefinition);
+  }
+
+  async completeHumanTask(taskId, result, userId) {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    logger.info(`[MULTI-AGENT COORDINATOR] Completing human task: ${taskId}`);
+    return await this.workflowOrchestratorGalaxy.humanTaskManager.completeTask(taskId, result, userId);
+  }
+
+  async createTimer(timerId, timerConfig) {
+    if (!this.workflowIntegration?.connected) {
+      throw new Error('Workflow Orchestrator Galaxy Enterprise not initialized');
+    }
+
+    logger.debug(`[MULTI-AGENT COORDINATOR] Creating timer: ${timerId}`);
+    return this.workflowOrchestratorGalaxy.timerEngine.createTimer(timerId, timerConfig);
   }
 }
 
