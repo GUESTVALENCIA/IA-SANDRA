@@ -6,6 +6,7 @@
 
 [build]
   publish = "sandra-deploy"
+  command = "echo 'Force rebuild $(date)' > sandra-deploy/build-timestamp.txt"
 
 # Build settings for production
 [build.environment]
@@ -129,11 +130,14 @@
       upgrade-insecure-requests;
     """
 
-# Specific headers for HTML files
+# Specific headers for HTML files - FORCE NO CACHE
 [[headers]]
   for = "*.html"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate, proxy-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+    ETag = "W/\"cache-bust-$(date +%s)\""
 
 # Service Worker headers
 [[headers]]
