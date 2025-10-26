@@ -631,6 +631,141 @@ class WorkflowOrchestrator extends EventEmitter {
 
     this.emit('workflow:error', { workflowId, error: error.message });
   }
+
+  // ============================================================================
+  // UTILITY METHODS FOR AGENT SETUP
+  // ============================================================================
+  getDevSpecialty(index) {
+    const specialties = [
+      'FRONTEND_DEVELOPMENT',
+      'BACKEND_DEVELOPMENT',
+      'API_INTEGRATION',
+      'DATABASE_MANAGEMENT',
+      'TESTING_AUTOMATION',
+      'DEPLOYMENT_OPTIMIZATION',
+      'CODE_REVIEW',
+      'REFACTORING',
+      'DOCUMENTATION',
+      'PERFORMANCE_OPTIMIZATION'
+    ];
+
+    return specialties[index % specialties.length];
+  }
+
+  getDevCapabilities(index) {
+    const capabilities = [
+      ['javascript', 'react', 'nodejs'],
+      ['python', 'django', 'fastapi'],
+      ['rest_api', 'graphql', 'webhooks'],
+      ['postgresql', 'mongodb', 'redis'],
+      ['jest', 'cypress', 'playwright'],
+      ['docker', 'kubernetes', 'cicd'],
+      ['eslint', 'sonarqube', 'code_analysis'],
+      ['clean_code', 'design_patterns', 'architecture'],
+      ['markdown', 'swagger', 'technical_writing'],
+      ['optimization', 'profiling', 'monitoring']
+    ];
+
+    return capabilities[index % capabilities.length];
+  }
+
+  getBusinessSpecialty(index) {
+    const specialties = [
+      'BOOKING_MANAGEMENT',
+      'PRICING_STRATEGY',
+      'CUSTOMER_SERVICE',
+      'PAYMENT_PROCESSING',
+      'INVENTORY_CONTROL',
+      'MARKETING_AUTOMATION',
+      'ANALYTICS_REPORTING',
+      'CRM_INTEGRATION',
+      'WORKFLOW_AUTOMATION',
+      'COMPLIANCE_MANAGEMENT'
+    ];
+
+    return specialties[index % specialties.length];
+  }
+
+  getBusinessCapabilities(index) {
+    const capabilities = [
+      ['booking', 'calendar', 'availability'],
+      ['pricing', 'discounts', 'revenue'],
+      ['support', 'chat', 'tickets'],
+      ['payments', 'billing', 'invoices'],
+      ['inventory', 'stock', 'supplies'],
+      ['email', 'campaigns', 'social_media'],
+      ['reports', 'dashboard', 'kpis'],
+      ['crm', 'leads', 'customers'],
+      ['automation', 'rules', 'triggers'],
+      ['regulations', 'audit', 'security']
+    ];
+
+    return capabilities[index % capabilities.length];
+  }
+
+  getCommSpecialty(index) {
+    const specialties = [
+      'API_GATEWAY',
+      'WEBHOOK_HANDLER',
+      'MESSAGE_QUEUE',
+      'EVENT_STREAMING',
+      'SYNC_COORDINATION',
+      'PROTOCOL_ADAPTER',
+      'DATA_TRANSFORMER',
+      'ERROR_HANDLER',
+      'MONITORING'
+    ];
+
+    return specialties[index % specialties.length];
+  }
+
+  getCommCapabilities(index) {
+    const capabilities = [
+      ['http', 'rest', 'json'],
+      ['webhooks', 'callbacks', 'events'],
+      ['amqp', 'rabbitmq', 'queues'],
+      ['kafka', 'streams', 'topics'],
+      ['sync', 'async', 'coordination'],
+      ['protocol', 'adapter', 'conversion'],
+      ['transform', 'mapping', 'validation'],
+      ['error_handling', 'retry', 'fallback'],
+      ['monitoring', 'metrics', 'alerts']
+    ];
+
+    return capabilities[index % capabilities.length];
+  }
+
+  getTechCapabilities(index) {
+    const capabilities = [
+      ['cloud', 'aws', 'azure'],
+      ['devops', 'cicd', 'automation'],
+      ['monitoring', 'logging', 'alerting'],
+      ['security', 'encryption', 'compliance'],
+      ['performance', 'optimization', 'caching'],
+      ['scalability', 'clustering', 'load_balancing'],
+      ['backup', 'recovery', 'disaster_recovery'],
+      ['networking', 'dns', 'cdn'],
+      ['infrastructure', 'terraform', 'kubernetes']
+    ];
+
+    return capabilities[index % capabilities.length];
+  }
+
+  getSpecializedCapabilities(index) {
+    const capabilities = [
+      ['hospitality', 'booking', 'guest_services'],
+      ['travel', 'tourism', 'destinations'],
+      ['payments', 'finance', 'billing'],
+      ['marketing', 'campaigns', 'analytics'],
+      ['support', 'helpdesk', 'tickets'],
+      ['logistics', 'supply_chain', 'inventory'],
+      ['compliance', 'legal', 'regulations'],
+      ['healthcare', 'medical', 'wellness'],
+      ['education', 'training', 'certification']
+    ];
+
+    return capabilities[index % capabilities.length];
+  }
 }
 
 // ============================================================================

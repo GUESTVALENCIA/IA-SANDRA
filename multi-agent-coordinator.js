@@ -16,6 +16,8 @@ const { coordinationBridge } = require('./coordination-bridge');
 const { workflowOrchestrator } = require('./workflow-orchestrator');
 const { guardianProtocol } = require('./guardian-protocol');
 const { safeLLM } = require('./llm/safe-llm');
+const { errorCoordinatorEnterprise } = require('./error-coordinator-enterprise');
+const { circuitBreakerCoordinator } = require('./circuit-breaker-coordinator');
 
 class MultiAgentCoordinator extends EventEmitter {
   constructor() {
@@ -138,6 +140,18 @@ class MultiAgentCoordinator extends EventEmitter {
         instance: orchestrator,
         status: 'CONNECTED',
         role: 'TASK_EXECUTION'
+      },
+
+      errorCoordinatorEnterprise: {
+        instance: errorCoordinatorEnterprise,
+        status: 'CONNECTED',
+        role: 'ERROR_COORDINATION_RESILIENCE'
+      },
+
+      circuitBreakerCoordinator: {
+        instance: circuitBreakerCoordinator,
+        status: 'CONNECTED',
+        role: 'CIRCUIT_BREAKER_PROTECTION'
       }
     };
 
@@ -152,6 +166,28 @@ class MultiAgentCoordinator extends EventEmitter {
 
     coordinationBridge.on('coordination:ready', (data) => {
       this.handleCoordinationReady(data);
+    });
+
+    // Eventos del Error Coordinator Enterprise
+    errorCoordinatorEnterprise.on('error:critical', (error) => {
+      this.handleCriticalError(error);
+    });
+
+    errorCoordinatorEnterprise.on('cascade:prevented', (data) => {
+      this.handleCascadePrevention(data);
+    });
+
+    errorCoordinatorEnterprise.on('recovery:completed', (data) => {
+      this.handleRecoveryCompleted(data);
+    });
+
+    // Eventos del Circuit Breaker Coordinator
+    circuitBreakerCoordinator.on('circuit:open', (data) => {
+      this.handleCircuitOpen(data);
+    });
+
+    circuitBreakerCoordinator.on('circuit:recovered', (data) => {
+      this.handleCircuitRecovered(data);
     });
 
     logger.info('[MULTI-AGENT COORDINATOR] ✅ System integration completed');
@@ -1215,8 +1251,14 @@ Provide a unified, comprehensive synthesis that:
       agent.workload.currentTasks++;
       agent.status = 'BUSY';
 
-      // Ejecutar tarea a través del backend orchestrator
-      const result = await orchestrator.executeAgent(agent.name, task.parameters || {});
+      // Ejecutar tarea con Circuit Breaker protection
+      const result = await circuitBreakerCoordinator.executeWithCircuitBreaker(
+        agentId,
+        async () => {
+          return await orchestrator.executeAgent(agent.name, task.parameters || {});
+        },
+        'AI_AGENT'
+      );
 
       // Actualizar performance
       const executionTime = Date.now() - startTime;
@@ -1238,6 +1280,16 @@ Provide a unified, comprehensive synthesis that:
       };
 
     } catch (error) {
+      // Reportar error al Error Coordinator Enterprise
+      await errorCoordinatorEnterprise.reportError({
+        agentId,
+        taskId: task.id,
+        error: error.message,
+        category: agent.category,
+        timestamp: new Date().toISOString(),
+        context: { task, agent: agent.name }
+      });
+
       // Actualizar tasa de errores
       agent.performance.successRate = Math.max(0, agent.performance.successRate - 1);
       this.performanceOptimization.realTimeMonitor.recordMetric('error');
@@ -1469,6 +1521,100 @@ Provide a unified, comprehensive synthesis that:
       timestamp: new Date().toISOString(),
       metrics: this.performanceOptimization.realTimeMonitor.metrics
     };
+  }
+
+  // ============================================================================
+  // ERROR COORDINATION EVENT HANDLERS
+  // ============================================================================
+  handleCriticalError(error) {
+    logger.error('[MULTI-AGENT COORDINATOR] Critical error detected:', error);
+
+    // Activar modo de emergencia si es necesario
+    if (error.severity === 'CRITICAL' && error.affectedAgents > 10) {
+      this.emergencyCoordination({
+        type: 'CRITICAL_ERROR_CASCADE',
+        error: error.id,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Redistribuir cargas de agentes afectados
+    if (error.affectedAgents && error.affectedAgents.length > 0) {
+      for (const agentId of error.affectedAgents) {
+        this.handleAgentOverload(agentId);
+      }
+    }
+  }
+
+  handleCascadePrevention(data) {
+    logger.info('[MULTI-AGENT COORDINATOR] Cascade prevention successful:', data);
+
+    // Actualizar métricas de resiliencia
+    this.systemState.performanceMetrics.cascadePreventions =
+      (this.systemState.performanceMetrics.cascadePreventions || 0) + 1;
+
+    // Emitir evento de sistema resiliente
+    this.emit('system:resilience', {
+      type: 'CASCADE_PREVENTED',
+      data,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  handleRecoveryCompleted(data) {
+    logger.info('[MULTI-AGENT COORDINATOR] Recovery completed:', data);
+
+    // Reactivar agentes recuperados
+    if (data.recoveredAgents) {
+      for (const agentId of data.recoveredAgents) {
+        const agent = this.agentEcosystem.get(agentId);
+        if (agent) {
+          agent.status = 'READY';
+          logger.info(`[MULTI-AGENT COORDINATOR] Agent ${agentId} recovered and ready`);
+        }
+      }
+    }
+
+    // Actualizar métricas de recuperación
+    this.systemState.performanceMetrics.successfulRecoveries =
+      (this.systemState.performanceMetrics.successfulRecoveries || 0) + 1;
+  }
+
+  handleCircuitOpen(data) {
+    logger.warn('[MULTI-AGENT COORDINATOR] Circuit breaker opened:', data);
+
+    // Marcar agente como temporalmente no disponible
+    const agent = this.agentEcosystem.get(data.agentId);
+    if (agent) {
+      agent.status = 'CIRCUIT_OPEN';
+
+      // Redistribuir tareas pendientes
+      this.handleAgentOverload(data.agentId);
+    }
+  }
+
+  handleCircuitRecovered(data) {
+    logger.info('[MULTI-AGENT COORDINATOR] Circuit breaker recovered:', data);
+
+    // Reactivar agente
+    const agent = this.agentEcosystem.get(data.agentId);
+    if (agent) {
+      agent.status = 'READY';
+      logger.info(`[MULTI-AGENT COORDINATOR] Agent ${data.agentId} circuit recovered`);
+    }
+  }
+
+  // Event handlers para sistemas integrados (existentes)
+  handleWorkflowStart(data) {
+    logger.info('[MULTI-AGENT COORDINATOR] Workflow started:', data);
+  }
+
+  handleOrchestratorReady(data) {
+    logger.info('[MULTI-AGENT COORDINATOR] Orchestrator ready:', data);
+  }
+
+  handleCoordinationReady(data) {
+    logger.info('[MULTI-AGENT COORDINATOR] Coordination ready:', data);
   }
 }
 

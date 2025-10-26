@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandra IA Galaxy Enterprise - Error Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00d4ff;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(45deg, #00d4ff, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            color: #cccccc;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .dashboard-container {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: auto;
+            animation: pulse 2s infinite;
+        }
+
+        .status-active { background-color: #00ff88; }
+        .status-warning { background-color: #ffaa00; }
+        .status-critical { background-color: #ff4444; }
+        .status-offline { background-color: #666666; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: #cccccc;
+            font-size: 0.8rem;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .error-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .error-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid;
+        }
+
+        .error-critical { border-left-color: #ff4444; }
+        .error-high { border-left-color: #ffaa00; }
+        .error-medium { border-left-color: #00d4ff; }
+        .error-low { border-left-color: #00ff88; }
+
+        .error-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-time {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .error-agent {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .prediction-item {
+            background: rgba(255, 106, 53, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255, 106, 53, 0.3);
+        }
+
+        .prediction-probability {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff6b35;
+        }
+
+        .alert-banner {
+            background: linear-gradient(45deg, #ff4444, #ff6b35);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            animation: alertPulse 1s infinite;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .system-health {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .health-label {
+            font-weight: 600;
+        }
+
+        .health-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444 0%, #ffaa00 50%, #00ff88 100%);
+            transition: width 0.5s ease;
+        }
+
+        .refresh-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(45deg, #00d4ff, #ff6b35);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.6);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00d4ff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #00d4ff;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 1rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00d4ff;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🚀 Sandra IA Galaxy Enterprise - Error Monitoring Dashboard</h1>
+        <p class="subtitle">Sistema de Monitoreo en Tiempo Real de Coordinación de Errores y Análisis Predictivo</p>
+    </header>
+
+    <div id="criticalAlert" class="alert-banner hidden">
+        ⚠️ ALERTA CRÍTICA: Sistema detectó riesgo alto de cascada de errores
+    </div>
+
+    <div class="dashboard-container">
+        <!-- System Status Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #00d4ff, #0066cc);">🔧</div>
+                <div class="card-title">Estado del Sistema</div>
+                <div id="systemStatus" class="status-indicator status-active"></div>
+            </div>
+            <div class="system-health">
+                <span class="health-label">Salud General:</span>
+                <div class="health-bar">
+                    <div id="systemHealthBar" class="health-fill" style="width: 95%;"></div>
+                </div>
+                <span id="systemHealthPercent">95%</span>
+            </div>
+            <div class="metric-grid">
+                <div class="metric">
+                    <div id="totalAgents" class="metric-value">248</div>
+                    <div class="metric-label">Agentes Totales</div>
+                </div>
+                <div class="metric">
+                    <div id="activeAgents" class="metric-value">235</div>
+                    <div class="metric-label">Agentes Activos</div>
+                </div>
+                <div class="metric">
+                    <div id="systemUptime" class="metric-value">99.8%</div>
+                    <div class="metric-label">Tiempo Operativo</div>
+                </div>
+                <div class="metric">
+                    <div id="responseTime" class="metric-value">85ms</div>
+                    <div class="metric-label">Tiempo Respuesta</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Coordinator Status -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #ff6b35, #ff8c42);">⚡</div>
+                <div class="card-title">Error Coordinator Enterprise</div>
+                <div id="coordinatorStatus" class="status-indicator status-active"></div>
+            </div>
+            <div class="metric-grid">
+                <div class="metric">
+                    <div id="activeErrors" class="metric-value">3</div>
+                    <div class="metric-label">Errores Activos</div>
+                </div>
+                <div class="metric">
+                    <div id="resolvedErrors" class="metric-value">47</div>
+                    <div class="metric-label">Errores Resueltos</div>
+                </div>
+                <div class="metric">
+                    <div id="cascadePrevented" class="metric-value">12</div>
+                    <div class="metric-label">Cascadas Prevenidas</div>
+                </div>
+                <div class="metric">
+                    <div id="recoverySuccess" class="metric-value">98.5%</div>
+                    <div class="metric-label">Tasa Recuperación</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Engine -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #9b59b6, #e74c3c);">🧠</div>
+                <div class="card-title">Motor de Análisis Predictivo</div>
+                <div id="analyticsStatus" class="status-indicator status-active"></div>
+            </div>
+            <div class="metric-grid">
+                <div class="metric">
+                    <div id="totalPredictions" class="metric-value">156</div>
+                    <div class="metric-label">Predicciones Totales</div>
+                </div>
+                <div class="metric">
+                    <div id="accuracyRate" class="metric-value">92.3%</div>
+                    <div class="metric-label">Tasa Precisión</div>
+                </div>
+                <div class="metric">
+                    <div id="anomaliesDetected" class="metric-value">8</div>
+                    <div class="metric-label">Anomalías Detectadas</div>
+                </div>
+                <div class="metric">
+                    <div id="patternsLearned" class="metric-value">24</div>
+                    <div class="metric-label">Patrones Aprendidos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Errors -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #e74c3c, #c0392b);">🔥</div>
+                <div class="card-title">Errores Recientes</div>
+                <div class="loading" id="errorsLoading"></div>
+            </div>
+            <div id="errorsList" class="error-list">
+                <!-- Errores se cargan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Predictive Alerts -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #f39c12, #e67e22);">🔮</div>
+                <div class="card-title">Alertas Predictivas</div>
+                <div id="predictionsStatus" class="status-indicator status-warning"></div>
+            </div>
+            <div id="predictionsList" class="error-list">
+                <!-- Predicciones se cargan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- System Timeline -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #27ae60, #2ecc71);">📈</div>
+                <div class="card-title">Timeline del Sistema</div>
+                <div id="timelineStatus" class="status-indicator status-active"></div>
+            </div>
+            <div id="systemTimeline" class="timeline">
+                <!-- Timeline se carga dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #3498db, #2980b9);">📊</div>
+                <div class="card-title">Métricas de Rendimiento</div>
+                <div id="metricsStatus" class="status-indicator status-active"></div>
+            </div>
+            <div class="chart-container">
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Circuit Breakers -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(45deg, #8e44ad, #9b59b6);">🔌</div>
+                <div class="card-title">Circuit Breakers</div>
+                <div id="circuitStatus" class="status-indicator status-active"></div>
+            </div>
+            <div class="metric-grid">
+                <div class="metric">
+                    <div id="circuitsClosed" class="metric-value">245</div>
+                    <div class="metric-label">Cerrados</div>
+                </div>
+                <div class="metric">
+                    <div id="circuitsOpen" class="metric-value">2</div>
+                    <div class="metric-label">Abiertos</div>
+                </div>
+                <div class="metric">
+                    <div id="circuitsHalfOpen" class="metric-value">1</div>
+                    <div class="metric-label">Semi-Abiertos</div>
+                </div>
+                <div class="metric">
+                    <div id="circuitTrips" class="metric-value">15</div>
+                    <div class="metric-label">Activaciones</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-button" onclick="refreshDashboard()" title="Actualizar Dashboard">
+        🔄
+    </button>
+
+    <script>
+        // Estado global del dashboard
+        let dashboardState = {
+            lastUpdate: new Date(),
+            autoRefresh: true,
+            refreshInterval: 5000, // 5 segundos
+            isConnected: true
+        };
+
+        // Datos simulados para demostración
+        let simulatedData = {
+            errors: [
+                {
+                    id: 'error-001',
+                    agentId: 'core_infrastructure_system-monitor-agent',
+                    category: 'CORE_INFRASTRUCTURE',
+                    severity: 'HIGH',
+                    message: 'Memory usage exceeded threshold',
+                    timestamp: new Date(Date.now() - 120000), // 2 min ago
+                    status: 'ACTIVE'
+                },
+                {
+                    id: 'error-002',
+                    agentId: 'ai_ml_specialists_conversational-ai-agent',
+                    category: 'AI_ML_SPECIALISTS',
+                    severity: 'MEDIUM',
+                    message: 'Response time degradation detected',
+                    timestamp: new Date(Date.now() - 300000), // 5 min ago
+                    status: 'RESOLVING'
+                },
+                {
+                    id: 'error-003',
+                    agentId: 'development_experts_api-integration-agent',
+                    category: 'DEVELOPMENT_EXPERTS',
+                    severity: 'CRITICAL',
+                    message: 'API endpoint timeout cascade',
+                    timestamp: new Date(Date.now() - 600000), // 10 min ago
+                    status: 'RESOLVED'
+                }
+            ],
+            predictions: [
+                {
+                    type: 'CASCADE_PREDICTION',
+                    probability: 0.85,
+                    timeframe: '15-30 minutes',
+                    description: 'Potential error cascade in AI_ML_SPECIALISTS category',
+                    severity: 'HIGH',
+                    timestamp: new Date()
+                },
+                {
+                    type: 'OVERLOAD_PREDICTION',
+                    probability: 0.72,
+                    timeframe: '1-2 hours',
+                    description: 'System overload predicted due to increased agent load',
+                    severity: 'MEDIUM',
+                    timestamp: new Date()
+                }
+            ],
+            timeline: [
+                {
+                    timestamp: new Date(Date.now() - 60000),
+                    event: 'Circuit breaker activated for agent group AI_ML_SPECIALISTS',
+                    type: 'circuit_breaker'
+                },
+                {
+                    timestamp: new Date(Date.now() - 180000),
+                    event: 'Cascade prevention activated - 3 errors isolated',
+                    type: 'cascade_prevention'
+                },
+                {
+                    timestamp: new Date(Date.now() - 360000),
+                    event: 'Anomaly detected in response time patterns',
+                    type: 'anomaly_detection'
+                },
+                {
+                    timestamp: new Date(Date.now() - 720000),
+                    event: 'Predictive model retrained with new data',
+                    type: 'ml_training'
+                }
+            ]
+        };
+
+        // Función principal de inicialización
+        function initializeDashboard() {
+            console.log('🚀 Initializing Sandra IA Galaxy Enterprise Error Monitoring Dashboard');
+
+            updateSystemMetrics();
+            updateErrorsList();
+            updatePredictionsList();
+            updateTimeline();
+            updateCharts();
+
+            // Iniciar auto-refresh
+            if (dashboardState.autoRefresh) {
+                setInterval(refreshDashboard, dashboardState.refreshInterval);
+            }
+
+            console.log('✅ Dashboard initialized successfully');
+        }
+
+        // Actualizar métricas del sistema
+        function updateSystemMetrics() {
+            // Simular datos dinámicos
+            const systemHealth = Math.floor(Math.random() * 10) + 90; // 90-100%
+            const activeAgents = Math.floor(Math.random() * 20) + 230; // 230-250
+            const responseTime = Math.floor(Math.random() * 50) + 60; // 60-110ms
+
+            document.getElementById('systemHealthPercent').textContent = systemHealth + '%';
+            document.getElementById('systemHealthBar').style.width = systemHealth + '%';
+            document.getElementById('activeAgents').textContent = activeAgents;
+            document.getElementById('responseTime').textContent = responseTime + 'ms';
+
+            // Actualizar estado del sistema
+            const statusElement = document.getElementById('systemStatus');
+            if (systemHealth >= 95) {
+                statusElement.className = 'status-indicator status-active';
+            } else if (systemHealth >= 85) {
+                statusElement.className = 'status-indicator status-warning';
+            } else {
+                statusElement.className = 'status-indicator status-critical';
+            }
+
+            // Actualizar métricas del coordinator
+            document.getElementById('activeErrors').textContent = simulatedData.errors.filter(e => e.status === 'ACTIVE').length;
+            document.getElementById('resolvedErrors').textContent = Math.floor(Math.random() * 10) + 45;
+            document.getElementById('cascadePrevented').textContent = Math.floor(Math.random() * 5) + 10;
+
+            // Actualizar métricas de analytics
+            document.getElementById('totalPredictions').textContent = Math.floor(Math.random() * 20) + 150;
+            document.getElementById('accuracyRate').textContent = (Math.random() * 5 + 90).toFixed(1) + '%';
+            document.getElementById('anomaliesDetected').textContent = Math.floor(Math.random() * 5) + 5;
+
+            // Actualizar circuit breakers
+            document.getElementById('circuitsClosed').textContent = Math.floor(Math.random() * 10) + 240;
+            document.getElementById('circuitsOpen').textContent = Math.floor(Math.random() * 3) + 1;
+            document.getElementById('circuitsHalfOpen').textContent = Math.floor(Math.random() * 2);
+        }
+
+        // Actualizar lista de errores
+        function updateErrorsList() {
+            const errorsList = document.getElementById('errorsList');
+            errorsList.innerHTML = '';
+
+            simulatedData.errors.forEach(error => {
+                const errorElement = document.createElement('div');
+                errorElement.className = `error-item error-${error.severity.toLowerCase()} fade-in`;
+
+                const timeAgo = getTimeAgo(error.timestamp);
+                const agentName = error.agentId.split('_').pop();
+
+                errorElement.innerHTML = `
+                    <div class="error-header">
+                        <span class="error-agent">${agentName}</span>
+                        <span class="error-time">${timeAgo}</span>
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>${error.severity}</strong> - ${error.message}
+                    </div>
+                    <div style="font-size: 0.8rem; color: #888;">
+                        Category: ${error.category} | Status: ${error.status}
+                    </div>
+                `;
+
+                errorsList.appendChild(errorElement);
+            });
+        }
+
+        // Actualizar lista de predicciones
+        function updatePredictionsList() {
+            const predictionsList = document.getElementById('predictionsList');
+            predictionsList.innerHTML = '';
+
+            simulatedData.predictions.forEach(prediction => {
+                const predictionElement = document.createElement('div');
+                predictionElement.className = 'prediction-item fade-in';
+
+                predictionElement.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span class="prediction-probability">${(prediction.probability * 100).toFixed(1)}%</span>
+                        <span style="color: #888; font-size: 0.8rem;">${prediction.timeframe}</span>
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>${prediction.type}</strong>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #ccc;">
+                        ${prediction.description}
+                    </div>
+                `;
+
+                predictionsList.appendChild(predictionElement);
+            });
+
+            // Mostrar alerta crítica si hay predicciones de alta probabilidad
+            const criticalPredictions = simulatedData.predictions.filter(p => p.probability > 0.8);
+            const alertBanner = document.getElementById('criticalAlert');
+
+            if (criticalPredictions.length > 0) {
+                alertBanner.classList.remove('hidden');
+            } else {
+                alertBanner.classList.add('hidden');
+            }
+        }
+
+        // Actualizar timeline del sistema
+        function updateTimeline() {
+            const timeline = document.getElementById('systemTimeline');
+            timeline.innerHTML = '';
+
+            simulatedData.timeline.forEach(item => {
+                const timelineElement = document.createElement('div');
+                timelineElement.className = 'timeline-item fade-in';
+
+                const timeAgo = getTimeAgo(item.timestamp);
+                const icon = getEventIcon(item.type);
+
+                timelineElement.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600;">${icon} ${item.type.replace('_', ' ').toUpperCase()}</span>
+                        <span style="color: #888; font-size: 0.8rem;">${timeAgo}</span>
+                    </div>
+                    <div style="color: #ccc; font-size: 0.9rem;">
+                        ${item.event}
+                    </div>
+                `;
+
+                timeline.appendChild(timelineElement);
+            });
+        }
+
+        // Actualizar gráficos (simulado)
+        function updateCharts() {
+            const canvas = document.getElementById('performanceChart');
+            const ctx = canvas.getContext('2d');
+
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar gráfico de líneas simple
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            const dataPoints = 20;
+            const width = canvas.width;
+            const height = canvas.height;
+
+            for (let i = 0; i < dataPoints; i++) {
+                const x = (i / (dataPoints - 1)) * width;
+                const y = height - (Math.random() * 0.3 + 0.7) * height;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+
+            ctx.stroke();
+
+            // Agregar etiquetas
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Arial';
+            ctx.fillText('Response Time (ms)', 10, 20);
+            ctx.fillText('Time →', width - 60, height - 10);
+        }
+
+        // Función para refrescar el dashboard completo
+        function refreshDashboard() {
+            console.log('🔄 Refreshing dashboard data...');
+
+            // Simular nuevos datos
+            simulateNewData();
+
+            // Actualizar todas las secciones
+            updateSystemMetrics();
+            updateErrorsList();
+            updatePredictionsList();
+            updateTimeline();
+            updateCharts();
+
+            // Actualizar timestamp
+            dashboardState.lastUpdate = new Date();
+
+            console.log('✅ Dashboard refreshed at', dashboardState.lastUpdate.toLocaleTimeString());
+        }
+
+        // Simular nuevos datos
+        function simulateNewData() {
+            // Simular posibilidad de nuevo error
+            if (Math.random() < 0.1) { // 10% chance
+                const newError = {
+                    id: `error-${Date.now()}`,
+                    agentId: getRandomAgent(),
+                    category: getRandomCategory(),
+                    severity: getRandomSeverity(),
+                    message: getRandomErrorMessage(),
+                    timestamp: new Date(),
+                    status: 'ACTIVE'
+                };
+
+                simulatedData.errors.unshift(newError);
+
+                // Mantener solo los últimos 10 errores
+                if (simulatedData.errors.length > 10) {
+                    simulatedData.errors.pop();
+                }
+            }
+
+            // Simular cambio de estado de errores
+            simulatedData.errors.forEach(error => {
+                if (error.status === 'ACTIVE' && Math.random() < 0.2) {
+                    error.status = 'RESOLVING';
+                } else if (error.status === 'RESOLVING' && Math.random() < 0.3) {
+                    error.status = 'RESOLVED';
+                }
+            });
+
+            // Actualizar timeline
+            if (Math.random() < 0.3) {
+                const newEvent = {
+                    timestamp: new Date(),
+                    event: getRandomTimelineEvent(),
+                    type: getRandomEventType()
+                };
+
+                simulatedData.timeline.unshift(newEvent);
+
+                // Mantener solo los últimos 8 eventos
+                if (simulatedData.timeline.length > 8) {
+                    simulatedData.timeline.pop();
+                }
+            }
+        }
+
+        // Funciones auxiliares
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+
+            if (hours > 0) {
+                return `${hours}h ago`;
+            } else if (minutes > 0) {
+                return `${minutes}m ago`;
+            } else {
+                return 'Just now';
+            }
+        }
+
+        function getEventIcon(type) {
+            const icons = {
+                'circuit_breaker': '🔌',
+                'cascade_prevention': '⛓️‍💥',
+                'anomaly_detection': '🔍',
+                'ml_training': '🧠',
+                'recovery': '🔄',
+                'alert': '⚠️'
+            };
+            return icons[type] || '📊';
+        }
+
+        function getRandomAgent() {
+            const agents = [
+                'core_infrastructure_system-monitor-agent',
+                'ai_ml_specialists_conversational-ai-agent',
+                'development_experts_api-integration-agent',
+                'business_logic_booking-manager-agent',
+                'integration_services_api-gateway-agent'
+            ];
+            return agents[Math.floor(Math.random() * agents.length)];
+        }
+
+        function getRandomCategory() {
+            const categories = [
+                'CORE_INFRASTRUCTURE',
+                'AI_ML_SPECIALISTS',
+                'DEVELOPMENT_EXPERTS',
+                'BUSINESS_LOGIC',
+                'INTEGRATION_SERVICES'
+            ];
+            return categories[Math.floor(Math.random() * categories.length)];
+        }
+
+        function getRandomSeverity() {
+            const severities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+            const weights = [0.4, 0.3, 0.2, 0.1]; // Más probabilidad de errores menores
+
+            const random = Math.random();
+            let cumulative = 0;
+
+            for (let i = 0; i < weights.length; i++) {
+                cumulative += weights[i];
+                if (random < cumulative) {
+                    return severities[i];
+                }
+            }
+
+            return 'MEDIUM';
+        }
+
+        function getRandomErrorMessage() {
+            const messages = [
+                'Connection timeout to external service',
+                'Memory usage threshold exceeded',
+                'Response time degradation detected',
+                'API rate limit reached',
+                'Database connection pool exhausted',
+                'Circuit breaker threshold exceeded',
+                'Load balancer health check failed',
+                'Authentication service unavailable'
+            ];
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function getRandomTimelineEvent() {
+            const events = [
+                'Circuit breaker activated for agent group',
+                'Cascade prevention system triggered',
+                'Anomaly pattern detected in system metrics',
+                'Predictive model accuracy improved',
+                'Load balancer configuration updated',
+                'Error recovery sequence completed',
+                'System health check passed',
+                'Performance optimization applied'
+            ];
+            return events[Math.floor(Math.random() * events.length)];
+        }
+
+        function getRandomEventType() {
+            const types = [
+                'circuit_breaker',
+                'cascade_prevention',
+                'anomaly_detection',
+                'ml_training',
+                'recovery',
+                'alert'
+            ];
+            return types[Math.floor(Math.random() * types.length)];
+        }
+
+        // Inicializar dashboard cuando se carga la página
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+
+        // Manejar visibilidad de la página para pausar/reanudar auto-refresh
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                dashboardState.autoRefresh = false;
+                console.log('📱 Dashboard paused (tab hidden)');
+            } else {
+                dashboardState.autoRefresh = true;
+                refreshDashboard();
+                console.log('📱 Dashboard resumed (tab visible)');
+            }
+        });
+
+        // Log inicial
+        console.log('🌟 Sandra IA Galaxy Enterprise Error Monitoring Dashboard Loaded');
+        console.log('📊 Real-time monitoring of 248+ agents');
+        console.log('🔮 Predictive analytics enabled');
+        console.log('⚡ Auto-refresh every 5 seconds');
+    </script>
+</body>
+</html>
