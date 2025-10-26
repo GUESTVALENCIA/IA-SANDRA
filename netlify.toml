@@ -189,43 +189,24 @@
   NODE_ENV = "development"
 
 # ═══════════════════════════════════════════════════════════════════
-# PLUGINS AND OPTIMIZATION
+# PLUGINS AND OPTIMIZATION - DISABLED TO FIX DEPLOYMENT
 # ═══════════════════════════════════════════════════════════════════
 
-# Essential build plugins
-[[plugins]]
-  package = "@netlify/plugin-functions-install-core"
-
-# PWA optimization plugin
-[[plugins]]
-  package = "netlify-plugin-pwa"
-  [plugins.inputs]
-    swSrc = "./sw.js"
-    swDest = "./sw.js"
-
-# Performance optimization
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-  [plugins.inputs]
-    output_path = "reports/lighthouse"
-
-# Mobile optimization
-[[plugins]]
-  package = "netlify-plugin-webp"
-  [plugins.inputs]
-    quality = 85
+# Plugins disabled temporarily to fix deployment issues
+# Can be re-enabled after installing packages in package.json
 
 # ═══════════════════════════════════════════════════════════════════
-# EDGE FUNCTIONS FOR MOBILE PERFORMANCE
+# EDGE FUNCTIONS - DISABLED TO FIX DEPLOYMENT
 # ═══════════════════════════════════════════════════════════════════
 
-[[edge_functions]]
-  function = "mobile-detector"
-  path = "/*"
+# Edge functions disabled temporarily to fix deployment issues
+# [[edge_functions]]
+#   function = "mobile-detector"
+#   path = "/*"
 
-[[edge_functions]]
-  function = "performance-optimizer"
-  path = "/api/*"
+# [[edge_functions]]
+#   function = "performance-optimizer"
+#   path = "/api/*"
 
 # ═══════════════════════════════════════════════════════════════════
 # FORMS (FOR CONTACT AND FEEDBACK)
