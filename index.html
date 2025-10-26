@@ -655,6 +655,47 @@
             transform: translateY(0);
         }
 
+        .app-info {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: var(--elegant-gray-50);
+            border-radius: 12px;
+            border: 1px solid var(--border-elegant);
+        }
+
+        .app-details {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-details span {
+            background: var(--pure-white);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--charcoal-primary);
+            border: 1px solid var(--border-elegant);
+            white-space: nowrap;
+        }
+
+        .app-size {
+            color: var(--elegant-gray-700);
+        }
+
+        .app-version {
+            color: var(--charcoal-primary);
+            font-weight: 600;
+        }
+
+        .app-rating {
+            color: var(--luxury-gold);
+            font-weight: 600;
+        }
+
         .instructions {
             background: var(--elegant-gray-50);
             border-radius: 16px;
@@ -1233,22 +1274,27 @@
                         <div class="card-icon">🍎</div>
                         <div>
                             <div class="card-title">iOS / iPhone</div>
-                            <div class="card-subtitle">Compatible con iOS 14.0 o superior</div>
+                            <div class="card-subtitle">Compatible con iOS 14.0 o superior • Safari requerido</div>
                         </div>
                     </div>
                     <button class="download-btn" onclick="downloadIOS()">
                         <span>📱</span>
-                        Descargar para iPhone
+                        Instalar en iPhone
                     </button>
+                    <div class="app-info">
+                        <div class="app-details">
+                            <span class="app-size">📦 42 MB</span>
+                            <span class="app-version">v98.0.0</span>
+                            <span class="app-rating">⭐ 4.7</span>
+                        </div>
+                    </div>
                     <div class="instructions">
-                        <h4>Instrucciones de Instalación iOS:</h4>
+                        <h4>Instalación rápida desde Safari:</h4>
                         <ol>
-                            <li><strong>Abre Safari:</strong> Asegúrate de estar usando Safari (no Chrome u otros navegadores)</li>
-                            <li><strong>Carga la página:</strong> Espera a que esta página cargue completamente</li>
-                            <li><strong>Menú Compartir:</strong> Toca el icono de compartir (cuadrado con flecha hacia arriba)</li>
-                            <li><strong>Añadir a inicio:</strong> Selecciona "Añadir a pantalla de inicio" en el menú</li>
-                            <li><strong>Confirmar:</strong> Toca "Añadir" para instalar Sandra IA como app</li>
-                            <li><strong>¡Listo!</strong> Sandra IA aparecerá como app nativa en tu pantalla de inicio</li>
+                            <li><strong>Toca "Instalar"</strong> → Se mostrarán las instrucciones</li>
+                            <li><strong>Menú Compartir</strong> → Toca el ícono ⬆️ en Safari</li>
+                            <li><strong>"Añadir a inicio"</strong> → Selecciona esta opción</li>
+                            <li><strong>Confirmar</strong> → Toca "Añadir" ¡Listo!</li>
                         </ol>
                         <div class="message" id="ios-message"></div>
                     </div>
@@ -1260,22 +1306,27 @@
                         <div class="card-icon">🤖</div>
                         <div>
                             <div class="card-title">Android</div>
-                            <div class="card-subtitle">Compatible con Android 8.0 o superior</div>
+                            <div class="card-subtitle">Compatible con Android 8.0 o superior • Chrome recomendado</div>
                         </div>
                     </div>
                     <button class="download-btn" onclick="downloadAndroid()">
                         <span>📲</span>
-                        Descargar APK
+                        Instalar en Android
                     </button>
+                    <div class="app-info">
+                        <div class="app-details">
+                            <span class="app-size">📦 42 MB</span>
+                            <span class="app-version">v98.0.0</span>
+                            <span class="app-rating">⭐ 4.7</span>
+                        </div>
+                    </div>
                     <div class="instructions">
-                        <h4>Instrucciones de Instalación Android:</h4>
+                        <h4>Instalación rápida desde Chrome:</h4>
                         <ol>
-                            <li><strong>Descarga APK:</strong> El archivo sandra-ia.apk se descargará automáticamente</li>
-                            <li><strong>Habilita fuentes desconocidas:</strong> Ve a Configuración > Seguridad > Fuentes desconocidas</li>
-                            <li><strong>Localiza el archivo:</strong> Encuentra sandra-ia.apk en tu carpeta de Descargas</li>
-                            <li><strong>Instala:</strong> Pulsa el archivo APK y selecciona "Instalar"</li>
-                            <li><strong>Permisos:</strong> Otorga permisos de cámara, micrófono y almacenamiento</li>
-                            <li><strong>¡Listo!</strong> Sandra IA aparecerá en tu cajón de aplicaciones</li>
+                            <li><strong>Toca "Instalar"</strong> → Se mostrará el prompt de instalación</li>
+                            <li><strong>Chrome dirá "Instalar app"</strong> → Toca "Instalar"</li>
+                            <li><strong>Se instalará automáticamente</strong> → Como app nativa</li>
+                            <li><strong>¡Listo!</strong> Sandra IA aparece en tu cajón de apps</li>
                         </ol>
                         <div class="message" id="android-message"></div>
                     </div>
@@ -1537,6 +1588,7 @@
                 try {
                     if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
                         // iOS device detected - show PWA installation instructions
+                        trackDownloadEvent('ios_install_clicked', 'safari_pwa');
                         showMessage(messageEl, 'success', '📱 Para instalar Sandra IA: toca el botón Compartir (⬆️) en Safari → "Añadir a pantalla de inicio" → "Añadir". ¡Sandra IA aparecerá como app nativa!');
 
                         // Try to trigger PWA install prompt if available
@@ -1545,12 +1597,16 @@
                             window.deferredPrompt.userChoice.then((choiceResult) => {
                                 if (choiceResult.outcome === 'accepted') {
                                     showMessage(messageEl, 'success', '✅ Sandra IA se está instalando...');
+                                    trackDownloadEvent('ios_install_accepted', 'safari_pwa');
+                                } else {
+                                    trackDownloadEvent('ios_install_dismissed', 'safari_pwa');
                                 }
                                 window.deferredPrompt = null;
                             });
                         }
                     } else {
                         // Not iOS device
+                        trackDownloadEvent('ios_install_clicked_wrong_device', navigator.userAgent);
                         showMessage(messageEl, 'info', '💡 Estas instrucciones son específicas para iPhone/iPad. En tu dispositivo, usa "Instalar PWA" o accede desde iOS para la mejor experiencia.');
                     }
                 } catch (error) {
@@ -1567,22 +1623,36 @@
             const originalText = btn.innerHTML;
             const messageEl = document.getElementById('android-message');
 
-            btn.innerHTML = '<span class="loading"></span> Descargando APK...';
+            btn.innerHTML = '<span class="loading"></span> Preparando instalación...';
             btn.disabled = true;
 
             setTimeout(() => {
                 try {
-                    // Create download link for APK
-                    const link = document.createElement('a');
-                    link.href = 'https://sandra.guestsvalencia.es/downloads/sandra-ia-galaxy.apk';
-                    link.download = 'sandra-ia-galaxy.apk';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    if (/Android/.test(navigator.userAgent)) {
+                        // Android device detected - show PWA installation instructions
+                        trackDownloadEvent('android_install_clicked', 'chrome_pwa');
+                        showMessage(messageEl, 'success', '📱 Para instalar Sandra IA: busca "Instalar app" en el menú de Chrome (⋮) → "Instalar". ¡Sandra IA aparecerá como app nativa!');
 
-                    showMessage(messageEl, 'success', '✅ Descarga iniciada. Busca sandra-ia-galaxy.apk en tu carpeta de Descargas y sigue las instrucciones de instalación.');
+                        // Try to trigger PWA install prompt if available
+                        if (window.deferredPrompt) {
+                            window.deferredPrompt.prompt();
+                            window.deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    showMessage(messageEl, 'success', '✅ Sandra IA se está instalando...');
+                                    trackDownloadEvent('android_install_accepted', 'chrome_pwa');
+                                } else {
+                                    trackDownloadEvent('android_install_dismissed', 'chrome_pwa');
+                                }
+                                window.deferredPrompt = null;
+                            });
+                        }
+                    } else {
+                        // Not Android device
+                        trackDownloadEvent('android_install_clicked_wrong_device', navigator.userAgent);
+                        showMessage(messageEl, 'info', '💡 Estas instrucciones son específicas para Android. En tu dispositivo, usa "Instalar PWA" o accede desde Android para la mejor experiencia.');
+                    }
                 } catch (error) {
-                    showMessage(messageEl, 'error', '❌ Error en la descarga. Verifica tu conexión a internet e inténtalo de nuevo.');
+                    showMessage(messageEl, 'error', '❌ Error en la instalación. Asegúrate de usar Chrome en Android y seguir las instrucciones manuales.');
                 }
 
                 btn.innerHTML = originalText;
@@ -1657,6 +1727,91 @@
             setTimeout(() => {
                 element.style.display = 'none';
             }, 8000);
+        }
+
+        // Auto install hint for PWA
+        function showAutoInstallHint(platform) {
+            const hint = document.createElement('div');
+            hint.className = 'pwa-install-hint';
+            hint.innerHTML = `
+                <div class="install-hint-content">
+                    <span class="hint-icon">📱</span>
+                    <span class="hint-text">¡Sandra IA se puede instalar como app nativa!</span>
+                    <button class="hint-install-btn" onclick="triggerPWAInstall()">Instalar</button>
+                    <button class="hint-close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+            hint.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #00ff88 0%, #00aaff 100%);
+                color: #0a0a0a;
+                padding: 15px 20px;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                font-weight: 600;
+                font-size: 14px;
+                max-width: 90%;
+                animation: slideDown 0.3s ease;
+            `;
+
+            document.body.appendChild(hint);
+
+            // Auto remove after 10 seconds
+            setTimeout(() => {
+                if (hint.parentElement) hint.remove();
+            }, 10000);
+        }
+
+        function triggerPWAInstall() {
+            if (window.deferredPrompt) {
+                trackDownloadEvent('pwa_install_triggered', 'auto_prompt');
+                window.deferredPrompt.prompt();
+                window.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('✅ User accepted PWA install');
+                        trackDownloadEvent('pwa_install_accepted', 'auto_prompt');
+                    } else {
+                        trackDownloadEvent('pwa_install_dismissed', 'auto_prompt');
+                    }
+                    window.deferredPrompt = null;
+                });
+            }
+        }
+
+        // Analytics tracking for downloads and installations
+        function trackDownloadEvent(action, platform) {
+            const eventData = {
+                action: action,
+                platform: platform,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                url: window.location.href
+            };
+
+            // Log to console for development
+            console.log('📊 Download Event:', eventData);
+
+            // Send to analytics (replace with your analytics service)
+            try {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', action, {
+                        event_category: 'sandra_ia_downloads',
+                        event_label: platform,
+                        value: 1
+                    });
+                }
+
+                // Local storage for tracking
+                const downloads = JSON.parse(localStorage.getItem('sandra_downloads') || '[]');
+                downloads.push(eventData);
+                localStorage.setItem('sandra_downloads', JSON.stringify(downloads.slice(-50))); // Keep last 50 events
+            } catch (error) {
+                console.warn('Analytics tracking failed:', error);
+            }
         }
 
         // PWA Install Prompt Handler
@@ -1742,6 +1897,27 @@
     </script>
     <!-- Service Worker Registration for PWA -->
     <script>
+        // PWA Install Prompt Management
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('💡 PWA install prompt available');
+            e.preventDefault();
+            deferredPrompt = e;
+            window.deferredPrompt = e;
+
+            // Show install hint for supported browsers
+            if (/Android/.test(navigator.userAgent) && /Chrome/.test(navigator.userAgent)) {
+                showAutoInstallHint('android');
+            }
+        });
+
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('✅ PWA was installed successfully');
+            deferredPrompt = null;
+            window.deferredPrompt = null;
+        });
+
         // Service Worker registration with iOS Safari optimizations
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
