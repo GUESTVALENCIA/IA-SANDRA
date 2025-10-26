@@ -18,7 +18,9 @@ const { guardianProtocol } = require('./guardian-protocol');
 const { safeLLM } = require('./llm/safe-llm');
 const { errorCoordinatorEnterprise } = require('./error-coordinator-enterprise');
 const { circuitBreakerCoordinator } = require('./circuit-breaker-coordinator');
+const { TaskDistributorGalaxyEnterprise } = require('./task-distributor-galaxy-enterprise');
 const { knowledgeSynthesizerGalaxyEnterprise } = require('./knowledge-synthesizer-galaxy-enterprise');
+const { performanceMonitorGalaxyEnterprise } = require('./performance-monitor-galaxy-enterprise');
 
 class MultiAgentCoordinator extends EventEmitter {
   constructor() {
@@ -53,13 +55,16 @@ class MultiAgentCoordinator extends EventEmitter {
       knowledgeSynthesis: true
     };
 
-    // Sistema de coordinación distribuida
+    // Sistema de coordinación distribuida con Galaxy Enterprise Task Distributor
     this.distributedCoordination = {
       loadBalancer: new Map(),
       dependencyResolver: new Map(),
       parallelProcessor: new Map(),
       knowledgeSynthesis: new Map()
     };
+
+    // Initialize Galaxy Enterprise Task Distributor
+    this.taskDistributor = new TaskDistributorGalaxyEnterprise();
 
     // Pool de agentes especializados (248+ agentes)
     this.agentEcosystem = new Map();
@@ -92,8 +97,14 @@ class MultiAgentCoordinator extends EventEmitter {
       // 7. Inicializar knowledge synthesis
       await this.initializeKnowledgeSynthesis();
 
-      // 8. Activar real-time coordination
+      // 8. Initialize Galaxy Enterprise Task Distributor
+      await this.initializeTaskDistributor();
+
+      // 9. Activar real-time coordination
       await this.activateRealTimeCoordination();
+
+      // 10. Conectar con Performance Monitor Galaxy Enterprise
+      await this.connectPerformanceMonitor();
 
       this.systemState.status = 'GALAXY_ENTERPRISE_ACTIVE';
       logger.info('[MULTI-AGENT COORDINATOR] ✅ Galaxy Enterprise Multi-Agent System OPERATIONAL');
@@ -706,27 +717,15 @@ class MultiAgentCoordinator extends EventEmitter {
     await this.setupAdvancedCoordinationPatterns();
 
     this.distributedCoordination = {
-      // Load Balancer para distribución inteligente
+      // Load Balancer - will be replaced by Galaxy Enterprise Task Distributor
       loadBalancer: {
-        algorithm: 'WEIGHTED_ROUND_ROBIN',
+        algorithm: 'GALAXY_ENTERPRISE_TASK_DISTRIBUTOR',
         weights: new Map(),
 
+        // Placeholder - will be replaced during Task Distributor initialization
         selectAgent: (category, requiredCapabilities) => {
-          const availableAgents = Array.from(this.agentEcosystem.values())
-            .filter(agent =>
-              agent.category === category &&
-              agent.status === 'READY' &&
-              agent.workload.currentTasks < agent.workload.maxConcurrent &&
-              this.hasRequiredCapabilities(agent, requiredCapabilities)
-            )
-            .sort((a, b) => {
-              // Ordenar por performance y carga actual
-              const scoreA = a.performance.successRate / (a.workload.currentTasks + 1);
-              const scoreB = b.performance.successRate / (b.workload.currentTasks + 1);
-              return scoreB - scoreA;
-            });
-
-          return availableAgents[0] || null;
+          // Simple fallback until Task Distributor is initialized
+          return null;
         }
       },
 
@@ -780,9 +779,10 @@ class MultiAgentCoordinator extends EventEmitter {
             executing.add(task.id);
 
             try {
-              const agent = this.distributedCoordination.loadBalancer.selectAgent(
+              const agent = await this.distributedCoordination.loadBalancer.selectAgent(
                 task.category || 'DEVELOPMENT_EXPERTS',
-                task.requiredCapabilities || []
+                task.requiredCapabilities || [],
+                task.priority || 'MEDIUM'
               );
 
               if (!agent) {
@@ -923,10 +923,11 @@ Provide a unified, comprehensive synthesis that:
                 synthesized: false,
                 galaxyEnterprise: false,
                 aggregatedResults: results,
-              fallback: true,
-              error: error.message,
-              timestamp: new Date().toISOString()
-            };
+                fallback: true,
+                error: error.message,
+                timestamp: new Date().toISOString()
+              };
+            }
           }
         }
       }
@@ -1882,6 +1883,102 @@ Provide a unified, comprehensive synthesis that:
   }
 
   // ============================================================================
+  // GALAXY ENTERPRISE TASK DISTRIBUTOR INTEGRATION
+  // ============================================================================
+  async initializeTaskDistributor() {
+    logger.info('[MULTI-AGENT COORDINATOR] Initializing Galaxy Enterprise Task Distributor');
+
+    try {
+      // Initialize the Task Distributor with coordinator context
+      await this.taskDistributor.initialize();
+
+      // Set up bidirectional integration with existing systems
+      this.setupTaskDistributorIntegration();
+
+      // Replace the old load balancer selectAgent method with Task Distributor
+      this.distributedCoordination.loadBalancer.selectAgent = async (category, requiredCapabilities, priority = 'MEDIUM') => {
+        try {
+          const task = {
+            id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            category,
+            requiredCapabilities: requiredCapabilities || [],
+            priority,
+            timestamp: Date.now()
+          };
+
+          const assignment = await this.taskDistributor.distributeTask(task);
+
+          if (assignment && assignment.selectedAgent) {
+            const agent = this.agentEcosystem.get(assignment.selectedAgent.id);
+            if (agent) {
+              // Update agent workload
+              agent.workload.currentTasks++;
+              agent.workload.lastAssigned = Date.now();
+              return agent;
+            }
+          }
+
+          return null;
+        } catch (error) {
+          logger.error('[TASK DISTRIBUTOR] Agent selection failed:', error);
+          // Fallback to original simple selection
+          return this.simpleFallbackSelection(category, requiredCapabilities);
+        }
+      };
+
+      logger.info('[MULTI-AGENT COORDINATOR] ✅ Galaxy Enterprise Task Distributor operational');
+
+    } catch (error) {
+      logger.error('[MULTI-AGENT COORDINATOR] Task Distributor initialization failed:', error);
+
+      // Ensure fallback mechanism is available
+      this.distributedCoordination.loadBalancer.selectAgent = (category, requiredCapabilities) => {
+        return this.simpleFallbackSelection(category, requiredCapabilities);
+      };
+
+      throw error;
+    }
+  }
+
+  setupTaskDistributorIntegration() {
+    // Set up basic event forwarding (simplified integration)
+
+    // Forward Task Distributor events to coordinator
+    if (this.taskDistributor.on) {
+      this.taskDistributor.on('task:distributed', (data) => {
+        this.emit('task:distributed', data);
+      });
+
+      this.taskDistributor.on('agent:overloaded', (agentId) => {
+        this.emit('agent:overloaded', agentId);
+        logger.warn(`[TASK DISTRIBUTOR] Agent ${agentId} is overloaded`);
+      });
+
+      this.taskDistributor.on('queue:congestion', (queueInfo) => {
+        this.emit('queue:congestion', queueInfo);
+        logger.warn('[TASK DISTRIBUTOR] Queue congestion detected:', queueInfo);
+      });
+    }
+  }
+
+  simpleFallbackSelection(category, requiredCapabilities) {
+    const availableAgents = Array.from(this.agentEcosystem.values())
+      .filter(agent =>
+        agent.category === category &&
+        agent.status === 'READY' &&
+        agent.workload.currentTasks < agent.workload.maxConcurrent &&
+        this.hasRequiredCapabilities(agent, requiredCapabilities)
+      )
+      .sort((a, b) => {
+        const scoreA = a.performance.successRate / (a.workload.currentTasks + 1);
+        const scoreB = b.performance.successRate / (b.workload.currentTasks + 1);
+        return scoreB - scoreA;
+      });
+
+    return availableAgents[0] || null;
+  }
+
+  // ============================================================================
   // REAL-TIME COORDINATION
   // ============================================================================
   async activateRealTimeCoordination() {
@@ -2001,6 +2098,371 @@ Provide a unified, comprehensive synthesis that:
       logger.warn(`[REAL-TIME COORDINATION] System degradation detected:`, metrics);
       this.handleSystemDegradation(metrics);
     });
+  }
+
+  // ============================================================================
+  // PERFORMANCE MONITOR GALAXY ENTERPRISE INTEGRATION
+  // ============================================================================
+  async connectPerformanceMonitor() {
+    logger.info('[MULTI-AGENT COORDINATOR] Connecting Performance Monitor Galaxy Enterprise');
+
+    try {
+      // Configurar integración bidireccional
+      this.performanceIntegration = {
+        monitor: performanceMonitorGalaxyEnterprise,
+        connected: false,
+        lastSync: null,
+        metricsEnabled: true
+      };
+
+      // Conectar Performance Monitor con este coordinator
+      await performanceMonitorGalaxyEnterprise.connectMultiAgentCoordinator(this);
+
+      // Configurar eventos para enviar métricas al Performance Monitor
+      this.setupPerformanceEventHandlers();
+
+      // Configurar listeners para alertas del Performance Monitor
+      this.setupPerformanceAlertHandlers();
+
+      // Connect Task Distributor with Performance Monitor
+      if (this.taskDistributor && performanceMonitorGalaxyEnterprise) {
+        try {
+          this.taskDistributor.performanceMonitor = performanceMonitorGalaxyEnterprise;
+          logger.info('[MULTI-AGENT COORDINATOR] ✅ Task Distributor connected to Performance Monitor');
+        } catch (error) {
+          logger.warn('[MULTI-AGENT COORDINATOR] Failed to connect Task Distributor to Performance Monitor:', error.message);
+        }
+      }
+
+      // Sincronización inicial
+      await this.syncPerformanceData();
+
+      this.performanceIntegration.connected = true;
+      this.performanceIntegration.lastSync = Date.now();
+
+      logger.info('[MULTI-AGENT COORDINATOR] ✅ Performance Monitor Galaxy Enterprise connected');
+
+    } catch (error) {
+      logger.warn('[MULTI-AGENT COORDINATOR] Performance Monitor connection failed, continuing without monitoring:', error.message);
+
+      this.performanceIntegration = {
+        monitor: null,
+        connected: false,
+        error: error.message
+      };
+    }
+  }
+
+  setupPerformanceEventHandlers() {
+    // Enviar métricas de agentes al Performance Monitor
+    this.on('agent:performance', (data) => {
+      if (this.performanceIntegration.connected) {
+        performanceMonitorGalaxyEnterprise.processAgentPerformanceData(data);
+      }
+    });
+
+    // Enviar estado del sistema al Performance Monitor
+    this.on('system:status', (data) => {
+      if (this.performanceIntegration.connected) {
+        performanceMonitorGalaxyEnterprise.processSystemStatusData(data);
+      }
+    });
+
+    // Emitir métricas cuando se complete una coordinación
+    this.on('coordination:complete', (data) => {
+      if (this.performanceIntegration.connected) {
+        this.emit('agent:performance', {
+          agentId: 'coordinator',
+          responseTime: data.executionTime,
+          throughput: data.tasksCompleted,
+          successRate: data.successRate,
+          timestamp: Date.now()
+        });
+      }
+    });
+
+    // Emitir estado del sistema en tiempo real
+    if (this.realTimeCoordination && this.realTimeCoordination.statusMonitor) {
+      const originalEmit = this.realTimeCoordination.eventStream.emit;
+      this.realTimeCoordination.eventStream.emit = (event, data) => {
+        // Llamar al emit original
+        originalEmit.call(this.realTimeCoordination.eventStream, event, data);
+
+        // Si es un evento de estado del sistema, enviarlo al Performance Monitor
+        if (event === 'system:status' && this.performanceIntegration.connected) {
+          this.emit('system:status', data);
+        }
+      };
+    }
+  }
+
+  setupPerformanceAlertHandlers() {
+    // Escuchar alertas del Performance Monitor
+    performanceMonitorGalaxyEnterprise.on('alert:generated', (alert) => {
+      logger.warn('[MULTI-AGENT COORDINATOR] Performance alert received:', {
+        id: alert.id,
+        severity: alert.severity,
+        title: alert.title
+      });
+
+      // Tomar acciones automáticas según el tipo de alerta
+      this.handlePerformanceAlert(alert);
+    });
+
+    // Escuchar anomalías detectadas
+    performanceMonitorGalaxyEnterprise.on('anomaly:detected', (anomaly) => {
+      logger.warn('[MULTI-AGENT COORDINATOR] Performance anomaly detected:', {
+        type: anomaly.type,
+        category: anomaly.category,
+        severity: anomaly.severity
+      });
+
+      // Tomar acciones preventivas
+      this.handlePerformanceAnomaly(anomaly);
+    });
+  }
+
+  async syncPerformanceData() {
+    try {
+      // Obtener estado actual del sistema
+      const systemStatus = this.generateSystemStatus();
+
+      // Enviar datos iniciales al Performance Monitor
+      this.emit('system:status', systemStatus);
+
+      // Enviar métricas de agentes activos
+      for (const [agentId, agent] of this.agentEcosystem) {
+        if (agent.status === 'READY' || agent.status === 'BUSY') {
+          this.emit('agent:performance', {
+            agentId: agentId,
+            responseTime: agent.performance.averageResponseTime || 100,
+            throughput: agent.performance.throughput || 10,
+            successRate: agent.performance.successRate || 0.95,
+            utilizationRate: agent.workload.currentTasks / agent.workload.maxConcurrent,
+            timestamp: Date.now()
+          });
+        }
+      }
+
+      logger.info('[MULTI-AGENT COORDINATOR] Performance data synchronized');
+
+    } catch (error) {
+      logger.error('[MULTI-AGENT COORDINATOR] Failed to sync performance data:', error);
+    }
+  }
+
+  handlePerformanceAlert(alert) {
+    try {
+      switch (alert.severity) {
+        case 'CRITICAL':
+          // Alertas críticas: activar modo de emergencia
+          this.activateEmergencyMode(alert);
+          break;
+
+        case 'HIGH':
+          // Alertas altas: redistribuir carga
+          this.redistributeWorkload(alert);
+          break;
+
+        case 'MEDIUM':
+          // Alertas medias: optimizar recursos
+          this.optimizeResources(alert);
+          break;
+
+        case 'LOW':
+          // Alertas bajas: log para análisis posterior
+          logger.info('[MULTI-AGENT COORDINATOR] Low priority alert logged:', alert.title);
+          break;
+      }
+
+      // Notificar a Error Coordinator Enterprise si está disponible
+      if (errorCoordinatorEnterprise) {
+        errorCoordinatorEnterprise.reportPerformanceIssue({
+          alertId: alert.id,
+          severity: alert.severity,
+          description: alert.description,
+          timestamp: Date.now(),
+          source: 'PERFORMANCE_MONITOR'
+        });
+      }
+
+    } catch (error) {
+      logger.error('[MULTI-AGENT COORDINATOR] Failed to handle performance alert:', error);
+    }
+  }
+
+  handlePerformanceAnomaly(anomaly) {
+    try {
+      switch (anomaly.category) {
+        case 'PERFORMANCE_DEGRADATION':
+          // Degradación de performance: activar optimizaciones
+          this.activatePerformanceOptimizations();
+          break;
+
+        case 'ERROR_SPIKE':
+          // Spike de errores: activar circuit breakers
+          this.activateCircuitBreakers();
+          break;
+
+        case 'RESOURCE_EXHAUSTION':
+          // Agotamiento de recursos: scale up o redistribute
+          this.handleResourceExhaustion();
+          break;
+
+        default:
+          logger.info('[MULTI-AGENT COORDINATOR] Anomaly detected but no specific action defined:', anomaly.category);
+      }
+
+    } catch (error) {
+      logger.error('[MULTI-AGENT COORDINATOR] Failed to handle performance anomaly:', error);
+    }
+  }
+
+  activateEmergencyMode(alert) {
+    logger.warn('[MULTI-AGENT COORDINATOR] 🚨 ACTIVATING EMERGENCY MODE due to:', alert.title);
+
+    // Reducir concurrencia
+    this.galaxyConfig.maxConcurrentAgents = Math.floor(this.galaxyConfig.maxConcurrentAgents * 0.5);
+
+    // Activar modo de conservación
+    this.systemState.emergencyMode = true;
+    this.systemState.emergencyReason = alert.title;
+
+    // Notificar a todos los sistemas
+    this.emit('emergency:activated', {
+      reason: alert.title,
+      timestamp: Date.now(),
+      restrictions: {
+        maxConcurrency: this.galaxyConfig.maxConcurrentAgents,
+        conservationMode: true
+      }
+    });
+  }
+
+  redistributeWorkload(alert) {
+    logger.info('[MULTI-AGENT COORDINATOR] Redistributing workload due to:', alert.title);
+
+    // Identificar agentes sobrecargados
+    const overloadedAgents = Array.from(this.agentEcosystem.values())
+      .filter(agent => agent.workload.currentTasks > agent.workload.maxConcurrent * 0.8);
+
+    // Redistribuir tareas a agentes menos cargados
+    for (const agent of overloadedAgents) {
+      this.handleAgentOverload(agent.id);
+    }
+  }
+
+  optimizeResources(alert) {
+    logger.info('[MULTI-AGENT COORDINATOR] Optimizing resources due to:', alert.title);
+
+    // Activar optimizaciones de cache
+    if (this.knowledgeSynthesis && this.knowledgeSynthesis.contextManager) {
+      this.knowledgeSynthesis.contextManager.optimizeCache();
+    }
+
+    // Optimizar load balancer
+    if (this.distributedCoordination && this.distributedCoordination.loadBalancer) {
+      this.distributedCoordination.loadBalancer.algorithm = 'LEAST_CONNECTIONS';
+    }
+  }
+
+  activatePerformanceOptimizations() {
+    logger.info('[MULTI-AGENT COORDINATOR] Activating performance optimizations');
+
+    // Aumentar el threshold de circuit breakers temporalmente
+    if (this.faultTolerance && this.faultTolerance.circuitBreaker) {
+      this.faultTolerance.circuitBreaker.failureThreshold =
+        Math.min(this.faultTolerance.circuitBreaker.failureThreshold * 1.5, 10);
+    }
+
+    // Reducir timeout para respuestas más rápidas
+    this.galaxyConfig.defaultTimeout = Math.max(this.galaxyConfig.defaultTimeout * 0.8, 5000);
+  }
+
+  activateCircuitBreakers() {
+    logger.info('[MULTI-AGENT COORDINATOR] Activating circuit breakers due to error spike');
+
+    // Notificar al Circuit Breaker Coordinator
+    if (circuitBreakerCoordinator) {
+      circuitBreakerCoordinator.activateEmergencyMode();
+    }
+
+    // Reducir concurrencia temporalmente
+    this.galaxyConfig.maxConcurrentAgents = Math.floor(this.galaxyConfig.maxConcurrentAgents * 0.7);
+  }
+
+  handleResourceExhaustion() {
+    logger.warn('[MULTI-AGENT COORDINATOR] Handling resource exhaustion');
+
+    // Activar modo de conservación de recursos
+    this.systemState.resourceConservationMode = true;
+
+    // Reducir carga de trabajo
+    this.galaxyConfig.maxParallelWorkflows = Math.max(this.galaxyConfig.maxParallelWorkflows - 2, 1);
+
+    // Limpiar caches para liberar memoria
+    if (this.knowledgeSynthesis && this.knowledgeSynthesis.knowledgeGraph) {
+      this.cleanupKnowledgeGraph();
+    }
+  }
+
+  cleanupKnowledgeGraph() {
+    // Limpiar nodos antiguos del knowledge graph
+    const cutoffTime = Date.now() - (24 * 60 * 60 * 1000); // 24 horas
+
+    let removedNodes = 0;
+    for (const [nodeId, node] of this.knowledgeSynthesis.knowledgeGraph.nodes) {
+      if (node.timestamp < cutoffTime) {
+        this.knowledgeSynthesis.knowledgeGraph.nodes.delete(nodeId);
+        removedNodes++;
+      }
+    }
+
+    logger.info(`[MULTI-AGENT COORDINATOR] Cleaned up ${removedNodes} old knowledge graph nodes`);
+  }
+
+  /**
+   * API pública para obtener métricas de performance
+   */
+  async getPerformanceMetrics() {
+    if (!this.performanceIntegration.connected) {
+      return {
+        available: false,
+        error: 'Performance Monitor not connected'
+      };
+    }
+
+    try {
+      return await performanceMonitorGalaxyEnterprise.getEnterpriseMetrics();
+    } catch (error) {
+      logger.error('[MULTI-AGENT COORDINATOR] Failed to get performance metrics:', error);
+      return {
+        available: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * API pública para obtener health del sistema
+   */
+  async getSystemHealth() {
+    if (!this.performanceIntegration.connected) {
+      return {
+        status: 'UNKNOWN',
+        reason: 'Performance Monitor not connected'
+      };
+    }
+
+    try {
+      return await performanceMonitorGalaxyEnterprise.getSystemHealth();
+    } catch (error) {
+      logger.error('[MULTI-AGENT COORDINATOR] Failed to get system health:', error);
+      return {
+        status: 'ERROR',
+        reason: error.message
+      };
+    }
   }
 
   // ============================================================================
@@ -2531,6 +2993,31 @@ Provide a unified, comprehensive synthesis that:
       logger.error('[MULTI-AGENT COORDINATOR] Galaxy coordination failed:', error);
       throw error;
     }
+  }
+
+  // ============================================================================
+  // GALAXY ENTERPRISE TASK DISTRIBUTOR API
+  // ============================================================================
+  async getTaskDistributorStatus() {
+    if (!this.taskDistributor) {
+      throw new Error('Task Distributor not initialized');
+    }
+
+    return {
+      status: this.taskDistributor.status,
+      name: this.taskDistributor.name,
+      version: this.taskDistributor.version,
+      mode: this.taskDistributor.mode
+    };
+  }
+
+  async distributeTaskViaDistributor(task) {
+    if (!this.taskDistributor) {
+      throw new Error('Task Distributor not initialized');
+    }
+
+    logger.info('[MULTI-AGENT COORDINATOR] Distributing task via Galaxy Enterprise Task Distributor');
+    return await this.taskDistributor.distributeTask(task);
   }
 }
 
