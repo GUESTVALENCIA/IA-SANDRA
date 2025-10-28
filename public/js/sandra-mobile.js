@@ -141,21 +141,59 @@
   const MODE = (window.SANDRA_MODE || null);
   async function chatLLM(text){
     const body = { messages: messages.slice(-12).concat([{ role:'user', content: text }]), locale, mode: MODE || null };
-    const r = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error('Chat API error');
-    return r.json();
+    try {
+      const r = await fetch('/api/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      if (!r.ok) {
+        const errorData = await r.json().catch(() => ({}));
+        throw new Error(`Chat error ${r.status}: ${errorData.error || 'Unknown error'}`);
+      }
+      const data = await r.json();
+      return { text: data.text || 'Sin respuesta' };
+    } catch (error) {
+      console.error('chatLLM error:', error);
+      throw error;
+    }
   }
   async function ttsSpeak(text){
-    const r = await fetch('/api/tts', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text }) });
-    if (!r.ok) throw new Error('TTS API error');
-    const { mime, audioBase64 } = await r.json();
-    await audioCtx.resume();
-    await playBase64(mime, audioBase64);
+    try {
+      const r = await fetch('/api/tts', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text })
+      });
+      if (!r.ok) {
+        const errorData = await r.json().catch(() => ({}));
+        throw new Error(`TTS error ${r.status}: ${errorData.error || 'Unknown error'}`);
+      }
+      const data = await r.json();
+      const { mime, audioBase64 } = data;
+      if (!audioBase64) throw new Error('No audio data received');
+      await audioCtx.resume();
+      await playBase64(mime || 'audio/mpeg', audioBase64);
+    } catch (error) {
+      console.error('ttsSpeak error:', error);
+      throw error;
+    }
   }
   async function handleQuery(text){
-    try { state('🤖 Pensando...'); const { text:answer } = await chatLLM(text); pushMsg('assistant', answer);
-          state('📢 Hablando...'); await ttsSpeak(answer); state('🟢 Listo'); }
-    catch(e){ state('⚠️ '+e.message); }
+    try {
+      state('🤖 Pensando...');
+      const { text:answer } = await chatLLM(text);
+      if (!answer) throw new Error('Empty response from LLM');
+      pushMsg('assistant', answer);
+      state('📢 Hablando...');
+      await ttsSpeak(answer);
+      state('🟢 Listo');
+    }
+    catch(e){
+      console.error('handleQuery error:', e);
+      state('❌ Error: ' + (e.message || 'Unknown error'));
+      pushMsg('assistant', '❌ Disculpa, hubo un error. Reinténtalo.');
+    }
   }
   sendBtn.onclick = () => { const v = input.value.trim(); if (!v) return; pushMsg('user', v); input.value=''; handleQuery(v); };
   micBtn.onclick = async () => { if (!audioCtx) ensureAudio(); await audioCtx.resume(); if (!recognizing){ wakeMode=false; startRec(); } else { stopRec(); } };
