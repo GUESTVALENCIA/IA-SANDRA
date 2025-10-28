@@ -99,7 +99,9 @@
       "Bash(tree:*)",
       "Bash(test:*)",
       "Bash(find . -maxdepth 1 -name \"*galaxy-enterprise.js\" -exec cp {} SANDRA_NUCLEUS_UNIFIED/agents/)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(NETLIFY_TOKEN=\"nfp_BguXWY1a87dAj2hLJvB2wy5ndvvkkCkm0b60\")",
+      "Bash(SITE_ID=\"sensational-pegasus-d56cc3\":*)"
     ],
     "deny": [],
     "ask": []
