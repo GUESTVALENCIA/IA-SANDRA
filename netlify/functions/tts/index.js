@@ -1,3 +1,7 @@
+// SANDRA IA - TTS ENDPOINT
+// Tier 1: TTS MP3 (Free, no keys required)
+// Tier 2: Cartesia (Backup - premium)
+
 const fetch = global.fetch;
 
 const headers = {
@@ -6,99 +10,87 @@ const headers = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-// TTS MP3 - API gratuita confiable
+// Tier 1: TTS MP3 - Free API (no API key required)
 async function ttsmp3TTS(text) {
-  // Using ttsmp3.com free API - no key required
-  const params = new URLSearchParams({
-    textspeak: text,
-    lang: 'es',  // Spanish
-    speed: 0.8
-  });
+  try {
+    console.log('🎤 Tier 1: TTS MP3 - Converting to speech...');
 
-  const resp = await fetch('https://ttsmp3.com/api/convert?textspeak=' + encodeURIComponent(text) + '&lang=es&speed=0.8', {
-    method: 'GET'
-  });
+    const url = `https://ttsmp3.com/api/convert?textspeak=${encodeURIComponent(text)}&lang=es&speed=0.8`;
 
-  if (!resp.ok) {
-    const error = await resp.text();
-    throw new Error(`TTS MP3 ${resp.status}: ${error}`);
+    const resp = await fetch(url, { method: 'GET', timeout: 30000 });
+
+    if (!resp.ok) {
+      throw new Error(`TTS MP3 API returned ${resp.status}`);
+    }
+
+    const data = await resp.json();
+
+    if (!data.URL) {
+      throw new Error('No audio URL in TTS MP3 response');
+    }
+
+    // Fetch the audio file from S3
+    const audioResp = await fetch(data.URL, { timeout: 30000 });
+
+    if (!audioResp.ok) {
+      throw new Error(`Failed to fetch audio from ${data.URL}: ${audioResp.status}`);
+    }
+
+    const buf = Buffer.from(await audioResp.arrayBuffer());
+    console.log('✅ TTS MP3 succeeded - Audio generated');
+    return { mime: 'audio/mpeg', buf };
+
+  } catch (error) {
+    throw new Error(`TTS MP3 failed: ${error.message}`);
   }
-
-  const data = await resp.json();
-  if (!data.URL) throw new Error('No audio URL in response');
-
-  // Fetch the audio file
-  const audioResp = await fetch(data.URL);
-  if (!audioResp.ok) throw new Error(`Failed to fetch audio: ${audioResp.status}`);
-
-  const buf = Buffer.from(await audioResp.arrayBuffer());
-  return { mime: 'audio/mpeg', buf };
 }
 
-async function elevenlabsTTS(text) {
-  const key = process.env.ELEVENLABS_API_KEY;
-  const voice = process.env.ELEVENLABS_VOICE_ID;
-  if (!key || !voice) throw new Error('ElevenLabs not configured');
-
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice}`;
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'xi-api-key': key,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      text,
-      model_id: 'eleven_multilingual_v2',
-      voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.75
-      }
-    })
-  });
-
-  if (!resp.ok) {
-    const error = await resp.text();
-    throw new Error(`ElevenLabs ${resp.status}: ${error}`);
-  }
-
-  const buf = Buffer.from(await resp.arrayBuffer());
-  return { mime: 'audio/mpeg', buf };
-}
-
+// Tier 2: Cartesia - Premium TTS backup
 async function cartesiaTTS(text) {
-  const key = process.env.CARTESIA_API_KEY;
-  const voice = process.env.CARTESIA_VOICE_ID;
-  if (!key || !voice) throw new Error('Cartesia not configured');
+  try {
+    console.log('🎤 Tier 2: Cartesia - Converting to speech...');
 
-  const resp = await fetch('https://api.cartesia.ai/tts/stream', {
-    method: 'POST',
-    headers: {
-      'x-api-key': key,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model_id: 'sonic-english',
-      transcript: text,
-      voice: {
-        mode: 'id',
-        id: voice
+    const key = process.env.CARTESIA_API_KEY;
+    const voice = process.env.CARTESIA_VOICE_ID;
+
+    if (!key || !voice) {
+      throw new Error('Cartesia API key or voice ID not configured');
+    }
+
+    const resp = await fetch('https://api.cartesia.ai/tts/stream', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'Content-Type': 'application/json'
       },
-      output_format: {
-        container: 'raw',
-        encoding: 'pcm_s16le',
-        sample_rate: 16000
-      }
-    })
-  });
+      body: JSON.stringify({
+        model_id: 'sonic-english',
+        transcript: text,
+        voice: {
+          mode: 'id',
+          id: voice
+        },
+        output_format: {
+          container: 'raw',
+          encoding: 'pcm_s16le',
+          sample_rate: 16000
+        }
+      }),
+      timeout: 30000
+    });
 
-  if (!resp.ok) {
-    const error = await resp.text();
-    throw new Error(`Cartesia ${resp.status}: ${error}`);
+    if (!resp.ok) {
+      const error = await resp.text();
+      throw new Error(`Cartesia API returned ${resp.status}: ${error.substring(0, 100)}`);
+    }
+
+    const buf = Buffer.from(await resp.arrayBuffer());
+    console.log('✅ Cartesia succeeded - Audio generated');
+    return { mime: 'audio/wav', buf };
+
+  } catch (error) {
+    throw new Error(`Cartesia failed: ${error.message}`);
   }
-
-  const buf = Buffer.from(await resp.arrayBuffer());
-  return { mime: 'audio/wav', buf };
 }
 
 exports.handler = async (event) => {
@@ -138,34 +130,35 @@ exports.handler = async (event) => {
     }
 
     let result;
+    let usedProvider = 'Unknown';
 
-    // Multi-provider TTS fallback chain
-    // Tier 1: TTS MP3 (free, reliable) 💚
-    // Tier 2: ElevenLabs (premium)
-    // Tier 3: Cartesia (backup)
-
+    // FALLBACK CHAIN: TTS MP3 → Cartesia
     try {
-      console.log('🎤 Tier 1: Trying TTS MP3 (free)...');
       result = await ttsmp3TTS(text);
-      console.log('✅ TTS generated with TTS MP3');
+      usedProvider = 'TTS MP3';
     } catch (mp3Error) {
-      console.warn('TTS MP3 failed:', mp3Error.message);
+      console.warn(`TTS MP3 failed: ${mp3Error.message}`);
 
       try {
-        console.log('🎤 Tier 2: Trying ElevenLabs...');
-        result = await elevenlabsTTS(text);
-        console.log('✅ TTS generated with ElevenLabs');
-      } catch (elError) {
-        console.warn('ElevenLabs failed:', elError.message);
+        result = await cartesiaTTS(text);
+        usedProvider = 'Cartesia';
+      } catch (cartesiaError) {
+        console.error(`❌ All TTS providers failed`);
+        console.error(`  TTS MP3: ${mp3Error.message}`);
+        console.error(`  Cartesia: ${cartesiaError.message}`);
 
-        try {
-          console.log('🎤 Tier 3: Trying Cartesia...');
-          result = await cartesiaTTS(text);
-          console.log('✅ TTS generated with Cartesia');
-        } catch (ctError) {
-          console.error('❌ All TTS providers failed');
-          throw new Error(`All TTS failed - TTS MP3: ${mp3Error.message.slice(0,40)} | ElevenLabs: ${elError.message.slice(0,40)} | Cartesia: ${ctError.message.slice(0,40)}`);
-        }
+        return {
+          statusCode: 503,
+          headers,
+          body: JSON.stringify({
+            error: 'All TTS providers failed',
+            details: {
+              ttsmp3: mp3Error.message,
+              cartesia: cartesiaError.message
+            },
+            success: false
+          })
+        };
       }
     }
 
@@ -177,9 +170,11 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         audioBase64,
         mime: result.mime,
+        provider: usedProvider,
         success: true
       })
     };
+
   } catch (error) {
     console.error('TTS Handler error:', error);
     return {
