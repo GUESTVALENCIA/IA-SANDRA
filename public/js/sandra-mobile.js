@@ -57,6 +57,29 @@
   const micBtn = $("#micBtn");
 
   const messages = [];
+  let isProcessing = false;  // ENTERPRISE: Lock de concurrencia
+  let requestId = 0;         // ENTERPRISE: Tracking de requests
+
+  // ENTERPRISE: Logging estructurado
+  const log = {
+    info: (msg, data) => console.log(`[Sandra] ${msg}`, data || ''),
+    warn: (msg, data) => console.warn(`[Sandra] ⚠️ ${msg}`, data || ''),
+    error: (msg, data) => console.error(`[Sandra] ❌ ${msg}`, data || '')
+  };
+
+  // ENTERPRISE: Métricas de performance
+  const metrics = {
+    chatLatency: [],
+    ttsLatency: [],
+    errors: { chat: 0, tts: 0, voice: 0 }
+  };
+
+  function trackMetric(type, duration) {
+    if (type === 'chat') metrics.chatLatency.push(duration);
+    if (type === 'tts') metrics.ttsLatency.push(duration);
+    log.info(`${type} latency: ${duration}ms`);
+  }
+
   function pushMsg(role, content) {
     const div = document.createElement('div');
     div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
@@ -127,10 +150,36 @@
     rec.onresult = (evt) => {
       const last = evt.results[evt.results.length-1];
       const text = last[0].transcript.trim();
-      if (wakeMode && /^(hola\s*sandra|ok\s*sandra)/i.test(text)) { wakeMode=false; state('🔓 Activada. Te escucho.'); return; }
-      if (/^(sos|emergencia|ayuda)/i.test(text)) { showSOS(); return; }
-      if (currentAudio) { try{ currentAudio.stop(); }catch{} currentAudio=null; }
-      if (last.isFinal && !wakeMode) { pushMsg('user', text); handleQuery(text); }
+
+      if (wakeMode && /^(hola\s*sandra|ok\s*sandra)/i.test(text)) {
+        wakeMode = false;
+        state('🔓 Activada. Te escucho.');
+        return;
+      }
+
+      if (/^(sos|emergencia|ayuda)/i.test(text)) {
+        showSOS();
+        return;
+      }
+
+      // ENTERPRISE FIX: Detener micrófono ANTES de procesar para evitar bucle
+      if (last.isFinal && !wakeMode) {
+        stopRec();  // Detener reconocimiento primero
+
+        // ENTERPRISE: Cancelación audio mejorada
+        if (currentAudio) {
+          try {
+            currentAudio.stop();
+            currentAudio.disconnect();
+          } catch(e) {
+            log.warn('Audio stop error:', e);
+          }
+          currentAudio = null;
+        }
+
+        pushMsg('user', text);
+        handleQuery(text);
+      }
     };
   }
   function startRec(){ if (!rec) initRec(); try { rec.start(); } catch{} }
@@ -141,61 +190,148 @@
   const MODE = (window.SANDRA_MODE || null);
   async function chatLLM(text){
     const body = { messages: messages.slice(-12).concat([{ role:'user', content: text }]), locale, mode: MODE || null };
+
+    // ENTERPRISE: Timeout controller (15s)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
       const r = await fetch('/api/chat', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+
       if (!r.ok) {
         const errorData = await r.json().catch(() => ({}));
-        throw new Error(`Chat error ${r.status}: ${errorData.error || 'Unknown error'}`);
+        throw new Error(`Chat error ${r.status}: ${errorData.error || 'API error'}`);
       }
+
       const data = await r.json();
       return { text: data.text || 'Sin respuesta' };
     } catch (error) {
-      console.error('chatLLM error:', error);
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        metrics.errors.chat++;
+        throw new Error('Timeout: La consulta tardó demasiado (>15s)');
+      }
+      metrics.errors.chat++;
+      log.error('chatLLM error:', error);
       throw error;
     }
   }
   async function ttsSpeak(text){
+    // ENTERPRISE: Timeout controller (10s)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
       const r = await fetch('/api/tts', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+
       if (!r.ok) {
         const errorData = await r.json().catch(() => ({}));
-        throw new Error(`TTS error ${r.status}: ${errorData.error || 'Unknown error'}`);
+        throw new Error(`TTS error ${r.status}: ${errorData.error || 'TTS failed'}`);
       }
+
       const data = await r.json();
       const { mime, audioBase64 } = data;
-      if (!audioBase64) throw new Error('No audio data received');
+
+      if (!audioBase64) throw new Error('No audio data received from TTS');
+
       await audioCtx.resume();
       await playBase64(mime || 'audio/mpeg', audioBase64);
     } catch (error) {
-      console.error('ttsSpeak error:', error);
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        metrics.errors.tts++;
+        throw new Error('Timeout: TTS tardó demasiado (>10s)');
+      }
+      metrics.errors.tts++;
+      log.error('ttsSpeak error:', error);
       throw error;
     }
   }
   async function handleQuery(text){
+    // ENTERPRISE: Lock de concurrencia
+    if (isProcessing) {
+      log.warn('Query already in progress, ignoring duplicate');
+      state('⚠️ Ya procesando consulta anterior...');
+      return;
+    }
+
+    const currentRequestId = ++requestId;
+    isProcessing = true;
+    sendBtn.disabled = true;
+    micBtn.disabled = true;
+
     try {
       state('🤖 Pensando...');
+
+      // Chat con métricas
+      const chatStart = Date.now();
       const { text:answer } = await chatLLM(text);
+      trackMetric('chat', Date.now() - chatStart);
+
+      // ENTERPRISE: Validar que no hay request más reciente
+      if (currentRequestId !== requestId) {
+        log.info('Newer request detected, discarding this response');
+        return;
+      }
+
       if (!answer) throw new Error('Empty response from LLM');
       pushMsg('assistant', answer);
+
       state('📢 Hablando...');
+
+      // TTS con métricas
+      const ttsStart = Date.now();
       await ttsSpeak(answer);
+      trackMetric('tts', Date.now() - ttsStart);
+
       state('🟢 Listo');
     }
     catch(e){
-      console.error('handleQuery error:', e);
-      state('❌ Error: ' + (e.message || 'Unknown error'));
-      pushMsg('assistant', '❌ Disculpa, hubo un error. Reinténtalo.');
+      log.error('handleQuery error:', e);
+
+      const userMsg = e.message.includes('Timeout')
+        ? '⏱️ La consulta tardó demasiado. Reinténtalo.'
+        : e.message.includes('Network')
+        ? '📡 Error de conexión. Verifica tu internet.'
+        : '❌ Disculpa, hubo un error. Reinténtalo.';
+
+      state('❌ Error: ' + (e.message || 'Unknown'));
+      pushMsg('assistant', userMsg);
+    }
+    finally {
+      isProcessing = false;
+      sendBtn.disabled = false;
+      micBtn.disabled = false;
     }
   }
-  sendBtn.onclick = () => { const v = input.value.trim(); if (!v) return; pushMsg('user', v); input.value=''; handleQuery(v); };
+  sendBtn.onclick = () => {
+    const v = input.value.trim();
+    if (!v) return;
+
+    // ENTERPRISE: Protección contra múltiples clicks
+    if (isProcessing) {
+      state('⚠️ Espera a que termine la consulta anterior');
+      return;
+    }
+
+    pushMsg('user', v);
+    input.value='';
+    handleQuery(v);
+  };
   micBtn.onclick = async () => { if (!audioCtx) ensureAudio(); await audioCtx.resume(); if (!recognizing){ wakeMode=false; startRec(); } else { stopRec(); } };
   function showSOS(){ sosEl.textContent = '🚨 SOS detectado (placeholder). Integra aquí tu rutina de emergencia/restauración.';
     sosEl.style.display='block'; setTimeout(()=> sosEl.style.display='none', 5000); }
