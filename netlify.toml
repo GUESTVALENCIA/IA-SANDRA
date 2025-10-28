@@ -1,8 +1,93 @@
+# SANDRA IA - NETLIFY CONFIGURATION
+# Production-ready config with WebSocket support
+
 [build]
   publish = "public"
   functions = "netlify/functions"
+  command = "npm run build"
 
+[build.environment]
+  NODE_VERSION = "18"
+
+# ====== REDIRECTS & ROUTING ======
+
+# Socket.IO WebSocket endpoint
+[[redirects]]
+  from = "/socket.io/*"
+  to = "/.netlify/functions/socket-server/:splat"
+  status = 200
+  force = true
+
+# API endpoints
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+# SPA fallback (for client-side routing)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ====== HEADERS ======
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "microphone=*, camera=*, geolocation=()"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+[[headers]]
+  for = "/socket.io/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    # WebSocket specific
+    Upgrade = "websocket"
+    Connection = "Upgrade"
+
+# ====== FUNCTIONS CONFIGURATION ======
+
+[functions]
+  node_bundler = "esbuild"
+  directory = "netlify/functions"
+
+# ====== DEVELOPMENT ======
+
+[dev]
+  command = "npm run serve"
+  port = 8080
+  publish = "public"
+  functions = "netlify/functions"
+  framework = "#static"
+
+# ====== EDGE FUNCTIONS (Optional - for future use) ======
+
+# [edge_functions]
+#   [[edge_functions.routes]]
+#     function = "socket-handler"
+#     path = "/socket.io/*"
+
+# ====== PLUGINS ======
+
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+
+# ====== ENVIRONMENT VARIABLES ======
+# Note: Set these in Netlify Dashboard > Site settings > Environment variables
+# - ANTHROPIC_API_KEY
+# - CARTESIA_API_KEY
+# - CARTESIA_VOICE_ID
+# - REDIS_URL (optional)

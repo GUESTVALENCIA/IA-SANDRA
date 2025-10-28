@@ -19,13 +19,13 @@ DEFAULT_LOCALE=es-ES
 
 ### LLM - GROQ (Dev/Barato)
 ```
-GROQ_API_KEY=***REMOVED***
+GROQ_API_KEY=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
 GROQ_MODEL=llama-3.1-70b-versatile
 ```
 
 ### LLM - OpenAI (Prod/GPT-4)
 ```
-OPENAI_API_KEY=***REMOVED***
+OPENAI_API_KEY=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
 OPENAI_MODEL=gpt-4o
 ```
 

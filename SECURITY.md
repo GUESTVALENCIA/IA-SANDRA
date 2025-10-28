@@ -189,7 +189,7 @@ console.error('OpenAI error:', error.message);
 const apiKey = "sk-proj-M0i_Na3z3I2jb0uvv_cixD1...";
 
 // ❌ NEVER: Keys in comments
-// ***REMOVED***
+// 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
 
 // ❌ NEVER: Keys in error messages
 if (error) throw new Error(`Key ${apiKey} failed: ${error}`);

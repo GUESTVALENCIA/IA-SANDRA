@@ -79,10 +79,10 @@ Request en App Móvil
 
 ### Variables Configuradas en Netlify
 ```bash
-✅ GROQ_API_KEY=***REMOVED***
+✅ GROQ_API_KEY=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
 ✅ GROQ_MODEL=mixtral-8x7b-32768
-✅ ANTHROPIC_API_KEY=***REMOVED***
-✅ OPENAI_API_KEY=***REMOVED***
+✅ ANTHROPIC_API_KEY=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
+✅ OPENAI_API_KEY=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
 ✅ OPENAI_MODEL=gpt-4o
 ✅ ELEVENLABS_API_KEY=sk_72e3c3e0c13f47e5b0c0a3c5f8e9c2d1
 ✅ CARTESIA_API_KEY=sk_car_67c5Tg8LMpR9G6unHvsvnw
