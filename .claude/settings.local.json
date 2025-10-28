@@ -89,9 +89,20 @@
       "Bash(start:*)",
       "WebFetch(domain:app.netlify.com)",
       "Bash(git remote set-url:*)",
-      "Bash(git submodule:*)"
+      "Bash(git submodule:*)",
+      "Bash(set PORT=5002)",
+      "Bash(tasklist:*)",
+      "Bash(cmd //c \"taskkill /PID 34512 /F & taskkill /PID 12396 /F & taskkill /PID 30604 /F\")",
+      "Bash(cmd /c \"taskkill /PID 34512 /F & taskkill /PID 12396 /F & taskkill /PID 30604 /F\")",
+      "Read(//c/c/**)",
+      "Read(//c/Users/clayt/Documents/**)",
+      "Bash(tree:*)",
+      "Bash(test:*)",
+      "Bash(find . -maxdepth 1 -name \"*galaxy-enterprise.js\" -exec cp {} SANDRA_NUCLEUS_UNIFIED/agents/)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "outputStyle": "guests-valencia-progress"
 }

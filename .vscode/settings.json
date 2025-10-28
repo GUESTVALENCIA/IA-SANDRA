@@ -1,0 +1,5 @@
+{
+    "claudeCode.allowDangerouslySkipPermissions": true,
+    "claudeCodeChat.wsl.enabled": true,
+    "claudeCodeChat.permissions.yoloMode": true
+}

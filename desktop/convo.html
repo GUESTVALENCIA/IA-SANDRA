@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandra IA 7.0 - Desktop Conversacional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+        }
+
+        .desktop-container {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Avatar Panel */
+        .avatar-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 400px;
+            max-height: 500px;
+            border-radius: 15px;
+        }
+
+        .avatar-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-status.speaking {
+            background: #4ade80;
+            color: white;
+        }
+
+        .avatar-status.listening {
+            background: #60a5fa;
+            color: white;
+        }
+
+        .avatar-status.idle {
+            background: #cbd5e1;
+        }
+
+        .avatar-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+
+        .indicator.active {
+            background: #4ade80;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chat-header h2 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-right: 10px;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        .message-avatar {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            max-width: 70%;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 10px 15px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .message-text {
+            line-height: 1.4;
+            margin-bottom: 5px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        .message.user .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #667eea;
+        }
+
+        .control-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Input Area */
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .text-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            padding: 10px 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .status-bar.connected {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-bar.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Transcription Display */
+        .transcription-display {
+            background: #f8fafc;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            min-height: 20px;
+            border-left: 3px solid #667eea;
+        }
+
+        .transcription-display.interim {
+            color: #999;
+            font-style: italic;
+        }
+
+        .transcription-display.final {
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop-container">
+        <!-- Avatar Panel -->
+        <div class="avatar-panel">
+            <div class="avatar-status idle" id="avatarStatus">
+                Inactivo
+            </div>
+            <canvas id="avatarCanvas" class="avatar-canvas"></canvas>
+            <div class="avatar-indicators">
+                <div class="indicator" id="indicator1"></div>
+                <div class="indicator" id="indicator2"></div>
+                <div class="indicator" id="indicator3"></div>
+            </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h2>=¬ Sandra IA 7.0</h2>
+                <p>Asistente conversacional premium</p>
+            </div>
+
+            <div class="transcription-display interim" id="transcription">
+                Esperando entrada...
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="message assistant">
+                    <div class="message-avatar">></div>
+                    <div class="message-content">
+                        <div class="message-text">¡Hola! Soy Sandra, tu asistente virtual de GuestsValencia. =K ¿Cómo puedo ayudarte hoy?</div>
+                        <div class="message-time">Ahora</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" id="listenBtn">
+                    <¤ Escuchar
+                </button>
+                <button class="control-btn" id="stopBtn" disabled>
+                    =Ñ Detener
+                </button>
+                <button class="control-btn" id="connectBtn">
+                    = Conectar
+                </button>
+            </div>
+
+            <div class="input-area">
+                <input
+                    type="text"
+                    class="text-input"
+                    id="textInput"
+                    placeholder="Escribe tu mensaje..."
+                    autocomplete="off"
+                />
+                <button class="send-btn" id="sendBtn">=ä</button>
+            </div>
+
+            <div class="status-bar idle" id="statusBar">
+                Desconectado
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * SANDRA IA 7.0 - DESKTOP CLIENT
+         * Cliente de escritorio con avatar sincronizado
+         */
+
+        const BACKEND_URL = 'http://localhost:7788';
+        const ROOM_NAME = `sandra-desktop-${Date.now()}`;
+
+        // Estado
+        let state = 'idle';
+        let isConnected = false;
+        let isListening = false;
+        let ws = null;
+        let recognition = null;
+
+        // Elements
+        const messagesContainer = document.getElementById('messagesContainer');
+        const textInput = document.getElementById('textInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const listenBtn = document.getElementById('listenBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const connectBtn = document.getElementById('connectBtn');
+        const statusBar = document.getElementById('statusBar');
+        const avatarStatus = document.getElementById('avatarStatus');
+        const transcription = document.getElementById('transcription');
+
+        /**
+         * Inicializar
+         */
+        function init() {
+            setupEventListeners();
+            setupSpeechRecognition();
+            addSystemMessage('Sistema iniciado. Haz clic en "Conectar" para comenzar.');
+        }
+
+        /**
+         * Configurar event listeners
+         */
+        function setupEventListeners() {
+            sendBtn.addEventListener('click', sendMessage);
+            textInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendMessage());
+            listenBtn.addEventListener('click', startListening);
+            stopBtn.addEventListener('click', stopListening);
+            connectBtn.addEventListener('click', connect);
+        }
+
+        /**
+         * Configurar Speech Recognition API
+         */
+        function setupSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.error('Speech Recognition no disponible');
+                addSystemMessage('L Speech Recognition no disponible en este navegador');
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isListening = true;
+                updateUI();
+                setState('listening');
+            };
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        handleMessage(transcript);
+                    } else {
+                        interim += transcript;
+                    }
+                }
+                transcription.textContent = interim || 'Escuchando...';
+                transcription.classList.toggle('interim', !!interim);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Error:', event.error);
+                addSystemMessage(`L Error: ${event.error}`);
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                updateUI();
+                setState('idle');
+            };
+        }
+
+        /**
+         * Conectar al backend
+         */
+        async function connect() {
+            try {
+                connectBtn.disabled = true;
+                addSystemMessage('ó Conectando...');
+
+                const response = await fetch(`${BACKEND_URL}/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        roomName: ROOM_NAME,
+                        participantName: `desktop-${Date.now()}`
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error de conexión');
+
+                isConnected = true;
+                setState('idle');
+                addSystemMessage(' Conectado con Sandra');
+                updateStatusBar('Conectado', 'connected');
+            } catch (error) {
+                console.error('Error:', error);
+                addSystemMessage(`L Error: ${error.message}`);
+                updateStatusBar('Error de conexión', 'error');
+            } finally {
+                connectBtn.disabled = false;
+                updateUI();
+            }
+        }
+
+        /**
+         * Iniciar escucha
+         */
+        function startListening() {
+            if (!isConnected) {
+                addSystemMessage('L Debes conectar primero');
+                return;
+            }
+            if (recognition) {
+                transcription.textContent = 'Escuchando...';
+                transcription.classList.remove('interim', 'final');
+                recognition.start();
+            }
+        }
+
+        /**
+         * Detener escucha
+         */
+        function stopListening() {
+            if (recognition) {
+                recognition.abort();
+            }
+        }
+
+        /**
+         * Procesar mensaje
+         */
+        async function handleMessage(text) {
+            if (!text.trim()) return;
+
+            addMessage('user', text);
+            setState('processing');
+            updateStatusBar('Procesando...', 'idle');
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        roomName: ROOM_NAME
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error en respuesta');
+
+                const data = await response.json();
+                addMessage('assistant', data.response || data.text);
+
+                setState('speaking');
+                updateStatusBar('Sandra está hablando...', 'idle');
+
+                // Simular duración de audio
+                await new Promise(r => setTimeout(r, 2000 + text.length * 50));
+
+                setState('idle');
+                updateStatusBar('Listo', 'connected');
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('assistant', `L Error: ${error.message}`);
+                setState('error');
+                updateStatusBar('Error', 'error');
+            }
+        }
+
+        /**
+         * Enviar mensaje
+         */
+        function sendMessage() {
+            const text = textInput.value.trim();
+            if (text) {
+                textInput.value = '';
+                handleMessage(text);
+            }
+        }
+
+        /**
+         * Agregar mensaje
+         */
+        function addMessage(role, text) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${role}`;
+            messageEl.innerHTML = `
+                <div class="message-avatar">${role === 'user' ? '=d' : '>'}</div>
+                <div class="message-content">
+                    <div class="message-text">${escapeHtml(text)}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        /**
+         * Agregar mensaje del sistema
+         */
+        function addSystemMessage(text) {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message assistant';
+            messageEl.innerHTML = `
+                <div class="message-avatar">></div>
+                <div class="message-content">
+                    <div class="message-text">${escapeHtml(text)}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        /**
+         * Cambiar estado
+         */
+        function setState(newState) {
+            state = newState;
+            avatarStatus.textContent = {
+                'idle': 'Inactivo',
+                'listening': 'Escuchando',
+                'processing': 'Procesando',
+                'speaking': 'Hablando',
+                'error': 'Error'
+            }[newState] || 'Desconocido';
+            avatarStatus.className = `avatar-status ${newState}`;
+
+            // Activar indicadores
+            const indicators = document.querySelectorAll('.indicator');
+            indicators.forEach((ind, idx) => {
+                ind.classList.toggle('active', idx < (newState === 'idle' ? 1 : newState === 'listening' ? 2 : 3));
+            });
+
+            updateUI();
+        }
+
+        /**
+         * Actualizar UI
+         */
+        function updateUI() {
+            listenBtn.disabled = !isConnected || isListening;
+            stopBtn.disabled = !isListening;
+            textInput.disabled = !isConnected;
+            sendBtn.disabled = !isConnected || !textInput.value.trim();
+        }
+
+        /**
+         * Actualizar barra de estado
+         */
+        function updateStatusBar(text, status) {
+            statusBar.textContent = text;
+            statusBar.className = `status-bar ${status}`;
+        }
+
+        /**
+         * Escapar HTML
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Iniciar
+        init();
+    </script>
+</body>
+</html>
