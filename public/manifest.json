@@ -3,7 +3,7 @@
   "short_name": "Sandra IA",
   "description": "Inteligencia Artificial Galaxy Ultimate optimizada para iOS 14+ con soporte completo para iPhone Pro y iPad Pro - sandra.guestsvalencia.es",
   "version": "98.0.0",
-  "start_url": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html",
+  "start_url": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -89,7 +89,7 @@
       "name": "Nueva Conversación",
       "short_name": "Nueva Chat",
       "description": "Iniciar una nueva conversación con Sandra IA",
-      "url": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=new",
+      "url": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=new",
       "icons": [
         {
           "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiMwMGZmODgiLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5KsPC90ZXh0Pgo8L3N2Zz4=",
@@ -102,7 +102,7 @@
       "name": "Grabación de Voz",
       "short_name": "Voz",
       "description": "Iniciar grabación de voz directamente",
-      "url": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=voice",
+      "url": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=voice",
       "icons": [
         {
           "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiNmZjQ3NTciLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn46kPC90ZXh0Pgo8L3N2Zz4=",
@@ -115,7 +115,7 @@
       "name": "Subir Archivo",
       "short_name": "Archivo",
       "description": "Subir archivo o imagen para analizar",
-      "url": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=upload",
+      "url": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=upload",
       "icons": [
         {
           "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiM2NjdlZWEiLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5OOPC90ZXh0Pgo8L3N2Zz4=",
@@ -128,7 +128,7 @@
       "name": "Configuración",
       "short_name": "Config",
       "description": "Acceder a configuración y opciones",
-      "url": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=settings",
+      "url": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=settings",
       "icons": [
         {
           "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjAiIGZpbGw9IiNhYWFhYWEiLz4KPHRleHQgeD0iNDgiIHk9IjYwIiBmb250LXNpemU9IjM2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7impnvuI88L3RleHQ+Cjwvc3ZnPg==",
@@ -141,16 +141,16 @@
   "protocol_handlers": [
     {
       "protocol": "web+sandra",
-      "url": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=%s"
+      "url": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=%s"
     },
     {
       "protocol": "mailto",
-      "url": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=compose&to=%s"
+      "url": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=compose&to=%s"
     }
   ],
   "file_handlers": [
     {
-      "action": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=open",
+      "action": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=open",
       "accept": {
         "text/plain": [
           ".txt"
@@ -185,7 +185,7 @@
     }
   ],
   "share_target": {
-    "action": "http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html?action=share",
+    "action": "https://sandra.guestsvalencia.es/sandra-ia-mobile-galaxy-responsive.html?action=share",
     "method": "POST",
     "enctype": "multipart/form-data",
     "params": {
@@ -215,7 +215,7 @@
   },
   "prefer_related_applications": false,
   "related_applications": [],
-  "id": "http://localhost:8080/",
+  "id": "https://sandra.guestsvalencia.es/",
   "iarc_rating_id": "",
   "sandra_config": {
     "version": "98.0.0",
