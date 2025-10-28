@@ -1,3 +1,102 @@
+# ===== DEPENDENCIES =====
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ===== BUILD & DEPLOYMENT =====
 .netlify/
+dist/
+build/
+out/
+.next/
+.turbo/
+.vercel/
+
+# ===== ENVIRONMENT VARIABLES (CRITICAL SECURITY) =====
+# NEVER commit environment files with real credentials
 .env
+.env.local
+.env.*.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.staging
+.env.test
+.env.*.ts
+.env.*.js
+
+# ===== CLAUDE CODE SETTINGS (SECURITY) =====
+.claude/settings.local.json
+
+# ===== IDE & EDITOR FILES =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== LOGS & TEMP FILES =====
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+
+# ===== OS SPECIFIC =====
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+
+# ===== PROJECT SPECIFIC =====
+downloads/**/*.apk
+test-results/
+playwright-report/
+coverage/
+.turbopack/
+
+# ===== SENSITIVE FILES =====
+**/secret*
+**/credentials*
+*.key
+*.pem
+*.pfx
+*.p12
+.aws/credentials
+.ssh/
+private/
+
+# ===== GIT-RELATED =====
+.git/
+.gitmodules
+.gitattributes
+
+# ===== NODE/NPM =====
+.npm/
+.eslintcache
+.node_repl_history
+
+# ===== CACHE FILES =====
+.cache/
+*.cache
+.vuepress/dist
+
+# ===== BACKUP FILES =====
+*.bak
+*.backup
+*~
+*.swp
+
+# ===== SECURITY SCANNING =====
+# BFG backup files from git history cleanup
+*.bundle
+bfg-cache/
