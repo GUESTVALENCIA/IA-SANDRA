@@ -1,0 +1,185 @@
+================================================================================
+🚀 SANDRA IA 7.0 MOBILE - PASO A PASO NETLIFY SETUP
+================================================================================
+
+Tu sitio Netlify: sensational-pegasus-d56cc3
+
+================================================================================
+PASO 1: ENTRA EN NETLIFY
+================================================================================
+
+1. Abre: https://app.netlify.com
+2. Inicia sesión (o usa OAuth con GitHub)
+3. Busca el site "sensational-pegasus-d56cc3"
+4. Haz click
+
+
+================================================================================
+PASO 2: VAE A SETTINGS
+================================================================================
+
+En tu site, arriba a la derecha, verás un botón o menú:
+- Busca "Settings" o gear icon (⚙️)
+- Haz click
+
+
+================================================================================
+PASO 3: BUILD & DEPLOY → ENVIRONMENT
+================================================================================
+
+En el menú izquierdo:
+- Busca "Build & deploy"
+- Luego: "Environment"
+- Verás la sección "Environment variables"
+
+
+================================================================================
+PASO 4: AÑADE VARIABLES (Una a Una)
+================================================================================
+
+Haz click: "Add variable" (o similar)
+
+Para CADA variable:
+┌────────────────────────────────────────────────────────────┐
+│ KEY (nombre):        DEFAULT_MODE                         │
+│ VALUE (valor):       dev                                  │
+│ Botón:               Save                                 │
+└────────────────────────────────────────────────────────────┘
+
+Repite con TODAS estas (copia exacto):
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. DEFAULT_MODE = dev                                           │
+│ 2. DEFAULT_LOCALE = es-ES                                       │
+│ 3. GROQ_API_KEY = gsk_zeTkqxpQd5l1AGTT5LDfWGdyb3FYRgKt3VBgHG... │
+│ 4. GROQ_MODEL = llama-3.1-70b-versatile                         │
+│ 5. OPENAI_API_KEY = sk-proj-M0i_Na3z3I2jb0uvv_cixD1ViEVvV...   │
+│ 6. OPENAI_MODEL = gpt-4o                                        │
+│ 7. ELEVENLABS_API_KEY = sk_72e3c3e0c13f47e5b0c0a3c5f8e9c2d1   │
+│ 8. ELEVENLABS_VOICE_ID = 21m00Tcm4TlvDq8ikWAM                   │
+│ 9. CARTESIA_API_KEY = sk_car_67c5Tg8LMpR9G6unHvsvnw             │
+│10. CARTESIA_VOICE_ID = a0e99841-438c-4a64-b679-ae501e7d6091    │
+└─────────────────────────────────────────────────────────────────┘
+
+(Usa el archivo NETLIFY-ENV-VARS-SETUP.md para copiar valores exactos)
+
+
+================================================================================
+PASO 5: GUARDA (Save)
+================================================================================
+
+Al hacer click "Save", Netlify empezará a rebuildar automáticamente:
+
+En la sección "Deploys" verás:
+- 🔄 Building... (amarillo, esperando)
+- Después: ✅ Published (verde, listo!)
+
+
+================================================================================
+PASO 6: ESPERA 2-3 MINUTOS
+================================================================================
+
+Netlify compila y despliega:
+✅ Sensational-pegasus-d56cc3.netlify.app LIVE
+
+
+================================================================================
+PASO 7: INSTALA EN TU PHONE
+================================================================================
+
+iPhone (Safari):
+─────────────────
+1. Abre: https://sensational-pegasus-d56cc3.netlify.app
+2. Espera a que cargue (10-15 seg)
+3. Toca: Compartir (esquina inferior derecha)
+4. Busca y toca: "Añadir a pantalla de inicio"
+5. Nombre: Sandra (o lo que quieras)
+6. Toca: "Añadir"
+7. ¡PWA instalada en home! 🎉
+
+Android (Chrome):
+─────────────────
+1. Abre: https://sensational-pegasus-d56cc3.netlify.app
+2. Espera a que cargue
+3. Verás popup abajo: "Instalar" con ícono de app
+4. Toca: "Instalar"
+5. ¡PWA instalada! 🎉
+
+
+================================================================================
+PASO 8: PRUEBA SANDRA
+================================================================================
+
+Una vez instalada en home, abre la app y:
+
+1. 🎤 Toca el botón de micrófono
+2. ✅ Permite acceso al micrófono (popup)
+3. 💬 Di: "Hola Sandra"
+4. 👁️ Mira la pantalla:
+   ✅ Verás transcripción de lo que dijiste
+   ✅ Avatar circular (arriba) animará la "boca"
+   ✅ Sandra responderá por voz
+
+
+================================================================================
+PASO 9: PRUEBA BARGE-IN
+================================================================================
+
+Interrupciones (barge-in):
+
+1. Toca 🎤 (micrófono)
+2. Espera a que Sandra empiece a hablar
+3. MIENTRAS ella habla, tú empieza a hablar también
+4. Resultado:
+   ✅ Sandra PAUSA su voz (corta TTS)
+   ✅ Te ESCUCHA a ti
+   ✅ Responde a lo que dices
+
+
+================================================================================
+PASO 10: CAMBIAR MODO A PRODUCCIÓN (OPCIONAL)
+================================================================================
+
+Si quieres cambiar de GROQ (dev) a OpenAI GPT-4 (prod):
+
+1. Vuelve a Netlify → Environment variables
+2. Edita: DEFAULT_MODE = prod (era "dev")
+3. Save → Rebuilda automáticamente
+4. Ahora usará OpenAI GPT-4o (más potente, más caro)
+
+
+================================================================================
+✅ CHECKLIST FINAL
+================================================================================
+
+□ Abrí Netlify.com
+□ Encontré site "sensational-pegasus-d56cc3"
+□ Entré a Settings → Build & deploy → Environment
+□ Añadí todas las 10 variables de entorno
+□ Hice click "Save" en cada una
+□ Deploy está verde ✅ en la sección "Deploys"
+□ Abrí la PWA en iPhone/Android
+□ Instalé la app en home
+□ Abrí la app
+□ Toqué 🎤 y dije "Hola Sandra"
+□ Escuché respuesta de Sandra
+□ Probé barge-in (interrumpir mientras habla)
+□ TODO FUNCIONA 🎉
+
+
+================================================================================
+🎉 ¡LISTO PARA SANDRITA!
+================================================================================
+
+Sandra IA 7.0 Mobile está LIVE en tu iPhone/Android.
+
+Próximos pasos (cuando digas):
+- LiveKit + avatar vídeo
+- Guardian Protocol + comandos SOS
+- Multilenguaje (ES/EN/FR)
+- Roles orquestados (Recepcionista, Developer, Coach)
+
+
+Para Sandrita ❤️
+CEO Clayton Thomas
+2025-10-28
