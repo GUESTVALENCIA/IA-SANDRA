@@ -6,6 +6,35 @@ const headers = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
+// TTS MP3 - API gratuita confiable
+async function ttsmp3TTS(text) {
+  // Using ttsmp3.com free API - no key required
+  const params = new URLSearchParams({
+    textspeak: text,
+    lang: 'es',  // Spanish
+    speed: 0.8
+  });
+
+  const resp = await fetch('https://ttsmp3.com/api/convert?textspeak=' + encodeURIComponent(text) + '&lang=es&speed=0.8', {
+    method: 'GET'
+  });
+
+  if (!resp.ok) {
+    const error = await resp.text();
+    throw new Error(`TTS MP3 ${resp.status}: ${error}`);
+  }
+
+  const data = await resp.json();
+  if (!data.URL) throw new Error('No audio URL in response');
+
+  // Fetch the audio file
+  const audioResp = await fetch(data.URL);
+  if (!audioResp.ok) throw new Error(`Failed to fetch audio: ${audioResp.status}`);
+
+  const buf = Buffer.from(await audioResp.arrayBuffer());
+  return { mime: 'audio/mpeg', buf };
+}
+
 async function elevenlabsTTS(text) {
   const key = process.env.ELEVENLABS_API_KEY;
   const voice = process.env.ELEVENLABS_VOICE_ID;
@@ -110,19 +139,33 @@ exports.handler = async (event) => {
 
     let result;
 
-    // Try ElevenLabs first
+    // Multi-provider TTS fallback chain
+    // Tier 1: TTS MP3 (free, reliable) 💚
+    // Tier 2: ElevenLabs (premium)
+    // Tier 3: Cartesia (backup)
+
     try {
-      result = await elevenlabsTTS(text);
-      console.log('✅ TTS generated with ElevenLabs');
-    } catch (elError) {
-      console.log('ElevenLabs failed, trying Cartesia:', elError.message);
-      // Fallback to Cartesia
+      console.log('🎤 Tier 1: Trying TTS MP3 (free)...');
+      result = await ttsmp3TTS(text);
+      console.log('✅ TTS generated with TTS MP3');
+    } catch (mp3Error) {
+      console.warn('TTS MP3 failed:', mp3Error.message);
+
       try {
-        result = await cartesiaTTS(text);
-        console.log('✅ TTS generated with Cartesia (fallback)');
-      } catch (ctError) {
-        console.error('Both TTS providers failed:', ctError.message);
-        throw new Error(`All TTS providers failed: ${ctError.message}`);
+        console.log('🎤 Tier 2: Trying ElevenLabs...');
+        result = await elevenlabsTTS(text);
+        console.log('✅ TTS generated with ElevenLabs');
+      } catch (elError) {
+        console.warn('ElevenLabs failed:', elError.message);
+
+        try {
+          console.log('🎤 Tier 3: Trying Cartesia...');
+          result = await cartesiaTTS(text);
+          console.log('✅ TTS generated with Cartesia');
+        } catch (ctError) {
+          console.error('❌ All TTS providers failed');
+          throw new Error(`All TTS failed - TTS MP3: ${mp3Error.message.slice(0,40)} | ElevenLabs: ${elError.message.slice(0,40)} | Cartesia: ${ctError.message.slice(0,40)}`);
+        }
       }
     }
 
