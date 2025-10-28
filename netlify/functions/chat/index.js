@@ -53,7 +53,7 @@ exports.handler = async (event) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
+            model: process.env.GROQ_MODEL || 'mixtral-8x7b-32768',
             messages: msgs,
             temperature: 0.7,
             max_tokens: 500
