@@ -45,7 +45,7 @@ async function ttsmp3TTS(text) {
   }
 }
 
-// Tier 2: Cartesia - Premium TTS backup
+// Tier 2: Cartesia - Premium TTS backup (using /tts/bytes endpoint v2024-06-10)
 async function cartesiaTTS(text) {
   try {
     console.log('🎤 Tier 2: Cartesia - Converting to speech...');
@@ -57,24 +57,26 @@ async function cartesiaTTS(text) {
       throw new Error('Cartesia API key or voice ID not configured');
     }
 
-    const resp = await fetch('https://api.cartesia.ai/tts/stream', {
+    const resp = await fetch('https://api.cartesia.ai/tts/bytes', {
       method: 'POST',
       headers: {
-        'x-api-key': key,
+        'Cartesia-Version': '2024-06-10',
+        'X-API-Key': key,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model_id: 'sonic-english',
+        model_id: 'sonic-2',
         transcript: text,
         voice: {
           mode: 'id',
           id: voice
         },
         output_format: {
-          container: 'raw',
-          encoding: 'pcm_s16le',
-          sample_rate: 16000
-        }
+          container: 'wav',
+          encoding: 'pcm_f32le',
+          sample_rate: 44100
+        },
+        speed: 'normal'
       }),
       timeout: 30000
     });
