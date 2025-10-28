@@ -344,7 +344,7 @@ const kpiMonitoring = {
 // Análisis de sesiones en tiempo real
 const userBehaviorAnalysis = {
   session_analytics: 'real_time',
-  funnel_analysis: 'automatic',
+  funnel_YOUR_ELEVENLABS_KEY_HERE: 'automatic',
   cohort_analysis: 'dynamic',
   churn_prediction: 'ml_powered'
 };

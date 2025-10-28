@@ -1,0 +1,140 @@
+name: API Key Expiration Monitor
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM UTC
+  workflow_dispatch:
+
+jobs:
+  check-expiration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check key expiration dates
+        id: expiration
+        run: |
+          node scripts/key-expiration-monitor.js
+          DAYS_UNTIL_EXPIRATION=$(node -e "const m = require('./scripts/key-expiration-monitor.js'); m.checkExpiration().then(r => console.log(r.daysUntilExpiration))")
+          echo "days_until_expiration=$DAYS_UNTIL_EXPIRATION" >> $GITHUB_OUTPUT
+
+      - name: Alert if expiring soon
+        if: steps.expiration.outputs.days_until_expiration < 14
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "⚠️ API Keys Expiring Soon",
+              "attachments": [{
+                "color": "${{ steps.expiration.outputs.days_until_expiration < 7 && 'danger' || 'warning' }}",
+                "fields": [
+                  {
+                    "title": "Days Until Expiration",
+                    "value": "${{ steps.expiration.outputs.days_until_expiration }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Action Required",
+                    "value": "${{ steps.expiration.outputs.days_until_expiration < 7 && 'Rotate keys immediately!' || 'Schedule key rotation soon' }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Repository",
+                    "value": "${{ github.repository }}",
+                    "short": true
+                  }
+                ]
+              }]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Create expiration report
+        run: |
+          echo "# Key Expiration Report" > expiration-report.md
+          echo "Date: $(date)" >> expiration-report.md
+          echo "Days until expiration: ${{ steps.expiration.outputs.days_until_expiration }}" >> expiration-report.md
+          echo "" >> expiration-report.md
+
+          if [ "${{ steps.expiration.outputs.days_until_expiration }}" -lt 7 ]; then
+            echo "## 🚨 CRITICAL: Keys expire in less than a week!" >> expiration-report.md
+            echo "Immediate rotation required." >> expiration-report.md
+          elif [ "${{ steps.expiration.outputs.days_until_expiration }}" -lt 14 ]; then
+            echo "## ⚠️ WARNING: Keys expire soon" >> expiration-report.md
+            echo "Schedule rotation within the next few days." >> expiration-report.md
+          else
+            echo "## ✅ Keys are valid" >> expiration-report.md
+            echo "No immediate action required." >> expiration-report.md
+          fi
+
+      - name: Upload expiration report
+        uses: actions/upload-artifact@v3
+        with:
+          name: expiration-report
+          path: expiration-report.md
+
+      - name: Trigger automatic rotation if critical
+        if: steps.expiration.outputs.days_until_expiration <= 3
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'key-rotation.yml',
+              ref: 'main',
+              inputs: {
+                emergency: 'true'
+              }
+            })
+            console.log('Emergency rotation triggered!')
+
+  verify-services:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Test all API services
+        id: test
+        run: |
+          npm run test:api-keys
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CARTESIA_API_KEY: ${{ secrets.CARTESIA_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        continue-on-error: true
+
+      - name: Report service status
+        if: always()
+        run: |
+          echo "# Service Status Report" > service-status.md
+          echo "Date: $(date)" >> service-status.md
+          echo "Test Result: ${{ steps.test.outcome }}" >> service-status.md
+
+      - name: Alert if services are down
+        if: steps.test.outcome == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: |
+            ❌ API Service Check Failed
+            Some API services may be down or keys may be invalid.
+            Check the workflow logs for details.
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

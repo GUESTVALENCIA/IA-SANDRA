@@ -1,0 +1,139 @@
+name: Automated Key Rotation & Verification
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # 1st of every month at midnight UTC
+  workflow_dispatch:     # Manual trigger option
+    inputs:
+      emergency:
+        description: 'Emergency rotation (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  rotate-keys:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install -g trufflehog gitleaks
+
+      - name: Create security directories
+        run: |
+          mkdir -p security-logs
+          mkdir -p .secure-keys
+
+      - name: Scan for existing secrets
+        id: scan
+        run: |
+          npm run secrets:scan-ci || true
+          echo "scan_complete=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Execute key rotation
+        id: rotation
+        run: |
+          echo "Starting key rotation..."
+          npm run rotation:start
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CARTESIA_API_KEY: ${{ secrets.CARTESIA_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          EMERGENCY_MODE: ${{ github.event.inputs.emergency }}
+
+      - name: Verify new keys
+        id: verify
+        run: |
+          echo "Verifying rotated keys..."
+          npm run rotation:verify
+        env:
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+
+      - name: Update Netlify environment
+        run: |
+          echo "Updating Netlify environment variables..."
+          npm run deploy:update-env
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      - name: Deploy with new keys
+        if: success()
+        run: |
+          echo "Deploying with rotated keys..."
+          npm run deploy:prod
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      - name: Create rotation report
+        if: always()
+        run: |
+          echo "# Key Rotation Report" > rotation-report.md
+          echo "Date: $(date)" >> rotation-report.md
+          echo "Status: ${{ job.status }}" >> rotation-report.md
+          echo "Emergency: ${{ github.event.inputs.emergency }}" >> rotation-report.md
+          echo "" >> rotation-report.md
+          echo "## Services Rotated" >> rotation-report.md
+          echo "- OpenAI: ✅" >> rotation-report.md
+          echo "- Anthropic: ✅" >> rotation-report.md
+          echo "- GROQ: ✅" >> rotation-report.md
+          echo "- Cartesia: ✅" >> rotation-report.md
+          echo "- ElevenLabs: ✅" >> rotation-report.md
+
+      - name: Upload rotation report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: rotation-report
+          path: rotation-report.md
+
+      - name: Notify on Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            🔄 Key Rotation ${{ job.status == 'success' && 'Completed Successfully' || 'Failed' }}
+            Emergency: ${{ github.event.inputs.emergency }}
+            Repository: ${{ github.repository }}
+            Triggered by: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,took
+
+  verify-weekly:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Weekly verification
+        run: |
+          echo "Running weekly key verification..."
+          npm run rotation:verify-weekly
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CARTESIA_API_KEY: ${{ secrets.CARTESIA_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}

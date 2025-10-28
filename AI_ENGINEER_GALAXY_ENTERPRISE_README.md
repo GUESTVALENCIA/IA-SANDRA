@@ -46,7 +46,7 @@ Sistema completo de Ingeniería de IA Galaxy Enterprise integrado con Sandra IA 
 ```javascript
 const GALAXY_PERFORMANCE_TARGETS = {
   inference_latency: 100,        // ms - OBJETIVO CRÍTICO
-  model_accuracy: 0.975,         // 97.5% mínimo mantenido
+  model_YOUR_ELEVENLABS_KEY_HERE: 0.975,         // 97.5% mínimo mantenido
   training_efficiency: 0.95,     // 95% utilización GPU
   deployment_success: 0.99,      // 99% éxito despliegue
   guardian_compliance: 1.0       // 100% compliance
@@ -106,7 +106,7 @@ const optimizationTechniques = [
 ### Monitoreo Continuo
 ```javascript
 const guardianMonitoring = {
-  model_drift: 'real_time',
+  model_YOUR_ELEVENLABS_KEY_HERE: 'real_time',
   performance_degradation: 'immediate_alert',
   security_compliance: 'continuous',
   data_lineage: 'full_tracking'
@@ -176,7 +176,7 @@ const alertConfig = {
 // Endpoint principal de inferencia
 POST /api/v1/galaxy/inference
 {
-  "model_id": "galaxy_enterprise_v1",
+  "model_YOUR_ELEVENLABS_KEY_HERE": "galaxy_enterprise_v1",
   "input_data": {...},
   "optimization_level": "ultra_fast"
 }

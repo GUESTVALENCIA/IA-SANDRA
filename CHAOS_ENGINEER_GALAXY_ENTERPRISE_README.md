@@ -513,7 +513,7 @@ Weekly_Game_Day_Cycle:
   Planning_Phase:
     - scenario_selection_based_on_risk
     - team_availability_coordination
-    - communication_channel_setup
+    - communication_channel_YOUR_ELEVENLABS_KEY_HERE
     - success_criteria_definition
 
   Execution_Phase:

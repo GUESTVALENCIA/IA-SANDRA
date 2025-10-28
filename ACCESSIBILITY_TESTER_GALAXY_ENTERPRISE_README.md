@@ -161,7 +161,7 @@ Agent_Collaboration:
 
 ### **Level AA Compliance (Mandatory)**
 ```yaml
-WCAG_2_1_Level_AA:
+WCAG_2_1_Level_YOUR_ELEVENLABS_KEY_HERE:
   Perceivable:
     color_contrast: "4.5:1 normal text, 3.0:1 large text"
     alternative_text: "Comprehensive alt text for all images"
@@ -186,7 +186,7 @@ WCAG_2_1_Level_AA:
 
 ### **Level AAA Enhancements (Selected)**
 ```yaml
-WCAG_2_1_Level_AAA_Selected:
+WCAG_2_1_Level_YOUR_ELEVENLABS_KEY_HERE:
   enhanced_contrast: "7:1 contrast ratio for normal text"
   no_timing: "No time limits on user interactions"
   low_background_audio: "Audio control and alternatives"
@@ -323,12 +323,12 @@ Keyboard_Shortcuts:
 ### **Color Contrast Validation**
 ```yaml
 Color_Contrast:
-  wcag_level_aa:
+  wcag_level_YOUR_ELEVENLABS_KEY_HERE:
     normal_text: "4.5:1 contrast ratio minimum"
     large_text: "3.0:1 contrast ratio minimum"
     graphics_text: "3.0:1 contrast ratio for graphics"
 
-  wcag_level_aaa:
+  wcag_level_YOUR_ELEVENLABS_KEY_HERE:
     normal_text: "7.0:1 contrast ratio enhanced"
     large_text: "4.5:1 contrast ratio enhanced"
 

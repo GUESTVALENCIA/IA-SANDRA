@@ -116,7 +116,7 @@ spec:
 ```sql
 -- Model Registry Schema
 CREATE TABLE galaxy_models (
-    model_id UUID PRIMARY KEY,
+    model_YOUR_ELEVENLABS_KEY_HERE UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     version VARCHAR(50) NOT NULL,
     architecture JSONB NOT NULL,
@@ -130,7 +130,7 @@ CREATE TABLE galaxy_models (
 -- Training Jobs Schema
 CREATE TABLE galaxy_training_jobs (
     job_id UUID PRIMARY KEY,
-    model_id UUID REFERENCES galaxy_models(model_id),
+    model_YOUR_ELEVENLABS_KEY_HERE UUID REFERENCES galaxy_models(model_YOUR_ELEVENLABS_KEY_HERE),
     config JSONB NOT NULL,
     status VARCHAR(50) DEFAULT 'QUEUED',
     start_time TIMESTAMP,
@@ -143,7 +143,7 @@ CREATE TABLE galaxy_training_jobs (
 -- Performance Monitoring Schema
 CREATE TABLE galaxy_performance_logs (
     log_id UUID PRIMARY KEY,
-    model_id UUID REFERENCES galaxy_models(model_id),
+    model_YOUR_ELEVENLABS_KEY_HERE UUID REFERENCES galaxy_models(model_YOUR_ELEVENLABS_KEY_HERE),
     timestamp TIMESTAMP DEFAULT NOW(),
     latency_ms INTEGER NOT NULL,
     accuracy DECIMAL(5,4),
@@ -229,9 +229,9 @@ const GALAXY_DASHBOARD_CONFIG = {
   alerts: {
     channels: ['slack', 'email', 'sms', 'webhook'],
     escalation_matrix: {
-      level_1: ['ai_engineer', 'ops_team'],
-      level_2: ['lead_ai', 'cto'],
-      level_3: ['ceo', 'emergency_team']
+      level_YOUR_ELEVENLABS_KEY_HERE: ['ai_engineer', 'ops_team'],
+      level_YOUR_ELEVENLABS_KEY_HERE: ['lead_ai', 'cto'],
+      level_YOUR_ELEVENLABS_KEY_HERE: ['ceo', 'emergency_team']
     }
   }
 };
@@ -319,7 +319,7 @@ Galaxy_Testing_Pipeline:
   unit_tests:
     coverage_requirement: 95%
     frameworks: [jest, pytest, go_test]
-    parallel_execution: true
+    parallel_YOUR_ELEVENLABS_KEY_HERE: true
 
   integration_tests:
     api_tests: comprehensive
@@ -357,7 +357,7 @@ Galaxy_Testing_Pipeline:
       "convergence_speed": "2.3x_baseline",
       "energy_efficiency": "1.8x_baseline"
     },
-    "model_accuracy": {
+    "model_YOUR_ELEVENLABS_KEY_HERE": {
       "post_quantization": "97.8%",
       "post_pruning": "97.6%",
       "post_distillation": "98.1%",
@@ -444,7 +444,7 @@ Galaxy_Enterprise_SLA:
   performance:
     inference_latency_p95: 100ms
     api_response_time_p95: 50ms
-    model_accuracy_minimum: 97.5%
+    model_YOUR_ELEVENLABS_KEY_HERE: 97.5%
 
   support:
     response_time_critical: 15_minutes

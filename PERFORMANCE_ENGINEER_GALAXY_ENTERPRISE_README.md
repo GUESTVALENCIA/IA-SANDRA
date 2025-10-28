@@ -287,19 +287,19 @@ Visualization_Engine:
 ```yaml
 ML_Models:
   Bottleneck_Predictor:
-    model_type: "time_series_forecasting"
+    model_YOUR_ELEVENLABS_KEY_HERE: "time_series_forecasting"
     features: ["cpu_usage", "memory_usage", "response_time", "throughput"]
     prediction_horizon: "1 hour"
     accuracy_target: "90%"
 
   Scaling_Predictor:
-    model_type: "reinforcement_learning"
+    model_YOUR_ELEVENLABS_KEY_HERE: "reinforcement_learning"
     features: ["load_metrics", "resource_usage", "performance_kpis"]
     optimization_goal: "cost_performance_ratio"
     learning_rate: "0.01"
 
   Performance_Tuner:
-    model_type: "bayesian_optimization"
+    model_YOUR_ELEVENLABS_KEY_HERE: "bayesian_optimization"
     parameters: ["thread_pools", "cache_sizes", "timeouts"]
     optimization_objective: "multi_objective"
     safety_constraints: true

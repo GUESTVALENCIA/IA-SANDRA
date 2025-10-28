@@ -157,7 +157,7 @@ const crossAgentDebuggingIntegration = {
 
   agent_249_ai_engineer: {
     coordination: "AI_DEBUGGING_OPTIMIZATION",
-    model_debugging: "AUTOMATED",
+    model_YOUR_ELEVENLABS_KEY_HERE: "AUTOMATED",
     training_debugging: "INTEGRATED"
   }
 };

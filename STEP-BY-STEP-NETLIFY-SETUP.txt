@@ -51,13 +51,13 @@ Repite con TODAS estas (copia exacto):
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. DEFAULT_MODE = dev                                           │
 │ 2. DEFAULT_LOCALE = es-ES                                       │
-│ 3. GROQ_API_KEY = gsk_zeTkqxpQd5l1AGTT5LDfWGdyb3FYRgKt3VBgHG... │
+│ 3. GROQ_API_KEY = gsk_YOUR_GROQ_API_KEY_HERE... │
 │ 4. GROQ_MODEL = llama-3.1-70b-versatile                         │
-│ 5. OPENAI_API_KEY = sk-proj-M0i_Na3z3I2jb0uvv_cixD1ViEVvV...   │
+│ 5. OPENAI_API_KEY = sk-proj-YOUR_OPENAI_API_KEY_HERE...   │
 │ 6. OPENAI_MODEL = gpt-4o                                        │
 │ 7. ELEVENLABS_API_KEY = sk_72e3c3e0c13f47e5b0c0a3c5f8e9c2d1   │
 │ 8. ELEVENLABS_VOICE_ID = 21m00Tcm4TlvDq8ikWAM                   │
-│ 9. CARTESIA_API_KEY = sk_car_67c5Tg8LMpR9G6unHvsvnw             │
+│ 9. CARTESIA_API_KEY = sk_car_YOUR_CARTESIA_API_KEY_HERE             │
 │10. CARTESIA_VOICE_ID = a0e99841-438c-4a64-b679-ae501e7d6091    │
 └─────────────────────────────────────────────────────────────────┘
 

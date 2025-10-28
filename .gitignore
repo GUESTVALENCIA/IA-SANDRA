@@ -100,3 +100,99 @@ private/
 # BFG backup files from git history cleanup
 *.bundle
 bfg-cache/
+
+
+# ===== SECURITY - NEVER COMMIT =====
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.template
+*.env
+env/
+.envrc
+
+# API Keys and Secrets
+**/apikeys/
+**/secrets/
+**/credentials/
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+*.crt
+*.cer
+*.der
+
+# Sensitive configuration
+config/production.json
+config/prod.json
+**/config/secrets.*
+secrets.json
+secrets.yaml
+secrets.yml
+
+# Authentication tokens
+.netlify/
+.vercel/
+.firebase/
+.auth/
+tokens/
+*.token
+
+# Private keys
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+*.ppk
+
+# Cloud credentials
+.aws/
+.gcp/
+.azure/
+credentials.json
+serviceAccount.json
+service-account-*.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+dump.sql
+
+# Logs that might contain secrets
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE and editor files that might cache secrets
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.sublime-workspace
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+*~
+
+# Security audit files
+security-logs/
+audit-logs/
+*.audit
+
+# Temporary security files
+.env.secure
+.env.rotated
+.env.compromised
+
+
+# Security - Auto-added by setup
+.secure-keys/

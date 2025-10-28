@@ -379,7 +379,7 @@ Cross_Agent_Financial_Status:
     status: "TRADING_DEBUG_ACTIVE"
     coordination: "INTEGRATED"
     performance_debugging: "AUTOMATED"
-    model_debugging: "COORDINATED"
+    model_YOUR_ELEVENLABS_KEY_HERE: "COORDINATED"
 
   Compliance_Financial_256:
     status: "FINANCIAL_COMPLIANCE_VALIDATED"

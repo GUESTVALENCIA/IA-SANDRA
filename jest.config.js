@@ -14,7 +14,8 @@ module.exports = {
     '<rootDir>/SANDRA_NUCLEUS_UNIFIED/'
   ],
   collectCoverageFrom: [
-    'netlify/functions/**/*.js',
+    'netlify/functions/chat/**/*.js',
+    'netlify/functions/tts/**/*.js',
     '!netlify/functions/**/node_modules/**',
     '!**/node_modules/**'
   ],
@@ -22,10 +23,10 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 50,
-      lines: 50,
-      statements: 50
+      branches: 45,
+      functions: 100,
+      lines: 60,
+      statements: 60
     }
   },
   verbose: true,

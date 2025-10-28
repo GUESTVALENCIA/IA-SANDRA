@@ -149,16 +149,16 @@ Sandra IA 7.0 es la **COO (Chief Operations Officer)** de GuestsValencia que orq
 ## 🏗️ TECH STACK COMPLETO
 
 ### Voice & Audio
-- **TTS Primario:** Cartesia (sk_car_67c5Tg8LMpR9G6unHvsvnw)
+- **TTS Primario:** Cartesia (sk_car_YOUR_CARTESIA_API_KEY_HERE)
 - **TTS Fallback:** ElevenLabs
-- **STT Primario:** Deepgram (30e9dbaec29dcde1b23a8bd9de31438c74f23522)
+- **STT Primario:** Deepgram (YOUR_DEEPGRAM_API_KEY_HERE)
 - **STT Fallback:** Whisper
 - **Wake Word:** "Hola Sandra"
 - **Barge-in:** Detecta interrupciones y baja volumen remoto
 
 ### Avatar & Video
 - **HeyGen:** Avatar 4K con lip-sync
-  - API Key: M2IzYzcyOGY1ZmFhNGI5YmE5NzBlZTFiNDhmOTc3MDMtMTc1MzU4MDA1OA==
+  - API Key: YOUR_HEYGEN_API_KEY_HERE
   - Avatar ID: a7a7e63f00a74ff984d4b43f984c438c
 - **Renderizado:** Three.js + WebGL
 - **Sincronización:** Visemes en tiempo real
@@ -194,7 +194,7 @@ Sandra IA 7.0 es la **COO (Chief Operations Officer)** de GuestsValencia que orq
 ### Deployment & Hosting
 - **Netlify:** Hosting principal
   - Site: sensational-pegasus-d56cc3
-  - Token: nfp_BguXWY1a87dAj2hLJvB2wy5ndvvkkCkm0b60
+  - Token: nfp_YOUR_NETLIFY_TOKEN_HERE
 - **GitHub:** Control de versiones
   - Repo: https://github.com/GUESTVALENCIA/guestsvalencia-site
 - **Dominio:** GuestsValencia.es
@@ -325,20 +325,20 @@ Usuario Habla → Deepgram STT → GPT-4o → Cartesia TTS → Sandra Responde
 ### Variables Críticas
 ```bash
 # Voice & Audio
-CARTESIA_API_KEY=sk_car_67c5Tg8LMpR9G6unHvsvnw
-DEEPGRAM_API_KEY=30e9dbaec29dcde1b23a8bd9de31438c74f23522
+CARTESIA_API_KEY=sk_car_YOUR_CARTESIA_API_KEY_HERE
+DEEPGRAM_API_KEY=YOUR_DEEPGRAM_API_KEY_HERE
 
 # Avatar
-HEYGEN_API_KEY=M2IzYzcyOGY1ZmFhNGI5YmE5NzBlZTFiNDhmOTc3MDMtMTc1MzU4MDA1OA==
+HEYGEN_API_KEY=YOUR_HEYGEN_API_KEY_HERE
 HEYGEN_AVATAR_ID=a7a7e63f00a74ff984d4b43f984c438c
 
 # AI
-OPENAI_API_KEY=sk-proj-M0i_Na3z3I2jb0uvv_cixD1ViEVvV24HEeAgli8hY...
+OPENAI_API_KEY=sk-proj-YOUR_OPENAI_API_KEY_HERE...
 OPENAI_MODEL_DEFAULT=gpt-4o
-ANTHROPIC_API_KEY=sk-ant-api03-ntbK9IgcsCwmdrbaFCBFf36gqI...
+ANTHROPIC_API_KEY=sk-ant-YOUR_ANTHROPIC_API_KEY_HERE...
 
 # Deployment
-NETLIFY_AUTH_TOKEN=nfp_BguXWY1a87dAj2hLJvB2wy5ndvvkkCkm0b60
+NETLIFY_AUTH_TOKEN=nfp_YOUR_NETLIFY_TOKEN_HERE
 NETLIFY_SITE_SLUG=sensational-pegasus-d56cc3
 
 # Business

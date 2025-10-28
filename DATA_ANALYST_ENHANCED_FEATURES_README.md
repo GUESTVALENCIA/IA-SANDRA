@@ -201,7 +201,7 @@ Federated_Performance:
   cross_org_query_latency: 1800ms_average
   privacy_computation_overhead: 15%_maximum
   compliance_verification: 89ms_real_time
-  federated_model_accuracy: 96%_vs_centralized
+  federated_model_YOUR_ELEVENLABS_KEY_HERE: 96%_vs_centralized
 ```
 
 ## 🧠 AI Enhancement Details

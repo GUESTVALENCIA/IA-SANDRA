@@ -524,7 +524,7 @@ Galaxy_Analytics_Testing:
   unit_tests:
     coverage_requirement: 95%
     frameworks: ["jest", "pytest", "go_test"]
-    ai_model_testing: "comprehensive"
+    ai_model_YOUR_ELEVENLABS_KEY_HERE: "comprehensive"
 
   integration_tests:
     api_testing: "comprehensive"
@@ -643,7 +643,7 @@ Cost_Optimization:
 
   storage_optimization:
     data_tiering: "intelligent_tiering"
-    compression: "zstd_level_3"
+    compression: "zstd_level_YOUR_ELEVENLABS_KEY_HERE"
     deduplication: "content_aware"
     lifecycle_management: "automated"
 
