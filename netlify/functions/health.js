@@ -33,6 +33,11 @@ exports.handler = async (event, context) => {
       performance: {
         memory: process.memoryUsage ? process.memoryUsage() : 'unknown',
         cpu: 'unknown'
+      },
+      env: {
+        // Only expose non-sensitive configuration
+        // NEVER expose actual API keys in HTTP responses
+        HEYGEN_AVATAR_ID: process.env.HEYGEN_AVATAR_ID ? '***' : 'not-configured'
       }
     };
 
