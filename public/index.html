@@ -28,9 +28,72 @@
 
   <!-- Description -->
   <meta name="description" content="Sandra IA 7.0 - Asistente conversacional multimodal con visión, voz y Barge-In">
+
+  <!-- HEYGEN VIDEO AVATAR STYLES -->
+  <style>
+    /* HeyGen Video Avatar Container */
+    #videoAvatarContainer {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #videoAvatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    /* Video Toggle Button */
+    #videoToggle {
+      position: fixed;
+      top: 270px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      z-index: 101;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #videoToggle:hover {
+      transform: translateX(-50%) scale(1.1);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    #videoToggle:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+
+    /* Hide circular avatar when video mode active */
+    #avatarCircle {
+      display: flex;
+    }
+  </style>
 </head>
 <body>
+  <!-- Avatar scripts - LOAD BEFORE sandra-mobile.js -->
   <script src="/js/avatar-sync.js"></script>
+  <script src="/js/heygen-integration.js"></script>
   <script src="/js/sandra-mobile.js"></script>
 
   <!-- Service Worker Registration -->

@@ -8,11 +8,20 @@
   document.body.innerHTML = `
     <div class="container">
       <div class="header">
-        <div class="avatar">
+        <!-- AVATAR CONTAINER - Circle mode -->
+        <div class="avatar" id="avatarCircle">
           <img id="avatar-img" src="/img/avatar-sandra.png" alt="Sandra avatar"/>
           <div class="pulse"></div>
           <div class="mouth" id="mouth"></div>
         </div>
+
+        <!-- HEYGEN VIDEO AVATAR CONTAINER - Video mode -->
+        <div id="videoAvatarContainer" style="display: none;">
+          <video id="videoAvatar" autoplay playsinline muted></video>
+        </div>
+
+        <!-- VIDEO TOGGLE BUTTON - Switch between modes -->
+        <button id="videoToggle" title="Activar avatar video HeyGen" onclick="toggleVideoMode()">📹</button>
         <div>
           <div class="title">Sandra IA · Conversación</div>
 
@@ -826,6 +835,23 @@
     }
   }
   async function ttsSpeak(text){
+    // HEYGEN INTEGRATION: Use HeyGen video avatar when active
+    if (typeof window.isVideoMode === 'function' && window.isVideoMode()) {
+      console.log('[Sandra] Using HeyGen video avatar for speech');
+
+      // Use HeyGen speak with lipsync
+      if (typeof window.heygenSpeak === 'function') {
+        try {
+          await window.heygenSpeak(text);
+          return; // Skip regular TTS
+        } catch (error) {
+          console.error('[Sandra] HeyGen speak failed, falling back to TTS:', error);
+          // Continue with regular TTS below
+        }
+      }
+    }
+
+    // REGULAR TTS (ElevenLabs/Cartesia)
     const langConfig = getCurrentLanguageConfig();
 
     // ENTERPRISE: Timeout controller (10s)
