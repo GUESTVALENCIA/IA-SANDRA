@@ -592,6 +592,70 @@ textarea::-webkit-scrollbar-thumb {
   border-color: var(--error-light);
 }
 
+/* WAKE WORD BUTTON - GALAXY LEVEL FEATURE */
+.wake-btn {
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--accent-violet);
+  color: var(--accent-violet);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  flex-grow: 0;
+  position: relative;
+}
+
+.wake-btn:hover {
+  background: var(--accent-violet);
+  border-color: var(--accent-violet);
+  color: var(--text-inverse);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(123, 104, 238, 0.3);
+}
+
+.wake-btn:active {
+  transform: scale(0.95);
+}
+
+/* Wake word active state - Pulsating */
+.wake-btn.active {
+  background: var(--accent-violet);
+  border-color: var(--accent-violet);
+  color: var(--text-inverse);
+  box-shadow: 0 0 0 0 rgba(123, 104, 238, 0.7);
+  animation: wake-word-pulse 2s infinite;
+}
+
+@keyframes wake-word-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(123, 104, 238, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(123, 104, 238, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(123, 104, 238, 0);
+  }
+}
+
+.wake-btn.active:hover {
+  transform: scale(1.05);
+}
+
+.wake-icon {
+  font-size: 1.2rem;
+}
+
 /* SEND BUTTON - Alineado derecha, flex: none */
 .send-btn {
   background: var(--gradient-green);
@@ -626,6 +690,7 @@ textarea::-webkit-scrollbar-thumb {
 
 .send-btn:disabled,
 .voice-btn:disabled,
+.wake-btn:disabled,
 .clip-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -880,6 +945,7 @@ input[type="file"] {
 @media (pointer: coarse) {
   .clip-btn,
   .voice-btn,
+  .wake-btn,
   .send-btn {
     min-width: 44px;
     min-height: 44px;
@@ -917,6 +983,7 @@ input[type="file"] {
   /* Botones más compactos en pantallas pequeñas */
   .clip-btn,
   .voice-btn,
+  .wake-btn,
   .send-btn {
     width: 40px;
     height: 40px;
@@ -1007,6 +1074,7 @@ input:focus-visible {
   .clip-btn,
   .clip-menu,
   .voice-btn,
+  .wake-btn,
   .send-btn,
   .install,
   .wave {
@@ -1026,4 +1094,5 @@ input:focus-visible {
    END OF GALAXY ENTERPRISE PRO STYLES
    ESQUEMA AZUL CIELO CLARO PROFESIONAL APLICADO
    MULTIMODAL BAR INTEGRADA DENTRO DEL PANEL (ChatGPT/WhatsApp Style)
+   WAKE WORD BUTTON GALAXY LEVEL FEATURE ACTIVATED
    ========================================= */

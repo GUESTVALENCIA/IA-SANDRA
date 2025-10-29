@@ -57,6 +57,10 @@
             🎤
           </button>
 
+          <button class="wake-btn" id="wakeBtn" aria-label="Activar 'Hola Sandra'">
+            <span class="wake-icon">👂</span>
+          </button>
+
           <button class="send-btn" id="sendBtn" aria-label="Enviar mensaje">
             ➤
           </button>
@@ -110,6 +114,7 @@
   const input = $("#input");
   const sendBtn = $("#sendBtn");
   const micBtn = $("#micBtn");
+  const wakeBtn = $("#wakeBtn");
   const clipBtn = $("#clipBtn");
   const clipMenu = $("#clipMenu");
 
@@ -118,6 +123,11 @@
   let requestId = 0;         // ENTERPRISE: Tracking de requests
   let isSandraPlaying = false; // Barge-in: Sandra hablando flag
   let currentProcessingId = null; // ID del request actual
+
+  // WAKE WORD DETECTION - "HOLA SANDRA"
+  let isWakeWordListening = false;
+  let wakeWordRecognition = null;
+  const WAKE_WORD = "hola sandra";
 
   // ENTERPRISE: Logging estructurado
   const log = {
@@ -151,10 +161,9 @@
   // Audio infra
   let audioCtx, analyser, gain, source, currentAudio;
 
-  // AVATAR SYNC - INSTALADO PERO DESACTIVADO
-  // Para activar: descomentar las líneas marcadas con "// AVATAR:"
+  // AVATAR SYNC - ACTIVADO
   let avatarSync = null;
-  const AVATAR_ENABLED = false; // CEO: Cambiar a true para activar
+  const AVATAR_ENABLED = true; // CEO: ACTIVADO
 
   function ensureAudio() {
     if (!audioCtx) {
@@ -165,14 +174,14 @@
       gain.connect(audioCtx.destination);
       analyser.connect(gain);
 
-      // AVATAR: Inicializar avatar sync (desactivado)
+      // AVATAR: Inicializar avatar sync
       if (AVATAR_ENABLED && typeof AvatarSync !== 'undefined') {
         avatarSync = new AvatarSync({
           mouthElement: mouth,
           avatarElement: $("#avatar-img")
         });
         avatarSync.initialize(audioCtx);
-        log.info('Avatar sync inicializado');
+        log.info('✅ Avatar sync ACTIVADO');
       }
     }
   }
@@ -188,7 +197,7 @@
       currentAudio = src;
       isSandraPlaying = true; // BARGE-IN: Marcar que Sandra está hablando
 
-      // AVATAR: Conectar avatar sync al audio (desactivado)
+      // AVATAR: Conectar avatar sync al audio
       if (AVATAR_ENABLED && avatarSync) {
         avatarSync.connectBufferSource(src);
         avatarSync.startAnimation();
@@ -202,7 +211,7 @@
         wave.classList.remove('active');
         setMouth(0.1);
 
-        // AVATAR: Detener animación del avatar (desactivado)
+        // AVATAR: Detener animación del avatar
         if (AVATAR_ENABLED && avatarSync) {
           avatarSync.stopAnimation();
         }
@@ -357,6 +366,106 @@
     }
   }
 
+  // ====================================================================
+  // WAKE WORD DETECTION - "HOLA SANDRA"
+  // GALAXY LEVEL FEATURE - Continuous listening for activation phrase
+  // ====================================================================
+
+  // Initialize wake word recognition (continuous listening)
+  function initWakeWord() {
+    if (!SpeechRecognition) {
+      log.warn('⚠️ Wake word not supported in this browser');
+      return;
+    }
+
+    wakeWordRecognition = new SpeechRecognition();
+
+    wakeWordRecognition.lang = 'es-ES';
+    wakeWordRecognition.continuous = true;
+    wakeWordRecognition.interimResults = false;
+    wakeWordRecognition.maxAlternatives = 1;
+
+    wakeWordRecognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+      log.info('🎤 Wake word heard:', transcript);
+
+      // Check if "hola sandra" or variations detected
+      if (transcript.includes('hola sandra') ||
+          transcript.includes('ola sandra') ||
+          transcript === 'sandra') {
+        log.info('✅ Wake word detected! Activating Sandra...');
+        stopWakeWord();
+        activateSandra();
+      }
+    };
+
+    wakeWordRecognition.onerror = (event) => {
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        log.error('Wake word error:', event.error);
+        // Auto-restart on error
+        setTimeout(() => {
+          if (isWakeWordListening) {
+            try {
+              wakeWordRecognition.start();
+            } catch (e) {
+              log.error('Wake word restart failed:', e);
+            }
+          }
+        }, 1000);
+      }
+    };
+
+    wakeWordRecognition.onend = () => {
+      // Auto-restart if still listening mode
+      if (isWakeWordListening) {
+        setTimeout(() => {
+          try {
+            wakeWordRecognition.start();
+          } catch (e) {
+            log.error('Wake word auto-restart failed:', e);
+          }
+        }, 500);
+      }
+    };
+  }
+
+  // Start wake word listening
+  function startWakeWord() {
+    if (!wakeWordRecognition) initWakeWord();
+    if (!wakeWordRecognition) return;
+
+    isWakeWordListening = true;
+    try {
+      wakeWordRecognition.start();
+      state('🎤 Escuchando "Hola Sandra"...');
+      log.info('🎧 Wake word listening started');
+    } catch (e) {
+      log.error('Wake word start failed:', e);
+    }
+  }
+
+  // Stop wake word listening
+  function stopWakeWord() {
+    if (wakeWordRecognition && isWakeWordListening) {
+      isWakeWordListening = false;
+      try {
+        wakeWordRecognition.stop();
+        log.info('🛑 Wake word listening stopped');
+      } catch (e) {
+        log.error('Wake word stop failed:', e);
+      }
+    }
+  }
+
+  // Activate Sandra when wake word detected
+  function activateSandra() {
+    state('👂 Sandra activada - Escuchando...');
+    // Start regular voice recording
+    if (!isRecording) {
+      startRecording();
+    }
+  }
+
   // CHATGPT PATTERN: Simple toggle (click = start/stop)
   micBtn.onclick = async (e) => {
     e.preventDefault();
@@ -371,6 +480,20 @@
       stopRecording();
     } else {
       startRecording();
+    }
+  };
+
+  // Wake word button toggle
+  wakeBtn.onclick = () => {
+    if (!isWakeWordListening) {
+      startWakeWord();
+      wakeBtn.classList.add('active');
+      wakeBtn.title = "Desactivar wake word";
+    } else {
+      stopWakeWord();
+      wakeBtn.classList.remove('active');
+      state('🟢 Listo');
+      wakeBtn.title = "Activar 'Hola Sandra'";
     }
   };
 
@@ -900,7 +1023,7 @@
   function showSOS(){ sosEl.textContent = '🚨 SOS detectado (placeholder). Integra aquí tu rutina de emergencia/restauración.';
     sosEl.style.display='block'; setTimeout(()=> sosEl.style.display='none', 5000); }
 
-  pushMsg('assistant', 'Hola, soy Sandra. Escribe, habla o adjunta archivos para comenzar.');
+  pushMsg('assistant', 'Hola, soy Sandra. Escribe, habla o adjunta archivos para comenzar. Di "Hola Sandra" para activarme por voz.');
   state('🟢 Listo');
   // CLEANUP: Manage install prompt visibility
   const installBox = document.querySelector('#installBox');
@@ -968,4 +1091,5 @@
 
   log.info('✅ Native app behavior enabled - web gestures disabled');
   log.info('📱 App behaves like WhatsApp/Telegram: fixed, serious, professional');
+  log.info('🎧 Wake word "Hola Sandra" ready - click 👂 button to activate');
 })();
