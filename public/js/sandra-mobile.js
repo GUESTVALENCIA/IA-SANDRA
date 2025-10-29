@@ -15,7 +15,6 @@
         </div>
         <div>
           <div class="title">Sandra IA · Conversación</div>
-          <div class="badge">Voz · Barge-in · Multimodal</div>
         </div>
       </div>
 
@@ -54,7 +53,7 @@
             <textarea id="input" placeholder="Escribe tu mensaje..." autocomplete="off" rows="1"></textarea>
           </div>
 
-          <button class="voice-btn" id="micBtn" aria-label="Click para dictar (ChatGPT style)">
+          <button class="voice-btn" id="micBtn" aria-label="Dictado por voz">
             🎤
           </button>
 
@@ -228,95 +227,152 @@
     loop();
   }
 
-  // Speech Recognition - CHATGPT STYLE: Click to start/stop, transcribe to input
+  // ====================================================================
+  // CHATGPT-STYLE VOICE DICTATION (Exact Clone)
+  // Pattern: Click mic → record continuously → click mic again → stop
+  // Transcription goes directly to input field (editable)
+  // ====================================================================
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let rec, recognizing=false;
-  let isDictating = false; // Estado de dictado (toggle)
-  let interimTranscript = ''; // Transcripción temporal
+  let recognition = null;
+  let isRecording = false;
   let locale = (localStorage.getItem('sandra_locale') || (navigator.language || 'es-ES'));
 
-  function initRec(){
-    if (!SpeechRecognition) { state('⚠️ Este navegador no soporta reconocimiento de voz.'); return; }
-    rec = new SpeechRecognition();
+  function initRecognition() {
+    if (!SpeechRecognition) {
+      log.warn('Speech Recognition no disponible');
+      state('⚠️ Dictado no soportado');
+      return null;
+    }
+
+    const rec = new SpeechRecognition();
     rec.lang = locale;
-    rec.continuous = true;
-    rec.interimResults = true;
+    rec.continuous = true;        // ChatGPT: continuous recording
+    rec.interimResults = true;    // ChatGPT: show partial results
 
     rec.onstart = () => {
-      recognizing = true;
-      wave.classList.add('active');
+      isRecording = true;
       micBtn.classList.add('recording');
-      state('🎙️ Dictando... (click para parar)');
+      wave.classList.add('active');
+      state('🎤 Escuchando');     // ChatGPT style: clean, simple
+      log.info('Recording started');
     };
 
     rec.onend = () => {
-      recognizing = false;
-      wave.classList.remove('active');
-      micBtn.classList.remove('recording');
-
-      // Si estábamos dictando y termina inesperadamente, reiniciar
-      if (isDictating) {
-        try { rec.start(); } catch {}
+      // ChatGPT pattern: only update UI if we're intentionally recording
+      if (isRecording) {
+        // Stopped unexpectedly, auto-restart
+        try {
+          rec.start();
+          log.info('Auto-restarted recognition');
+        } catch (err) {
+          // Restart failed, clean up state
+          isRecording = false;
+          micBtn.classList.remove('recording');
+          wave.classList.remove('active');
+          state('🟢 Listo');
+          log.error('Auto-restart failed:', err);
+        }
       } else {
+        // Stopped intentionally
+        micBtn.classList.remove('recording');
+        wave.classList.remove('active');
         state('🟢 Listo');
+        log.info('Recording stopped');
       }
     };
 
-    rec.onerror = (e) => {
-      state('⚠️ Voz: '+e.error);
-      isDictating = false;
+    rec.onerror = (event) => {
+      log.error('Recognition error:', event.error);
+
+      // ChatGPT pattern: silent errors for expected cases
+      if (event.error === 'no-speech' || event.error === 'aborted') {
+        return; // Don't show error to user
+      }
+
+      // Real error, clean up
+      isRecording = false;
       micBtn.classList.remove('recording');
+      wave.classList.remove('active');
+      state('⚠️ Error de micrófono');
     };
 
-    rec.onresult = (evt) => {
-      let interim = '';
-      let final = '';
+    rec.onresult = (event) => {
+      let finalTranscript = '';
 
-      // Procesar todos los resultados
-      for (let i = evt.resultIndex; i < evt.results.length; i++) {
-        const transcript = evt.results[i][0].transcript;
-        if (evt.results[i].isFinal) {
-          final += transcript + ' ';
-        } else {
-          interim += transcript;
+      // ChatGPT pattern: only process final results
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + ' ';
         }
       }
 
-      // CHATGPT STYLE: Actualizar textarea con transcripción
-      if (final) {
-        // Agregar al input existente (permite edición acumulativa)
-        const currentValue = input.value.trim();
-        input.value = currentValue + (currentValue ? ' ' : '') + final.trim();
+      // ChatGPT behavior: add transcription to input field
+      if (finalTranscript) {
+        const currentText = input.value.trim();
+        input.value = currentText + (currentText ? ' ' : '') + finalTranscript.trim();
 
-        // Ajustar altura del textarea
+        // Auto-expand textarea
         input.style.height = 'auto';
         input.style.height = Math.min(input.scrollHeight, 200) + 'px';
 
-        interimTranscript = '';
-      }
-
-      // Mostrar transcripción temporal (opcional - comentar si no se desea)
-      if (interim && isDictating) {
-        const currentFinal = input.value.trim();
-        // state(`🎙️ "${interim}..."`);
+        log.info('Transcribed:', finalTranscript.trim());
       }
     };
+
+    return rec;
   }
 
-  function startDictation(){
-    if (!rec) initRec();
-    isDictating = true;
-    interimTranscript = '';
-    try { rec.start(); } catch{}
-  }
-
-  function stopDictation(){
-    isDictating = false;
-    if (rec && recognizing) {
-      try { rec.stop(); } catch{}
+  function startRecording() {
+    if (!recognition) {
+      recognition = initRecognition();
+      if (!recognition) return; // Browser doesn't support it
     }
-    state('🟢 Listo - Revisa y envía');
+
+    isRecording = true;
+
+    try {
+      recognition.start();
+      log.info('Starting recognition');
+    } catch (err) {
+      // If already started, ignore error
+      if (err.message && err.message.includes('already started')) {
+        log.info('Recognition already active');
+      } else {
+        log.error('Start error:', err);
+        isRecording = false;
+      }
+    }
   }
+
+  function stopRecording() {
+    isRecording = false;
+
+    if (recognition) {
+      try {
+        recognition.stop();
+        log.info('Stopping recognition');
+      } catch (err) {
+        log.error('Stop error:', err);
+      }
+    }
+  }
+
+  // CHATGPT PATTERN: Simple toggle (click = start/stop)
+  micBtn.onclick = async (e) => {
+    e.preventDefault();
+
+    // Resume AudioContext if suspended (iOS requirement)
+    if (audioCtx && audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
+
+    // ChatGPT pattern: simple toggle
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
 
   function state(t){ stateEl.textContent = t; }
 
@@ -475,22 +531,8 @@
 
     pushMsg('user', v);
     input.value='';
+    input.style.height = 'auto'; // Reset height
     handleQuery(v);
-  };
-  // CHATGPT STYLE: Click to start/stop dictation (simple toggle)
-  micBtn.onclick = async (e) => {
-    e.preventDefault();
-
-    // Toggle: Si está dictando, parar. Si no, iniciar.
-    if (isDictating) {
-      // PARAR DICTADO
-      stopDictation();
-    } else {
-      // INICIAR DICTADO
-      if (!rec) initRec();
-      if (audioCtx) await audioCtx.resume();
-      startDictation();
-    }
   };
 
   // CHATGPT/CLAUDE STYLE: Clip menu toggle
@@ -860,6 +902,14 @@
 
   pushMsg('assistant', 'Hola, soy Sandra. Escribe, habla o adjunta archivos para comenzar.');
   state('🟢 Listo');
+  // CLEANUP: Manage install prompt visibility
+  const installBox = document.querySelector('#installBox');
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (!isIOS) document.querySelector('#installBox').style.display='none';
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                       window.navigator.standalone === true;
+
+  // Hide if: not iOS, OR already installed in standalone mode
+  if (!isIOS || isStandalone) {
+    if (installBox) installBox.style.display = 'none';
+  }
 })();

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // SANDRA IA - LOCAL CHAT ENDPOINT (OPTIMIZED)
 // Tier System: Qwen → Mistral → Llama → GROQ
-// Enhanced with cache, metrics, and robust error handling
+// Enhanced with cache, metrics, robust error handling + 18 ROLES
 // ═══════════════════════════════════════════════════════════════════
 
 const { withMiddleware, createSuccessResponse, createErrorResponse } = require('../shared/middleware');
@@ -11,19 +11,22 @@ const cache = require('../shared/cache');
 const { recordRequest, recordModelUsage, recordError } = require('../metrics');
 
 /**
- * Call Ollama local model
+ * Call Ollama local model with role-specific prompt
  */
-async function callOllama(model, messages) {
+async function callOllama(model, messages, role = 'guests-valencia') {
   const startTime = Date.now();
 
   try {
+    // Obtener prompt según rol
+    const systemPrompt = config.sandraPrompt.getRolePrompt(role);
+
     const response = await fetch(`${config.models.ollama.baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'system', content: config.sandraPrompt.system },
+          { role: 'system', content: systemPrompt },
           ...messages
         ],
         stream: false,
@@ -48,9 +51,9 @@ async function callOllama(model, messages) {
 }
 
 /**
- * Call GROQ API (Tier 4 fallback)
+ * Call GROQ API (Tier 4 fallback) with role-specific prompt
  */
-async function callGROQ(messages) {
+async function callGROQ(messages, role = 'guests-valencia') {
   const startTime = Date.now();
 
   try {
@@ -58,6 +61,9 @@ async function callGROQ(messages) {
     if (!apiKey) {
       throw new Error('GROQ_API_KEY not configured');
     }
+
+    // Obtener prompt según rol
+    const systemPrompt = config.sandraPrompt.getRolePrompt(role);
 
     const response = await fetch(`${config.models.groq.baseUrl}/chat/completions`, {
       method: 'POST',
@@ -68,7 +74,7 @@ async function callGROQ(messages) {
       body: JSON.stringify({
         model: config.models.groq.model,
         messages: [
-          { role: 'system', content: config.sandraPrompt.system },
+          { role: 'system', content: systemPrompt },
           ...messages
         ],
         temperature: 0.7,
@@ -96,20 +102,21 @@ async function callGROQ(messages) {
 /**
  * Execute tier cascade with fallback
  */
-async function executeTierCascade(messages, requestLogger) {
+async function executeTierCascade(messages, role, requestLogger) {
   const recentMessages = messages.slice(-10); // Optimize: only recent context
 
   // Try each tier in sequence
   for (const tier of config.tiers.local) {
     try {
-      requestLogger.info(`Trying ${tier.name} (Tier ${tier.tier})`);
+      requestLogger.info(`Trying ${tier.name} (Tier ${tier.tier}) with role: ${role}`);
 
-      const result = await callOllama(tier.model, recentMessages);
+      const result = await callOllama(tier.model, recentMessages, role);
 
       recordModelUsage(tier.name, tier.tier, true);
       requestLogger.info(`${tier.name} succeeded`, {
         latency: `${result.latency}ms`,
-        tier: tier.tier
+        tier: tier.tier,
+        role: role
       });
 
       return {
@@ -117,7 +124,8 @@ async function executeTierCascade(messages, requestLogger) {
         provider: tier.name,
         tier: tier.tier,
         cost: tier.cost,
-        latency: `${result.latency}ms`
+        latency: `${result.latency}ms`,
+        role: role
       };
 
     } catch (error) {
@@ -133,14 +141,15 @@ async function executeTierCascade(messages, requestLogger) {
   // Final fallback: GROQ API (Tier 4)
   const groqTier = config.tiers.api[0];
   try {
-    requestLogger.info(`Trying ${groqTier.name} (Tier ${groqTier.tier}) - Final fallback`);
+    requestLogger.info(`Trying ${groqTier.name} (Tier ${groqTier.tier}) - Final fallback with role: ${role}`);
 
-    const result = await callGROQ(recentMessages);
+    const result = await callGROQ(recentMessages, role);
 
     recordModelUsage(groqTier.name, groqTier.tier, true);
     requestLogger.info(`${groqTier.name} succeeded`, {
       latency: `${result.latency}ms`,
-      tier: groqTier.tier
+      tier: groqTier.tier,
+      role: role
     });
 
     return {
@@ -148,7 +157,8 @@ async function executeTierCascade(messages, requestLogger) {
       provider: groqTier.name,
       tier: groqTier.tier,
       cost: groqTier.cost,
-      latency: `${result.latency}ms`
+      latency: `${result.latency}ms`,
+      role: role
     };
 
   } catch (error) {
@@ -165,7 +175,13 @@ const handler = async (event, context, { requestId, body, logger: requestLogger 
   const startTime = Date.now();
 
   try {
-    const { messages = [], locale = 'es-ES' } = body;
+    const { messages = [], locale = 'es-ES', role = 'guests-valencia' } = body;
+
+    // Validar rol
+    if (!config.sandraPrompt.isValidRole(role)) {
+      requestLogger.warn('Invalid role provided, using default', { role });
+      body.role = 'guests-valencia';
+    }
 
     // Validate messages
     if (!messages || messages.length === 0) {
@@ -180,13 +196,15 @@ const handler = async (event, context, { requestId, body, logger: requestLogger 
 
     requestLogger.info('Processing chat request', {
       messageCount: messages.length,
-      userMessage: lastUserMessage.content?.substring(0, 100)
+      userMessage: lastUserMessage.content?.substring(0, 100),
+      role: body.role
     });
 
-    // Check cache first
-    const cachedResponse = cache.get(lastUserMessage.content);
+    // Check cache first (cache incluye role en key)
+    const cacheKey = `${body.role}:${lastUserMessage.content}`;
+    const cachedResponse = cache.get(cacheKey);
     if (cachedResponse) {
-      requestLogger.info('Cache hit - returning cached response');
+      requestLogger.info('Cache hit - returning cached response', { role: body.role });
 
       const latency = Date.now() - startTime;
       recordRequest('chat-local', 200, latency);
@@ -197,15 +215,16 @@ const handler = async (event, context, { requestId, body, logger: requestLogger 
         tier: 0,
         cost: 'FREE',
         latency: `${latency}ms`,
-        cached: true
+        cached: true,
+        role: body.role
       });
     }
 
     // Execute tier cascade
-    const result = await executeTierCascade(messages, requestLogger);
+    const result = await executeTierCascade(messages, body.role, requestLogger);
 
     // Cache the response
-    cache.set(lastUserMessage.content, result.text);
+    cache.set(cacheKey, result.text);
 
     // Record metrics
     const latency = Date.now() - startTime;
@@ -214,6 +233,7 @@ const handler = async (event, context, { requestId, body, logger: requestLogger 
     requestLogger.info('Chat request completed', {
       provider: result.provider,
       tier: result.tier,
+      role: result.role,
       totalLatency: `${latency}ms`
     });
 

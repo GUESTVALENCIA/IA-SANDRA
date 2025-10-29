@@ -215,8 +215,8 @@ body {
 }
 
 /* =========================================
-   PANEL - CONTENEDOR DE CHAT
-   ESTE ES BLANCO (ÚNICO ELEMENTO BLANCO)
+   PANEL - CONTENEDOR DE CHAT (INTEGRADO CON MULTIMODAL BAR)
+   CHATGPT/WHATSAPP STYLE - TODO DENTRO DEL PANEL BLANCO
    ========================================= */
 .panel {
   flex: 1;
@@ -228,10 +228,12 @@ body {
   box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-md);
+  position: relative;
 }
 
 /* =========================================
-   CHAT - MENSAJES
+   CHAT - MENSAJES (OCUPA EL ESPACIO DISPONIBLE)
    ========================================= */
 .chat {
   flex: 1;
@@ -243,6 +245,7 @@ body {
   overflow-x: hidden;
   padding-right: var(--spacing-xs);
   scroll-behavior: smooth;
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Scrollbar personalizado */
@@ -303,7 +306,23 @@ body {
 }
 
 /* =========================================
-   MULTIMODAL INPUT BAR - WHATSAPP/CHATGPT PERFECT LAYOUT
+   STATE INDICATOR - DENTRO DEL PANEL
+   ========================================= */
+.state {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--accent-blue-light);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* =========================================
+   MULTIMODAL INPUT BAR - INTEGRADA DENTRO DEL PANEL
+   CHATGPT/WHATSAPP PERFECT LAYOUT
    ========================================= */
 .multimodal-input-bar {
   display: flex;
@@ -314,6 +333,7 @@ body {
   margin-top: auto;
   position: relative;
   width: 100%;
+  flex-shrink: 0;
 }
 
 /* CLIP BUTTON (+) - Alineado izquierda, flex: none */
@@ -618,21 +638,6 @@ textarea::-webkit-scrollbar-thumb {
 }
 
 /* =========================================
-   STATE INDICATOR - INDICADOR DE ESTADO
-   ========================================= */
-.state {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--bg-secondary);    /* AZUL CIELO MEDIO */
-  border-radius: var(--radius-sm);
-  text-align: center;
-  border: 1px solid var(--border-color);
-}
-
-/* =========================================
    INSTALL BANNER - BANNER DE INSTALACIÓN
    ========================================= */
 .install {
@@ -819,8 +824,8 @@ input[type="file"] {
    IOS SAFE AREA SUPPORT
    ========================================= */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .multimodal-input-bar {
-    padding-bottom: calc(env(safe-area-inset-bottom) + var(--spacing-sm));
+  .panel {
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--spacing-md));
   }
 
   .container {
@@ -981,4 +986,5 @@ input:focus-visible {
 /* =========================================
    END OF GALAXY ENTERPRISE PRO STYLES
    ESQUEMA AZUL CIELO CLARO PROFESIONAL APLICADO
+   MULTIMODAL BAR INTEGRADA DENTRO DEL PANEL (ChatGPT/WhatsApp Style)
    ========================================= */

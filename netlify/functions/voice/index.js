@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // SANDRA IA - VOICE ENDPOINT
 // Whisper (STT) + Cartesia (TTS) + Chat Integration
+// ENHANCED: 18 ROLES SYSTEM + ADN BASE
 // ═══════════════════════════════════════════════════════════════════
 
 const { withMiddleware, createSuccessResponse, createErrorResponse } = require('../shared/middleware');
@@ -119,29 +120,32 @@ async function generateSpeech(text) {
 }
 
 /**
- * Get chat response using local models
+ * Get chat response using local models with role support
  */
-async function getChatResponse(text) {
+async function getChatResponse(text, role = 'guests-valencia') {
   try {
-    logger.info('Getting chat response', { textLength: text.length });
+    logger.info('Getting chat response', { textLength: text.length, role });
 
-    // Check cache first
-    const cachedResponse = cache.get(text);
+    // Check cache first (incluye role en key)
+    const cacheKey = `voice:${role}:${text}`;
+    const cachedResponse = cache.get(cacheKey);
     if (cachedResponse) {
-      logger.info('Using cached chat response');
+      logger.info('Using cached chat response', { role });
       return cachedResponse;
     }
 
-    // Call chat-local endpoint
+    // Call chat-local endpoint with role
     const response = await fetch(`${process.env.URL}/.netlify/functions/chat-local`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Sandra-Role': role
       },
       body: JSON.stringify({
         messages: [
           { role: 'user', content: text }
-        ]
+        ],
+        role: role
       })
     });
 
@@ -153,12 +157,12 @@ async function getChatResponse(text) {
     const chatText = data.text || 'Lo siento, no pude procesar tu mensaje.';
 
     // Cache the response
-    cache.set(text, chatText);
+    cache.set(cacheKey, chatText);
 
     return chatText;
 
   } catch (error) {
-    logger.error('Chat response failed', { error: error.message });
+    logger.error('Chat response failed', { error: error.message, role });
     throw error;
   }
 }
@@ -168,12 +172,27 @@ async function getChatResponse(text) {
  */
 const handler = async (event, context, { requestId, body, logger: requestLogger }) => {
   try {
-    const { audio, audioBase64, text, language = 'es', mode = 'full' } = body;
+    const { 
+      audio, 
+      audioBase64, 
+      text, 
+      language = 'es', 
+      mode = 'full',
+      role = 'guests-valencia' 
+    } = body;
+
+    // Validar rol
+    if (!config.sandraPrompt.isValidRole(role)) {
+      requestLogger.warn('Invalid role provided, using default', { role });
+      body.role = 'guests-valencia';
+    }
 
     // Mode: 'stt' (speech-to-text only), 'tts' (text-to-speech only), 'full' (complete pipeline)
     let transcription = text;
     let chatResponse = null;
     let speechAudio = null;
+
+    requestLogger.info('Processing voice request', { mode, role: body.role });
 
     // Step 1: Transcribe audio if provided
     if ((audio || audioBase64) && mode !== 'tts') {
@@ -185,11 +204,12 @@ const handler = async (event, context, { requestId, body, logger: requestLogger 
       });
     }
 
-    // Step 2: Get chat response
+    // Step 2: Get chat response with role
     if (mode !== 'tts' && transcription) {
-      chatResponse = await getChatResponse(transcription);
+      chatResponse = await getChatResponse(transcription, body.role);
       requestLogger.info('Chat response generated', {
-        responseLength: chatResponse?.length
+        responseLength: chatResponse?.length,
+        role: body.role
       });
     }
 
@@ -205,7 +225,8 @@ const handler = async (event, context, { requestId, body, logger: requestLogger 
     // Return results based on mode
     const result = {
       requestId,
-      mode
+      mode,
+      role: body.role
     };
 
     if (transcription && mode !== 'tts') {

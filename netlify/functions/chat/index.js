@@ -1,11 +1,22 @@
-// SANDRA IA - MULTI-MODEL ARCHITECTURE
+// ═══════════════════════════════════════════════════════════════════
+// SANDRA IA - MULTI-MODEL CHAT ENDPOINT (CLOUD TIER)
 // Tier 1: GROQ Mixtral (Gratis)
 // Tier 2: Claude Haiku (Gratis - Backup)
 // Tier 3: GPT-4o (Pagado - Fallback final)
+// ENHANCED: 18 ROLES SYSTEM + ADN BASE
+// ═══════════════════════════════════════════════════════════════════
 
-async function callGROQ(msgs) {
+const config = require('../shared/config');
+
+/**
+ * Call GROQ API with role-specific prompt
+ */
+async function callGROQ(msgs, role = 'guests-valencia') {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
+
+  // Obtener prompt según rol
+  const systemPrompt = config.sandraPrompt.getRolePrompt(role);
 
   const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -15,7 +26,10 @@ async function callGROQ(msgs) {
     },
     body: JSON.stringify({
       model: process.env.GROQ_MODEL || 'mixtral-8x7b-32768',
-      messages: msgs,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...msgs.filter(m => m.role !== 'system')
+      ],
       temperature: 0.7,
       max_tokens: 500
     })
@@ -27,12 +41,18 @@ async function callGROQ(msgs) {
   }
 
   const data = await resp.json();
-  return { text: data.choices?.[0]?.message?.content?.trim() || 'No response', provider: 'GROQ' };
+  return { text: data.choices?.[0]?.message?.content?.trim() || 'No response', provider: 'GROQ', role };
 }
 
-async function callClaudeHaiku(msgs) {
+/**
+ * Call Claude Haiku with role-specific prompt
+ */
+async function callClaudeHaiku(msgs, role = 'guests-valencia') {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+
+  // Obtener prompt según rol
+  const systemPrompt = config.sandraPrompt.getRolePrompt(role);
 
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -44,7 +64,7 @@ async function callClaudeHaiku(msgs) {
     body: JSON.stringify({
       model: 'claude-3-5-haiku-20241022',
       max_tokens: 500,
-      system: 'Eres Sandra, asistente IA de GuestsValencia. Hablas con calidez, precisión y foco en ayudar. Responde en español, breve y clara. Sé empática y profesional.',
+      system: systemPrompt,
       messages: msgs.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content }))
     })
   });
@@ -55,12 +75,18 @@ async function callClaudeHaiku(msgs) {
   }
 
   const data = await resp.json();
-  return { text: data.content?.[0]?.text?.trim() || 'No response', provider: 'Claude Haiku' };
+  return { text: data.content?.[0]?.text?.trim() || 'No response', provider: 'Claude Haiku', role };
 }
 
-async function callOpenAI(msgs) {
+/**
+ * Call OpenAI GPT-4o with role-specific prompt
+ */
+async function callOpenAI(msgs, role = 'guests-valencia') {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY not configured');
+
+  // Obtener prompt según rol
+  const systemPrompt = config.sandraPrompt.getRolePrompt(role);
 
   const resp = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -70,7 +96,10 @@ async function callOpenAI(msgs) {
     },
     body: JSON.stringify({
       model: process.env.OPENAI_MODEL || 'gpt-4o',
-      messages: msgs,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...msgs.filter(m => m.role !== 'system')
+      ],
       temperature: 0.7,
       max_tokens: 500
     })
@@ -82,9 +111,12 @@ async function callOpenAI(msgs) {
   }
 
   const data = await resp.json();
-  return { text: data.choices?.[0]?.message?.content?.trim() || 'No response', provider: 'GPT-4o' };
+  return { text: data.choices?.[0]?.message?.content?.trim() || 'No response', provider: 'GPT-4o', role };
 }
 
+/**
+ * Main handler
+ */
 exports.handler = async (event) => {
   try {
     // CORS headers
@@ -92,7 +124,7 @@ exports.handler = async (event) => {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type, X-Sandra-Role'
     };
 
     if (event.httpMethod === 'OPTIONS') {
@@ -110,38 +142,42 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) };
     }
 
-    const { messages = [], locale = process.env.DEFAULT_LOCALE || 'es-ES', mode = process.env.DEFAULT_MODE || 'dev' } = body;
+    const { 
+      messages = [], 
+      locale = process.env.DEFAULT_LOCALE || 'es-ES', 
+      mode = process.env.DEFAULT_MODE || 'dev',
+      role = 'guests-valencia'
+    } = body;
+
+    // Validar rol
+    if (!config.sandraPrompt.isValidRole(role)) {
+      console.warn('Invalid role provided, using default:', role);
+      body.role = 'guests-valencia';
+    }
 
     if (!messages || messages.length === 0) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'No messages provided' }) };
     }
 
-    const sys = { role: 'system', content: [
-      'Eres Sandra, asistente IA de GuestsValencia.',
-      'Hablas con calidez, precisión y foco en ayudar.',
-      'Responde en español, breve y clara.',
-      'Sé empática y profesional.'
-    ].join(' ') };
-
-    const msgs = [sys, ...messages].slice(-20);
+    const msgs = messages.slice(-20);
     let result;
 
     // MULTI-MODEL FALLBACK CHAIN
     try {
-      console.log('🤖 Intentando GROQ Tier 1...');
-      result = await callGROQ(msgs);
+      console.log(`🤖 Intentando GROQ Tier 1 with role: ${body.role}...`);
+      result = await callGROQ(msgs, body.role);
       console.log('✅ GROQ respondió exitosamente');
     } catch (groqError) {
       console.warn('⚠️ GROQ falló:', groqError.message);
       try {
-        console.log('🤖 Intentando Claude Haiku Tier 2...');
-        result = await callClaudeHaiku(msgs);
+        console.log(`🤖 Intentando Claude Haiku Tier 2 with role: ${body.role}...`);
+        result = await callClaudeHaiku(msgs, body.role);
         console.log('✅ Claude Haiku respondió exitosamente');
       } catch (claudeError) {
         console.warn('⚠️ Claude Haiku falló:', claudeError.message);
         try {
-          console.log('🤖 Intentando GPT-4o Tier 3...');
-          result = await callOpenAI(msgs);
+          console.log(`🤖 Intentando GPT-4o Tier 3 with role: ${body.role}...`);
+          result = await callOpenAI(msgs, body.role);
           console.log('✅ GPT-4o respondió exitosamente');
         } catch (openaiError) {
           console.error('❌ Todos los modelos fallaron:', openaiError.message);
@@ -153,7 +189,12 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ text: result.text, provider: result.provider, locale })
+      body: JSON.stringify({ 
+        text: result.text, 
+        provider: result.provider, 
+        locale,
+        role: result.role 
+      })
     };
   } catch (error) {
     console.error('Handler error:', error);

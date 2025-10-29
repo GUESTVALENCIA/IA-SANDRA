@@ -3,12 +3,14 @@
 // Centralized configuration for all Netlify Functions
 // ═══════════════════════════════════════════════════════════════════
 
+const { buildSystemPrompt, getAvailableRoles, isValidRole } = require('./sandra-prompts');
+
 module.exports = {
   // ====== CORS Headers ======
   corsHeaders: {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID, X-Sandra-Role',
     'Access-Control-Max-Age': '86400'
   },
 
@@ -164,12 +166,22 @@ module.exports = {
     }
   },
 
-  // ====== Sandra Personality ======
+  // ====== Sandra Personality & Prompts ======
   sandraPrompt: {
-    system: 'Eres Sandra, asistente IA de GuestsValencia. Hablas español natural de España. Eres cálida, profesional y empática. Responde en 2-3 frases máximo, directo y útil.',
-    traits: ['professional', 'empathetic', 'concise', 'helpful', 'warm'],
+    system: buildSystemPrompt('guests-valencia'), // DEFAULT: Guests Valencia
+    traits: ['professional', 'empathetic', 'concise', 'helpful', 'warm', 'natural', 'intelligent', 'adaptable'],
     language: 'es-ES',
-    maxTokens: 200
+    maxTokens: 200,
+    // NUEVO: Funciones para manejar roles
+    getRolePrompt: (role = 'guests-valencia') => {
+      return buildSystemPrompt(role);
+    },
+    getAvailableRoles: () => {
+      return getAvailableRoles();
+    },
+    isValidRole: (role) => {
+      return isValidRole(role);
+    }
   },
 
   // ====== Health Check Configuration ======
