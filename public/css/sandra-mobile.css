@@ -6,6 +6,39 @@
    ============================================================================= */
 
 /* =========================================
+   NATIVE APP BEHAVIOR - CRITICAL FIXES
+   Disable zoom, bounce, and web gestures
+   ========================================= */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection only in input fields */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Fix html and body to prevent bounce/scroll */
+html,
+body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================
    VARIABLES DE DISEÑO GALAXY ENTERPRISE
    PALETA AZUL CIELO CLARO PROFESIONAL
    ========================================= */
@@ -89,14 +122,8 @@
 /* =========================================
    BASE STYLES - TIPOGRAFÍA MODERNA
    ========================================= */
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
 body {
-  margin: 0;
-  padding: 0;
+  /* Positioning already handled by native app fixes above */
   background: var(--bg-primary);      /* AZUL CIELO CLARO */
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display',
@@ -109,16 +136,23 @@ body {
 }
 
 /* =========================================
-   CONTAINER - LAYOUT PRINCIPAL
+   CONTAINER - LAYOUT PRINCIPAL (FIXED NATIVE APP)
    ========================================= */
 .container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   max-width: 640px;
   margin: 0 auto;
   padding: var(--spacing-md);
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);      /* AZUL CIELO CLARO */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* =========================================
@@ -217,6 +251,7 @@ body {
 /* =========================================
    PANEL - CONTENEDOR DE CHAT (INTEGRADO CON MULTIMODAL BAR)
    CHATGPT/WHATSAPP STYLE - TODO DENTRO DEL PANEL BLANCO
+   NATIVE APP: Scroll contained within panel only
    ========================================= */
 .panel {
   flex: 1;
@@ -230,6 +265,10 @@ body {
   flex-direction: column;
   gap: var(--spacing-md);
   position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* =========================================

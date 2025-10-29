@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <!-- NATIVE APP BEHAVIOR: Prevent zoom, elastic scroll, and web gestures -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Sandra IA · Multimodal</title>
 
   <!-- PWA Manifest -->
@@ -11,16 +12,19 @@
   <!-- CSS -->
   <link rel="stylesheet" href="/css/sandra-mobile.css">
 
-  <!-- iOS PWA -->
+  <!-- iOS PWA - NATIVE APP MODE -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Sandra IA">
   <link rel="apple-touch-icon" href="/img/avatar-sandra.png">
+
+  <!-- NATIVE APP: Disable phone number detection -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <!-- Theme colors -->
   <meta name="theme-color" content="#4A90E2">
   <meta name="msapplication-navbutton-color" content="#4A90E2">
-  <meta name="apple-mobile-web-app-status-bar-style" content="#4A90E2">
 
   <!-- Description -->
   <meta name="description" content="Sandra IA 7.0 - Asistente conversacional multimodal con visión, voz y Barge-In">

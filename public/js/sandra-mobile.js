@@ -912,4 +912,60 @@
   if (!isIOS || isStandalone) {
     if (installBox) installBox.style.display = 'none';
   }
+
+  // ============================================
+  // NATIVE APP BEHAVIOR - DISABLE WEB GESTURES
+  // CEO Requirement: Fixed app like WhatsApp/Telegram
+  // ============================================
+
+  // Disable pinch-to-zoom gestures (iOS Safari)
+  document.addEventListener('gesturestart', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }, { passive: false });
+
+  document.addEventListener('gesturechange', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }, { passive: false });
+
+  document.addEventListener('gestureend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }, { passive: false });
+
+  // Disable double-tap to zoom (300ms threshold)
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+
+  // Prevent pull-to-refresh and multi-finger zoom
+  document.body.addEventListener('touchmove', function(e) {
+    // More than one finger = prevent (stops pinch zoom)
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Disable zoom with keyboard (Ctrl/Cmd + scroll)
+  document.addEventListener('wheel', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Disable zoom with keyboard (Ctrl/Cmd + +/-)
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=')) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  log.info('✅ Native app behavior enabled - web gestures disabled');
+  log.info('📱 App behaves like WhatsApp/Telegram: fixed, serious, professional');
 })();
