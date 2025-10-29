@@ -1,5 +1,5 @@
 // SANDRA IA - AUDIO STREAM HANDLER
-// Manages bidirectional audio streaming over Socket.IO
+// Manages bidirectional audio streaming over Supabase Realtime
 // Integrates with WebRTC, VAD, and Avatar Sync
 
 class AudioStreamHandler {
@@ -36,8 +36,8 @@ class AudioStreamHandler {
     this.playbackQueue = [];
     this.audioBuffers = [];
 
-    // Socket.IO client reference
-    this.socketClient = null;
+    // Supabase Realtime reference
+    this.supabaseChannel = null;
 
     // Event handlers
     this.onCaptureStart = null;
@@ -51,11 +51,11 @@ class AudioStreamHandler {
 
   // === INITIALIZATION ===
 
-  async initialize(socketClient) {
+  async initialize(supabaseChannel) {
     try {
       console.log('🎤 Initializing audio stream handler...');
 
-      this.socketClient = socketClient;
+      this.supabaseChannel = supabaseChannel;
 
       // Create audio context
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
