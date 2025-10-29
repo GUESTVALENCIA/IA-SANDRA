@@ -15,15 +15,32 @@
         </div>
         <div>
           <div class="title">Sandra IA · Conversación</div>
-          <div class="badge">Voz · Barge-in · Español</div>
+          <div class="badge">Voz · Barge-in · Multimodal</div>
         </div>
       </div>
       <div class="panel" id="panelChat"></div>
-      <div class="controls">
-        <input id="input" type="text" placeholder="Escribe o pulsa 🎤 para hablar..." autocomplete="off"/>
-        <button class="btn" id="sendBtn">▶️</button>
-        <button class="btn voice-btn" id="micBtn">🎤</button>
+
+      <!-- MULTIMODAL INPUT BAR - Galaxy Enterprise -->
+      <div class="multimodal-input-bar">
+        <div class="input-wrapper">
+          <input id="input" type="text" placeholder="Escribe, habla, adjunta..." autocomplete="off"/>
+          <div class="multimodal-actions">
+            <button class="action-btn" id="cameraBtn" title="Cámara/Imagen" aria-label="Capturar o subir imagen">📷</button>
+            <button class="action-btn" id="videoBtn" title="Video" aria-label="Grabar o subir video">🎥</button>
+            <button class="action-btn" id="pdfBtn" title="PDF" aria-label="Subir documento PDF">📄</button>
+            <button class="action-btn" id="fileBtn" title="Archivos" aria-label="Adjuntar archivo">📎</button>
+          </div>
+        </div>
+        <button class="btn voice-btn-hold" id="micBtn" aria-label="Mantener para hablar">🎤</button>
+        <button class="btn send-btn" id="sendBtn" aria-label="Enviar mensaje">▶️</button>
       </div>
+
+      <!-- Hidden file inputs -->
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" multiple/>
+      <input type="file" id="videoInput" accept="video/*" capture="user" style="display:none"/>
+      <input type="file" id="pdfInput" accept="application/pdf,.pdf" style="display:none" multiple/>
+      <input type="file" id="fileInput" accept="*/*" style="display:none" multiple/>
+
       <div class="wave" id="wave"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="install" id="installBox">
         <b>Instalar</b> — iPhone: Compartir → <i>Añadir a pantalla de inicio</i>.
@@ -93,6 +110,12 @@
 
   // Audio infra
   let audioCtx, analyser, gain, source, currentAudio;
+
+  // AVATAR SYNC - INSTALADO PERO DESACTIVADO
+  // Para activar: descomentar las líneas marcadas con "// AVATAR:"
+  let avatarSync = null;
+  const AVATAR_ENABLED = false; // CEO: Cambiar a true para activar
+
   function ensureAudio() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -101,6 +124,16 @@
       gain = audioCtx.createGain();
       gain.connect(audioCtx.destination);
       analyser.connect(gain);
+
+      // AVATAR: Inicializar avatar sync (desactivado)
+      if (AVATAR_ENABLED && typeof AvatarSync !== 'undefined') {
+        avatarSync = new AvatarSync({
+          mouthElement: mouth,
+          avatarElement: $("#avatar-img")
+        });
+        avatarSync.initialize(audioCtx);
+        log.info('Avatar sync inicializado');
+      }
     }
   }
   function playBase64(mime, b64) {
@@ -114,6 +147,13 @@
       source = src;
       currentAudio = src;
       isSandraPlaying = true; // BARGE-IN: Marcar que Sandra está hablando
+
+      // AVATAR: Conectar avatar sync al audio (desactivado)
+      if (AVATAR_ENABLED && avatarSync) {
+        avatarSync.connectBufferSource(src);
+        avatarSync.startAnimation();
+      }
+
       src.start();
       animateMouth();
       src.onended = () => {
@@ -121,6 +161,11 @@
         isSandraPlaying = false; // BARGE-IN: Sandra terminó de hablar
         wave.classList.remove('active');
         setMouth(0.1);
+
+        // AVATAR: Detener animación del avatar (desactivado)
+        if (AVATAR_ENABLED && avatarSync) {
+          avatarSync.stopAnimation();
+        }
       };
     });
   }
@@ -362,11 +407,317 @@
     input.value='';
     handleQuery(v);
   };
-  micBtn.onclick = async () => { if (!audioCtx) ensureAudio(); await audioCtx.resume(); if (!recognizing){ wakeMode=false; startRec(); } else { stopRec(); } };
+  // MULTIMODAL: Voice hold-to-speak (5min max, chunks 30s)
+  let isHolding = false;
+  let voiceChunks = [];
+  let voiceRecorder = null;
+  let voiceStartTime = 0;
+  const MAX_VOICE_DURATION = 5 * 60 * 1000; // 5 minutos
+  const CHUNK_DURATION = 30 * 1000; // 30 segundos por chunk
+
+  micBtn.onpointerdown = async (e) => {
+    e.preventDefault();
+    if (!audioCtx) ensureAudio();
+    await audioCtx.resume();
+
+    // Iniciar grabación de audio
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      voiceRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      voiceChunks = [];
+      voiceStartTime = Date.now();
+      isHolding = true;
+
+      voiceRecorder.ondataavailable = (evt) => {
+        if (evt.data.size > 0) voiceChunks.push(evt.data);
+      };
+
+      voiceRecorder.onstop = async () => {
+        const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+        stream.getTracks().forEach(track => track.stop());
+
+        // Enviar audio a procesamiento
+        if (voiceChunks.length > 0) {
+          await processVoiceInput(blob);
+        }
+      };
+
+      voiceRecorder.start();
+      wave.classList.add('active');
+      state('🎙️ Grabando... (suelta para enviar)');
+
+      // Chunks de 30s
+      const chunkInterval = setInterval(() => {
+        if (!isHolding) {
+          clearInterval(chunkInterval);
+          return;
+        }
+        if (Date.now() - voiceStartTime >= MAX_VOICE_DURATION) {
+          clearInterval(chunkInterval);
+          micBtn.onpointerup();
+        }
+      }, CHUNK_DURATION);
+    } catch (err) {
+      log.error('Voice recording error:', err);
+      state('❌ Error al acceder al micrófono');
+      metrics.errors.voice++;
+    }
+  };
+
+  micBtn.onpointerup = () => {
+    if (isHolding && voiceRecorder && voiceRecorder.state === 'recording') {
+      voiceRecorder.stop();
+      isHolding = false;
+      wave.classList.remove('active');
+      state('⚡ Procesando audio...');
+    }
+  };
+
+  micBtn.onpointercancel = micBtn.onpointerup;
+
+  async function processVoiceInput(audioBlob) {
+    // ENTERPRISE: Enviar audio al backend para transcripción
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'voice.webm');
+
+    try {
+      const r = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!r.ok) throw new Error('Transcription failed');
+
+      const { text } = await r.json();
+      if (text && text.trim()) {
+        pushMsg('user', text);
+        handleQuery(text);
+      } else {
+        state('⚠️ No se detectó voz clara');
+      }
+    } catch (err) {
+      log.error('Voice transcription error:', err);
+      state('❌ Error al procesar audio');
+      metrics.errors.voice++;
+
+      // Fallback: usar Speech Recognition si está disponible
+      if (SpeechRecognition) {
+        state('🔄 Usando reconocimiento de voz alternativo...');
+        wakeMode = false;
+        startRec();
+      }
+    }
+  }
+
+  // MULTIMODAL: File handlers
+  const cameraBtn = $('#cameraBtn');
+  const videoBtn = $('#videoBtn');
+  const pdfBtn = $('#pdfBtn');
+  const fileBtn = $('#fileBtn');
+
+  const cameraInput = $('#cameraInput');
+  const videoInput = $('#videoInput');
+  const pdfInput = $('#pdfInput');
+  const fileInput = $('#fileInput');
+
+  cameraBtn.onclick = () => cameraInput.click();
+  videoBtn.onclick = () => videoInput.click();
+  pdfBtn.onclick = () => pdfInput.click();
+  fileBtn.onclick = () => fileInput.click();
+
+  // MULTIMODAL: Camera/Image handler
+  cameraInput.onchange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    state('📸 Procesando imágenes...');
+
+    for (const file of files) {
+      try {
+        const base64 = await fileToBase64(file);
+
+        // Enviar imagen al backend para análisis
+        const r = await fetch('/api/vision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: base64,
+            mimeType: file.type,
+            prompt: 'Describe esta imagen en detalle.'
+          })
+        });
+
+        if (!r.ok) throw new Error('Vision API failed');
+
+        const { description } = await r.json();
+
+        pushMsg('user', `📷 [Imagen adjunta: ${file.name}]`);
+        pushMsg('assistant', description);
+
+      } catch (err) {
+        log.error('Image processing error:', err);
+        pushMsg('assistant', '⚠️ No pude procesar la imagen. Reinténtalo.');
+      }
+    }
+
+    cameraInput.value = '';
+    state('🟢 Listo');
+  };
+
+  // MULTIMODAL: Video handler
+  videoInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    state('🎥 Procesando video...');
+
+    try {
+      // Extraer frame para análisis
+      const videoFrame = await extractVideoFrame(file);
+
+      const r = await fetch('/api/vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: videoFrame,
+          mimeType: 'image/jpeg',
+          prompt: 'Describe el contenido de este video.'
+        })
+      });
+
+      if (!r.ok) throw new Error('Video analysis failed');
+
+      const { description } = await r.json();
+
+      pushMsg('user', `🎥 [Video adjunto: ${file.name}]`);
+      pushMsg('assistant', `Análisis del video: ${description}`);
+
+    } catch (err) {
+      log.error('Video processing error:', err);
+      pushMsg('assistant', '⚠️ No pude procesar el video. Reinténtalo.');
+    }
+
+    videoInput.value = '';
+    state('🟢 Listo');
+  };
+
+  // MULTIMODAL: PDF handler
+  pdfInput.onchange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    state('📄 Procesando PDFs...');
+
+    for (const file of files) {
+      try {
+        const base64 = await fileToBase64(file);
+
+        const r = await fetch('/api/pdf-extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pdf: base64,
+            filename: file.name
+          })
+        });
+
+        if (!r.ok) throw new Error('PDF extraction failed');
+
+        const { text, summary } = await r.json();
+
+        pushMsg('user', `📄 [PDF adjunto: ${file.name}]`);
+        pushMsg('assistant', `Resumen del documento: ${summary || text.substring(0, 500)}...`);
+
+      } catch (err) {
+        log.error('PDF processing error:', err);
+        pushMsg('assistant', '⚠️ No pude procesar el PDF. Reinténtalo.');
+      }
+    }
+
+    pdfInput.value = '';
+    state('🟢 Listo');
+  };
+
+  // MULTIMODAL: Generic file handler
+  fileInput.onchange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    state('📎 Procesando archivos...');
+
+    for (const file of files) {
+      try {
+        const base64 = await fileToBase64(file);
+
+        const r = await fetch('/api/file-analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file: base64,
+            filename: file.name,
+            mimeType: file.type
+          })
+        });
+
+        if (!r.ok) throw new Error('File analysis failed');
+
+        const { analysis } = await r.json();
+
+        pushMsg('user', `📎 [Archivo adjunto: ${file.name}]`);
+        pushMsg('assistant', analysis);
+
+      } catch (err) {
+        log.error('File processing error:', err);
+        pushMsg('assistant', `⚠️ No pude procesar ${file.name}. Reinténtalo.`);
+      }
+    }
+
+    fileInput.value = '';
+    state('🟢 Listo');
+  };
+
+  // MULTIMODAL: Helper functions
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function extractVideoFrame(file) {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+
+      video.onloadeddata = () => {
+        video.currentTime = 1; // Extraer frame en segundo 1
+      };
+
+      video.onseeked = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+        URL.revokeObjectURL(video.src);
+        resolve(base64);
+      };
+
+      video.onerror = reject;
+      video.src = URL.createObjectURL(file);
+    });
+  }
+
   function showSOS(){ sosEl.textContent = '🚨 SOS detectado (placeholder). Integra aquí tu rutina de emergencia/restauración.';
     sosEl.style.display='block'; setTimeout(()=> sosEl.style.display='none', 5000); }
 
-  pushMsg('assistant', 'Hola, soy Sandra. Toca 🎤 o di “Hola Sandra” (tras permitir el micrófono).');
+  pushMsg('assistant', 'Hola, soy Sandra. Escribe, habla o adjunta archivos para comenzar.');
   state('🟢 Listo');
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   if (!isIOS) document.querySelector('#installBox').style.display='none';
