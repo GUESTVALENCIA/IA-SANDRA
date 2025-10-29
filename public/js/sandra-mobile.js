@@ -30,8 +30,11 @@
 
         <!-- Menú desplegable discreto -->
         <div class="clip-menu" id="clipMenu">
+          <button class="clip-menu-item" id="captureBtn" aria-label="Capturar imagen">
+            📷 Capturar imagen
+          </button>
           <button class="clip-menu-item" id="cameraBtn" aria-label="Subir imagen">
-            📷 Imagen
+            🖼️ Subir imagen
           </button>
           <button class="clip-menu-item" id="videoBtn" aria-label="Subir video">
             🎥 Video
@@ -58,10 +61,20 @@
       </div>
 
       <!-- Hidden file inputs -->
-      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" multiple/>
+      <input type="file" id="cameraInput" accept="image/*" style="display:none" multiple/>
       <input type="file" id="videoInput" accept="video/*" capture="user" style="display:none"/>
       <input type="file" id="pdfInput" accept="application/pdf,.pdf" style="display:none" multiple/>
       <input type="file" id="fileInput" accept="*/*" style="display:none" multiple/>
+
+      <!-- Camera capture elements (hidden by default) -->
+      <div id="cameraModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <video id="cameraPreview" autoplay playsinline style="max-width:90%; max-height:70vh; border-radius:12px;"></video>
+        <canvas id="cameraCanvas" style="display:none;"></canvas>
+        <div style="margin-top:20px; display:flex; gap:15px;">
+          <button id="capturePhotoBtn" class="btn" style="background:#4CAF50; color:white; padding:12px 30px; border-radius:8px; border:none; font-size:16px;">📸 Capturar</button>
+          <button id="closeCameraBtn" class="btn" style="background:#f44336; color:white; padding:12px 30px; border-radius:8px; border:none; font-size:16px;">✖ Cancelar</button>
+        </div>
+      </div>
 
       <div class="wave" id="wave"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="install" id="installBox">
@@ -504,6 +517,7 @@
   });
 
   // MULTIMODAL: File handlers
+  const captureBtn = $('#captureBtn');
   const cameraBtn = $('#cameraBtn');
   const videoBtn = $('#videoBtn');
   const pdfBtn = $('#pdfBtn');
@@ -514,6 +528,121 @@
   const pdfInput = $('#pdfInput');
   const fileInput = $('#fileInput');
 
+  // Camera capture elements
+  const cameraModal = $('#cameraModal');
+  const cameraPreview = $('#cameraPreview');
+  const cameraCanvas = $('#cameraCanvas');
+  const capturePhotoBtn = $('#capturePhotoBtn');
+  const closeCameraBtn = $('#closeCameraBtn');
+
+  let currentStream = null;
+
+  // NUEVA FUNCIONALIDAD: Captura directa de cámara
+  captureBtn.onclick = async () => {
+    clipMenu.classList.remove('show');
+
+    try {
+      state('📷 Solicitando acceso a cámara...');
+
+      // Solicitar acceso a cámara
+      currentStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user', // Cámara frontal
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+
+      // Mostrar preview
+      cameraPreview.srcObject = currentStream;
+      cameraModal.style.display = 'flex';
+      state('📸 Posiciona la cámara y captura');
+
+    } catch (err) {
+      log.error('Camera access error:', err);
+      state('⚠️ No se pudo acceder a la cámara');
+      pushMsg('assistant', '⚠️ No pude acceder a la cámara. Verifica los permisos del navegador.');
+    }
+  };
+
+  // Capturar foto
+  capturePhotoBtn.onclick = async () => {
+    try {
+      state('📸 Capturando imagen...');
+
+      // Obtener dimensiones del video
+      const videoWidth = cameraPreview.videoWidth;
+      const videoHeight = cameraPreview.videoHeight;
+
+      // Configurar canvas
+      cameraCanvas.width = videoWidth;
+      cameraCanvas.height = videoHeight;
+
+      // Capturar frame
+      const ctx = cameraCanvas.getContext('2d');
+      ctx.drawImage(cameraPreview, 0, 0, videoWidth, videoHeight);
+
+      // Convertir a base64
+      const imageBase64 = cameraCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+      // Cerrar cámara
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+      cameraModal.style.display = 'none';
+
+      state('🤖 Sandra analizando imagen...');
+
+      // Enviar a vision API
+      const r = await fetch('/api/vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: imageBase64,
+          mode: 'analyze',
+          prompt: '¿Qué ves en esta imagen? Describe en detalle lo que observas.'
+        })
+      });
+
+      if (!r.ok) {
+        const errorData = await r.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Vision API failed');
+      }
+
+      const data = await r.json();
+      const analysis = data.data?.analysis || data.analysis || 'No pude analizar la imagen';
+
+      pushMsg('user', '📷 [Imagen capturada desde cámara]');
+      pushMsg('assistant', `Veo: ${analysis}`);
+
+      state('🟢 Listo');
+
+    } catch (err) {
+      log.error('Image capture error:', err);
+      state('⚠️ Error al capturar imagen');
+      pushMsg('assistant', '⚠️ No pude capturar o analizar la imagen. Reinténtalo.');
+
+      // Cerrar cámara en caso de error
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+      cameraModal.style.display = 'none';
+    }
+  };
+
+  // Cerrar cámara sin capturar
+  closeCameraBtn.onclick = () => {
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+      currentStream = null;
+    }
+    cameraModal.style.display = 'none';
+    state('🟢 Listo');
+  };
+
+  // Upload de imagen desde archivo
   cameraBtn.onclick = () => {
     clipMenu.classList.remove('show');
     cameraInput.click();
@@ -547,18 +676,19 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            image: base64,
-            mimeType: file.type,
+            imageBase64: base64,
+            mode: 'analyze',
             prompt: 'Describe esta imagen en detalle.'
           })
         });
 
         if (!r.ok) throw new Error('Vision API failed');
 
-        const { description } = await r.json();
+        const data = await r.json();
+        const analysis = data.data?.analysis || data.analysis || 'No pude analizar la imagen';
 
-        pushMsg('user', `📷 [Imagen adjunta: ${file.name}]`);
-        pushMsg('assistant', description);
+        pushMsg('user', `🖼️ [Imagen adjunta: ${file.name}]`);
+        pushMsg('assistant', analysis);
 
       } catch (err) {
         log.error('Image processing error:', err);
@@ -585,18 +715,19 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          image: videoFrame,
-          mimeType: 'image/jpeg',
+          imageBase64: videoFrame,
+          mode: 'analyze',
           prompt: 'Describe el contenido de este video.'
         })
       });
 
       if (!r.ok) throw new Error('Video analysis failed');
 
-      const { description } = await r.json();
+      const data = await r.json();
+      const analysis = data.data?.analysis || data.analysis || 'No pude analizar el video';
 
       pushMsg('user', `🎥 [Video adjunto: ${file.name}]`);
-      pushMsg('assistant', `Análisis del video: ${description}`);
+      pushMsg('assistant', `Análisis del video: ${analysis}`);
 
     } catch (err) {
       log.error('Video processing error:', err);

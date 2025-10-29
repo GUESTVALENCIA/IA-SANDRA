@@ -1,21 +1,21 @@
 /* =============================================================================
    SANDRA IA 7.0 - GALAXY ENTERPRISE PRO UI/UX
-   Diseño: Fresco, moderno, profesional
-   Paleta: Colores visibles con excelente contraste
+   Diseño: Azul cielo claro profesional (Telegram/Twitter style)
+   Paleta: Fondo azul cielo, chat blanco, contraste perfecto
    Tipografía: Inter/SF Pro Display
    ============================================================================= */
 
 /* =========================================
    VARIABLES DE DISEÑO GALAXY ENTERPRISE
-   PALETA FRESCA Y PROFESIONAL
+   PALETA AZUL CIELO CLARO PROFESIONAL
    ========================================= */
 :root {
-  /* Backgrounds - FRESCOS Y VISIBLES */
-  --bg-primary: #F5F7FA;              /* Gris azulado muy suave (como Slack) */
-  --bg-secondary: #E8EDF2;            /* Gris azulado claro visible */
-  --bg-panel: #FFFFFF;                /* Blanco puro para paneles */
+  /* Backgrounds - AZUL CIELO CLARO (como Telegram) */
+  --bg-primary: #E3F2FD;              /* Azul cielo claro - FONDO PRINCIPAL */
+  --bg-secondary: #BBDEFB;            /* Azul cielo medio - MARCOS Y CONTENEDORES */
+  --bg-panel: #FFFFFF;                /* Blanco puro SOLO para panel de chat */
   --bg-input: #FFFFFF;                /* Blanco para inputs */
-  --bg-header: #2C3E50;               /* Azul oscuro elegante para header */
+  --bg-header: #2C3E50;               /* Azul oscuro elegante para header (MANTENER) */
 
   /* Textos - CONTRASTE PERFECTO */
   --text-primary: #2C3E50;            /* Azul oscuro profesional (excelente legibilidad) */
@@ -23,7 +23,7 @@
   --text-muted: #90A4AE;              /* Gris azulado suave */
   --text-inverse: #FFFFFF;            /* Blanco para textos sobre fondos oscuros */
 
-  /* Acentos corporativos - VIBRANTES Y FRESCOS */
+  /* Acentos corporativos - AZUL CIELO VIBRANTE */
   --accent-blue: #4A90E2;             /* Azul principal vibrante */
   --accent-blue-light: #E3F2FD;       /* Azul muy claro para fondos */
   --accent-blue-medium: #90CAF9;      /* Azul medio para bordes */
@@ -40,8 +40,8 @@
   --accent-orange-light: #FFF3E0;     /* Naranja muy claro */
 
   /* Mensajes chat - COLORES VISIBLES */
-  --msg-user-bg: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);  /* Azul claro visible */
-  --msg-user-border: #90CAF9;                                          /* Borde azul medio */
+  --msg-user-bg: linear-gradient(135deg, #90CAF9 0%, #64B5F6 100%);  /* Azul claro visible */
+  --msg-user-border: #64B5F6;                                         /* Borde azul medio visible */
   --msg-ai-bg: #F5F5F5;                                               /* Gris claro neutral */
   --msg-ai-border: #E0E0E0;                                           /* Gris medio */
 
@@ -53,13 +53,13 @@
   --warning: #FF9800;                 /* Naranja */
   --warning-light: #FFB74D;           /* Naranja claro */
 
-  /* Bordes y sombras - VISIBLES */
-  --border-color: #CFD8DC;            /* Gris azulado visible */
-  --border-light: #ECEFF1;            /* Gris azulado muy claro */
-  --shadow-sm: 0 1px 3px rgba(44, 62, 80, 0.08);
-  --shadow-md: 0 4px 12px rgba(44, 62, 80, 0.12);
-  --shadow-lg: 0 8px 24px rgba(44, 62, 80, 0.16);
-  --shadow-floating: 0 12px 32px rgba(44, 62, 80, 0.20);
+  /* Bordes y sombras - VISIBLES AZUL CIELO */
+  --border-color: #90CAF9;            /* Azul claro visible para bordes */
+  --border-light: #BBDEFB;            /* Azul muy claro para bordes suaves */
+  --shadow-sm: 0 1px 3px rgba(74, 144, 226, 0.12);
+  --shadow-md: 0 4px 12px rgba(74, 144, 226, 0.15);
+  --shadow-lg: 0 8px 24px rgba(74, 144, 226, 0.18);
+  --shadow-floating: 0 12px 32px rgba(74, 144, 226, 0.22);
 
   /* Gradientes profesionales */
   --gradient-blue: linear-gradient(135deg, #5FA5E8 0%, #4A90E2 100%);
@@ -97,7 +97,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg-primary);
+  background: var(--bg-primary);      /* AZUL CIELO CLARO */
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display',
                'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
@@ -118,11 +118,12 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--bg-primary);      /* AZUL CIELO CLARO */
 }
 
 /* =========================================
    HEADER - AVATAR Y TÍTULO
-   FONDO DE COLOR ELEGANTE
+   FONDO DE COLOR ELEGANTE (MANTENER AZUL OSCURO)
    ========================================= */
 .header {
   display: flex;
@@ -130,7 +131,7 @@ body {
   gap: var(--spacing-md);
   padding: var(--spacing-lg);
   margin: calc(var(--spacing-md) * -1) calc(var(--spacing-md) * -1) var(--spacing-lg);
-  background: var(--bg-header);
+  background: var(--bg-header);       /* AZUL OSCURO - MANTENER */
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   box-shadow: var(--shadow-md);
 }
@@ -215,11 +216,12 @@ body {
 
 /* =========================================
    PANEL - CONTENEDOR DE CHAT
+   ESTE ES BLANCO (ÚNICO ELEMENTO BLANCO)
    ========================================= */
 .panel {
   flex: 1;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-light);
+  background: var(--bg-panel);        /* BLANCO - ÚNICO ELEMENTO BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
   border-radius: var(--radius-lg);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-md);
@@ -253,13 +255,13 @@ body {
 }
 
 .chat::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--border-color);    /* AZUL CLARO VISIBLE */
   border-radius: 3px;
   transition: background var(--transition-base);
 }
 
 .chat::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: var(--accent-blue);
 }
 
 .msg {
@@ -285,9 +287,9 @@ body {
 
 .msg.user {
   align-self: flex-end;
-  background: var(--msg-user-bg);
+  background: var(--msg-user-bg);     /* AZUL CLARO VISIBLE */
   color: var(--text-primary);
-  border: 1px solid var(--msg-user-border);
+  border: 2px solid var(--msg-user-border);  /* BORDE AZUL VISIBLE */
   border-bottom-right-radius: var(--spacing-xs);
   font-weight: 500;
 }
@@ -316,7 +318,7 @@ body {
 
 /* CLIP BUTTON (+) - Alineado izquierda, flex: none */
 .clip-btn {
-  background: var(--bg-panel);
+  background: var(--bg-panel);        /* BLANCO */
   border: 2px solid var(--accent-violet);
   color: var(--accent-violet);
   width: 44px;
@@ -359,8 +361,8 @@ body {
   position: absolute;
   bottom: 50px;
   left: 0;
-  background: var(--bg-panel);
-  border: 2px solid var(--border-color);
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-floating);
   padding: var(--spacing-xs);
@@ -422,8 +424,8 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background: var(--bg-input);
-  border: 2px solid var(--border-color);
+  background: var(--bg-input);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
@@ -469,7 +471,7 @@ textarea::-webkit-scrollbar-thumb {
 
 /* VOICE BUTTON - Dentro del input wrapper, derecha del textarea */
 .voice-btn {
-  background: var(--bg-panel);
+  background: var(--bg-panel);        /* BLANCO */
   border: 2px solid var(--accent-orange);
   color: var(--accent-orange);
   width: 40px;
@@ -577,8 +579,8 @@ textarea::-webkit-scrollbar-thumb {
    BOTONES GENERALES
    ========================================= */
 .btn {
-  background: var(--bg-panel);
-  border: 2px solid var(--border-color);
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
   color: var(--text-primary);
   padding: 10px 16px;
   border-radius: var(--radius-md);
@@ -624,10 +626,10 @@ textarea::-webkit-scrollbar-thumb {
   color: var(--text-secondary);
   margin-top: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--bg-secondary);
+  background: var(--bg-secondary);    /* AZUL CIELO MEDIO */
   border-radius: var(--radius-sm);
   text-align: center;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border-color);
 }
 
 /* =========================================
@@ -684,8 +686,8 @@ textarea::-webkit-scrollbar-thumb {
 
 .modal .card {
   width: min(92vw, 520px);
-  background: var(--bg-panel);
-  border: 2px solid var(--border-color);
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-floating);
@@ -978,4 +980,5 @@ input:focus-visible {
 
 /* =========================================
    END OF GALAXY ENTERPRISE PRO STYLES
+   ESQUEMA AZUL CIELO CLARO PROFESIONAL APLICADO
    ========================================= */
