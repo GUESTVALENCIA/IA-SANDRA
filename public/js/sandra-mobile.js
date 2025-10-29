@@ -18,56 +18,60 @@
           <div class="badge">Voz · Barge-in · Multimodal</div>
         </div>
       </div>
-      <div class="panel" id="panelChat"></div>
 
-      <!-- MULTIMODAL INPUT BAR - Galaxy Enterprise (ChatGPT/Claude Style) -->
-      <div class="multimodal-input-bar">
-        <button class="clip-btn" id="clipBtn" aria-label="Adjuntar archivos">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
+      <!-- PANEL DE CHAT CON MULTIMODAL BAR INTEGRADA (ChatGPT/WhatsApp Style) -->
+      <div class="panel" id="panelChat">
+        <!-- Chat messages will be inserted here -->
 
-        <!-- Menú desplegable discreto -->
-        <div class="clip-menu" id="clipMenu">
-          <button class="clip-menu-item" id="captureBtn" aria-label="Capturar imagen">
-            📷 Capturar imagen
+        <!-- MULTIMODAL INPUT BAR - INTEGRADA DENTRO DEL PANEL -->
+        <div class="multimodal-input-bar">
+          <button class="clip-btn" id="clipBtn" aria-label="Adjuntar archivos">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
           </button>
-          <button class="clip-menu-item" id="cameraBtn" aria-label="Subir imagen">
-            🖼️ Subir imagen
+
+          <!-- Menú desplegable discreto -->
+          <div class="clip-menu" id="clipMenu">
+            <button class="clip-menu-item" id="captureBtn" aria-label="Capturar imagen">
+              📷 Capturar imagen
+            </button>
+            <button class="clip-menu-item" id="cameraBtn" aria-label="Subir imagen">
+              🖼️ Subir imagen
+            </button>
+            <button class="clip-menu-item" id="videoBtn" aria-label="Subir video">
+              🎥 Video
+            </button>
+            <button class="clip-menu-item" id="pdfBtn" aria-label="Subir PDF">
+              📄 PDF
+            </button>
+            <button class="clip-menu-item" id="fileBtn" aria-label="Adjuntar archivo">
+              📎 Archivo
+            </button>
+          </div>
+
+          <div class="input-wrapper">
+            <textarea id="input" placeholder="Escribe tu mensaje..." autocomplete="off" rows="1"></textarea>
+          </div>
+
+          <button class="voice-btn" id="micBtn" aria-label="Click para dictar (ChatGPT style)">
+            🎤
           </button>
-          <button class="clip-menu-item" id="videoBtn" aria-label="Subir video">
-            🎥 Video
-          </button>
-          <button class="clip-menu-item" id="pdfBtn" aria-label="Subir PDF">
-            📄 PDF
-          </button>
-          <button class="clip-menu-item" id="fileBtn" aria-label="Adjuntar archivo">
-            📎 Archivo
+
+          <button class="send-btn" id="sendBtn" aria-label="Enviar mensaje">
+            ➤
           </button>
         </div>
-
-        <div class="input-wrapper">
-          <textarea id="input" placeholder="Escribe tu mensaje..." autocomplete="off" rows="1"></textarea>
-        </div>
-
-        <button class="voice-btn" id="micBtn" aria-label="Click para dictar (ChatGPT style)">
-          🎤
-        </button>
-
-        <button class="send-btn" id="sendBtn" aria-label="Enviar mensaje">
-          ➤
-        </button>
       </div>
 
       <!-- Hidden file inputs -->
       <input type="file" id="cameraInput" accept="image/*" style="display:none" multiple/>
-      <input type="file" id="videoInput" accept="video/*" capture="user" style="display:none"/>
+      <input type="file" id="videoInput" accept="video/*" style="display:none"/>
       <input type="file" id="pdfInput" accept="application/pdf,.pdf" style="display:none" multiple/>
       <input type="file" id="fileInput" accept="*/*" style="display:none" multiple/>
 
       <!-- Camera capture elements (hidden by default) -->
-      <div id="cameraModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <div id="cameraModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
         <video id="cameraPreview" autoplay playsinline style="max-width:90%; max-height:70vh; border-radius:12px;"></video>
         <canvas id="cameraCanvas" style="display:none;"></canvas>
         <div style="margin-top:20px; display:flex; gap:15px;">
