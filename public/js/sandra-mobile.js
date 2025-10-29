@@ -59,6 +59,8 @@
   const messages = [];
   let isProcessing = false;  // ENTERPRISE: Lock de concurrencia
   let requestId = 0;         // ENTERPRISE: Tracking de requests
+  let isSandraPlaying = false; // Barge-in: Sandra hablando flag
+  let currentProcessingId = null; // ID del request actual
 
   // ENTERPRISE: Logging estructurado
   const log = {
@@ -111,9 +113,15 @@
       src.connect(analyser);
       source = src;
       currentAudio = src;
+      isSandraPlaying = true; // BARGE-IN: Marcar que Sandra está hablando
       src.start();
       animateMouth();
-      src.onended = () => { currentAudio = null; wave.classList.remove('active'); setMouth(0.1); };
+      src.onended = () => {
+        currentAudio = null;
+        isSandraPlaying = false; // BARGE-IN: Sandra terminó de hablar
+        wave.classList.remove('active');
+        setMouth(0.1);
+      };
     });
   }
   function setMouth(level){
@@ -162,11 +170,14 @@
         return;
       }
 
-      // ENTERPRISE FIX: Detener micrófono ANTES de procesar para evitar bucle
+      // BARGE-IN FIX: Detección de interrupción
       if (last.isFinal && !wakeMode) {
         stopRec();  // Detener reconocimiento primero
 
-        // ENTERPRISE: Cancelación audio mejorada
+        // BARGE-IN: Si Sandra está hablando, es una interrupción
+        const isBargeIn = isSandraPlaying;
+
+        // BARGE-IN: Cancelar audio de Sandra si está hablando
         if (currentAudio) {
           try {
             currentAudio.stop();
@@ -175,10 +186,18 @@
             log.warn('Audio stop error:', e);
           }
           currentAudio = null;
+          isSandraPlaying = false;
+        }
+
+        // BARGE-IN: Cancelar procesamiento anterior si existe
+        if (isBargeIn && isProcessing) {
+          log.info('BARGE-IN DETECTED: Cancelando procesamiento anterior');
+          isProcessing = false; // Liberar el lock
+          currentProcessingId = null; // Reset ID
         }
 
         pushMsg('user', text);
-        handleQuery(text);
+        handleQuery(text, isBargeIn);
       }
     };
   }
@@ -261,15 +280,22 @@
       throw error;
     }
   }
-  async function handleQuery(text){
-    // ENTERPRISE: Lock de concurrencia
-    if (isProcessing) {
+  async function handleQuery(text, isBargeIn = false){
+    // BARGE-IN FIX: Permitir interrupción
+    if (isProcessing && !isBargeIn) {
       log.warn('Query already in progress, ignoring duplicate');
       state('⚠️ Ya procesando consulta anterior...');
       return;
     }
 
+    // BARGE-IN: Si es interrupción, cancelar request anterior
+    if (isBargeIn && currentProcessingId) {
+      log.info('BARGE-IN: Cancelando request anterior', currentProcessingId);
+      // El request anterior se descartará en la validación
+    }
+
     const currentRequestId = ++requestId;
+    currentProcessingId = currentRequestId;
     isProcessing = true;
     sendBtn.disabled = true;
     micBtn.disabled = true;
@@ -282,9 +308,9 @@
       const { text:answer } = await chatLLM(text);
       trackMetric('chat', Date.now() - chatStart);
 
-      // ENTERPRISE: Validar que no hay request más reciente
+      // BARGE-IN: Validar que no fue cancelado
       if (currentRequestId !== requestId) {
-        log.info('Newer request detected, discarding this response');
+        log.info('Request cancelado por barge-in, descartando respuesta');
         return;
       }
 
@@ -313,7 +339,11 @@
       pushMsg('assistant', userMsg);
     }
     finally {
-      isProcessing = false;
+      // BARGE-IN: Solo liberar si es el request actual
+      if (currentRequestId === requestId) {
+        isProcessing = false;
+        currentProcessingId = null;
+      }
       sendBtn.disabled = false;
       micBtn.disabled = false;
     }
