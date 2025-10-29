@@ -249,6 +249,63 @@ body {
 }
 
 /* =========================================
+   LANGUAGE SELECTOR - MULTI-LANGUAGE HOT-SWAP
+   CEO URGENT REQUIREMENT: ES/EN/FR instant switch
+   ========================================= */
+.language-selector {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  justify-content: center;
+  align-items: center;
+}
+
+.lang-btn {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--text-inverse);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  user-select: none;
+  box-shadow: var(--shadow-sm);
+  min-width: 60px;
+}
+
+.lang-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.lang-btn.active {
+  background: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+  transform: translateY(-1px);
+}
+
+.lang-btn.active:hover {
+  background: var(--accent-blue-medium);
+  border-color: var(--accent-blue-medium);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.5);
+}
+
+.lang-btn:active {
+  transform: scale(0.95);
+}
+
+/* =========================================
    PANEL - CONTENEDOR DE CHAT (INTEGRADO CON MULTIMODAL BAR)
    CHATGPT/WHATSAPP STYLE - TODO DENTRO DEL PANEL BLANCO
    NATIVE APP: Scroll contained within panel only
@@ -342,6 +399,37 @@ body {
   color: var(--text-primary);
   border: 1px solid var(--msg-ai-border);
   border-bottom-left-radius: var(--spacing-xs);
+}
+
+/* System messages for language changes */
+.msg.system {
+  align-self: center;
+  background: var(--accent-violet-light);
+  border: 2px solid var(--accent-violet);
+  padding: 10px 16px;
+  margin: 8px 0;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: 500;
+  max-width: 90%;
+  box-shadow: var(--shadow-sm);
+  animation: system-message-pulse 0.5s ease-out;
+}
+
+@keyframes system-message-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* =========================================
@@ -980,6 +1068,17 @@ input[type="file"] {
     font-size: 12px;
   }
 
+  /* Language selector compact on small screens */
+  .language-selector {
+    gap: 6px;
+  }
+
+  .lang-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    min-width: 55px;
+  }
+
   /* Botones más compactos en pantallas pequeñas */
   .clip-btn,
   .voice-btn,
@@ -1077,7 +1176,8 @@ input:focus-visible {
   .wake-btn,
   .send-btn,
   .install,
-  .wave {
+  .wave,
+  .language-selector {
     display: none;
   }
 
@@ -1095,4 +1195,59 @@ input:focus-visible {
    ESQUEMA AZUL CIELO CLARO PROFESIONAL APLICADO
    MULTIMODAL BAR INTEGRADA DENTRO DEL PANEL (ChatGPT/WhatsApp Style)
    WAKE WORD BUTTON GALAXY LEVEL FEATURE ACTIVATED
+   MULTI-LANGUAGE SELECTOR HOT-SWAP ES/EN/FR READY
+   ========================================= */
+
+/* =========================================
+   GUARDIAN PROTOCOL - VISUAL INDICATORS
+   Emergency snapshot/restoration feedback
+   ========================================= */
+
+/* Guardian active state - Orange pulse */
+.guardian-active {
+  border: 3px solid var(--accent-orange) !important;
+  animation: guardian-pulse 2s infinite;
+}
+
+@keyframes guardian-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px var(--accent-orange); 
+  }
+  50% { 
+    box-shadow: 0 0 40px var(--accent-orange); 
+  }
+}
+
+/* Guardian badge indicator */
+.guardian-badge {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: var(--accent-orange);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  display: none;
+  z-index: 1000;
+}
+
+.guardian-badge.active {
+  display: block;
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   END GUARDIAN PROTOCOL STYLES
    ========================================= */

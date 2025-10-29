@@ -2,6 +2,7 @@
 // SANDRA IA 7.0 - SYSTEM PROMPTS (ADN BASE + 18 ROLES)
 // BASE DNA: Persistent across ALL layers and roles
 // ARCHITECTURE: Ollama (Qwen/Mistral/Llama) + GROQ fallback
+// MULTI-LANGUAGE: ES/EN/FR hot-swap support
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -51,6 +52,27 @@ OBJETIVO FINAL:
 Sonar como una persona real, inteligente y profesional. Versátil, natural y con personalidad.`;
 
 /**
+ * MULTI-LANGUAGE INSTRUCTIONS
+ * Language-specific response instructions for ES/EN/FR
+ */
+const LANGUAGE_INSTRUCTIONS = {
+  es: `**IDIOMA:** Responde SIEMPRE en español (es-ES).
+- Usa lenguaje natural y cercano.
+- Sé profesional pero accesible.
+- Adapta expresiones al español de España.`,
+
+  en: `**LANGUAGE:** ALWAYS respond in English (en-US).
+- Use natural and friendly language.
+- Be professional yet approachable.
+- Use American English expressions.`,
+
+  fr: `**LANGUE:** Réponds TOUJOURS en français (fr-FR).
+- Utilise un langage naturel et amical.
+- Sois professionnel mais accessible.
+- Adapte les expressions au français standard.`
+};
+
+/**
  * ROLES DE SANDRA IA 7.0
  * Cada rol tiene su prompt específico que se combina con el ADN base
  */
@@ -69,8 +91,6 @@ TUS RESPONSABILIDADES:
 - Ofrecer recomendaciones personalizadas
 
 TONO: Profesional, cálida, servicial y orientada al turismo. Como una recepcionista de hotel de 5 estrellas pero accesible.
-
-IDIOMA: Español de España (es-ES), pero puedes cambiar según el cliente lo solicite.
 
 EJEMPLOS:
 Usuario: "Hola, busco apartamento para 4 personas"
@@ -729,20 +749,25 @@ Proceso de validación rápida:
 3. SOLUCIÓN: ¿Tu idea lo resuelve MEJOR que alternativas?
 4. MONETIZACIÓN: ¿Pagarían por ello?
 
-Ejercicio prácido:
+Ejercicio práctico:
 Habla con 10 personas de tu público objetivo esta semana. Pregúntales sobre el problema (NO vendas tu solución todavía).
 
 Cuéntame tu idea (resumida) y te ayudo a diseñar las preguntas de validación. 🚀💙"`
 };
 
 /**
- * CONSTRUIR PROMPT COMPLETO
- * Combina ADN base + Rol específico
+ * CONSTRUIR PROMPT COMPLETO CON MULTI-LANGUAGE
+ * Combina ADN base + Instrucciones de idioma + Rol específico
  */
-function buildSystemPrompt(role = 'guests-valencia') {
+function buildSystemPrompt(role = 'guests-valencia', language = 'es') {
   const rolePrompt = ROLE_PROMPTS[role] || ROLE_PROMPTS['guests-valencia'];
+  const langInstruction = LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS['es'];
 
   return `${BASE_DNA}
+
+════════════════════════════════════════════════════════════════
+
+${langInstruction}
 
 ════════════════════════════════════════════════════════════════
 
@@ -763,6 +788,13 @@ function isValidRole(role) {
   return ROLE_PROMPTS.hasOwnProperty(role);
 }
 
+/**
+ * VALIDAR SI UN IDIOMA EXISTE
+ */
+function isValidLanguage(language) {
+  return LANGUAGE_INSTRUCTIONS.hasOwnProperty(language);
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════════
@@ -770,7 +802,9 @@ function isValidRole(role) {
 module.exports = {
   BASE_DNA,
   ROLE_PROMPTS,
+  LANGUAGE_INSTRUCTIONS,
   buildSystemPrompt,
   getAvailableRoles,
-  isValidRole
+  isValidRole,
+  isValidLanguage
 };

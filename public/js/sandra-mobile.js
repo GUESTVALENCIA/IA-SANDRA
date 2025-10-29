@@ -15,6 +15,19 @@
         </div>
         <div>
           <div class="title">Sandra IA · Conversación</div>
+
+          <!-- LANGUAGE SELECTOR - MULTI-LANGUAGE HOT-SWAP ES/EN/FR -->
+          <div class="language-selector">
+            <button class="lang-btn active" data-lang="es" title="Español">
+              🇪🇸 ES
+            </button>
+            <button class="lang-btn" data-lang="en" title="English">
+              🇬🇧 EN
+            </button>
+            <button class="lang-btn" data-lang="fr" title="Français">
+              🇫🇷 FR
+            </button>
+          </div>
         </div>
       </div>
 
@@ -118,16 +131,171 @@
   const clipBtn = $("#clipBtn");
   const clipMenu = $("#clipMenu");
 
+  // ============================================
+  // MULTI-LANGUAGE SYSTEM - ES/EN/FR HOT-SWAP
+  // Instant language switching without reload
+  // CEO URGENT REQUIREMENT
+  // ============================================
+
+  let currentLanguage = 'es'; // Default Spanish
+
+  const LANGUAGE_CONFIG = {
+    es: {
+      code: 'es-ES',
+      name: 'Español',
+      flag: '🇪🇸',
+      voiceRecognition: 'es-ES',
+      ttsLocale: 'es-ES',
+      greetings: ['Hola', 'Buenos días', 'Buenas tardes'],
+      placeholders: {
+        input: 'Escribe tu mensaje...',
+        listening: '🎤 Escuchando...',
+        ready: '🟢 Listo',
+        processing: '⏳ Procesando...',
+        thinking: '🤖 Pensando...',
+        speaking: '📢 Hablando...'
+      },
+      wakeWord: 'hola sandra',
+      wakeWordTitle: "Activar 'Hola Sandra'",
+      wakeWordListening: '🎤 Escuchando "Hola Sandra"...',
+      wakeWordDeactivate: 'Desactivar wake word'
+    },
+    en: {
+      code: 'en-US',
+      name: 'English',
+      flag: '🇬🇧',
+      voiceRecognition: 'en-US',
+      ttsLocale: 'en-US',
+      greetings: ['Hello', 'Good morning', 'Good afternoon'],
+      placeholders: {
+        input: 'Type your message...',
+        listening: '🎤 Listening...',
+        ready: '🟢 Ready',
+        processing: '⏳ Processing...',
+        thinking: '🤖 Thinking...',
+        speaking: '📢 Speaking...'
+      },
+      wakeWord: 'hey sandra',
+      wakeWordTitle: "Activate 'Hey Sandra'",
+      wakeWordListening: '🎤 Listening for "Hey Sandra"...',
+      wakeWordDeactivate: 'Deactivate wake word'
+    },
+    fr: {
+      code: 'fr-FR',
+      name: 'Français',
+      flag: '🇫🇷',
+      voiceRecognition: 'fr-FR',
+      ttsLocale: 'fr-FR',
+      greetings: ['Bonjour', 'Bonsoir'],
+      placeholders: {
+        input: 'Tapez votre message...',
+        listening: '🎤 Écoute...',
+        ready: '🟢 Prêt',
+        processing: '⏳ Traitement...',
+        thinking: '🤖 Réflexion...',
+        speaking: '📢 Parole...'
+      },
+      wakeWord: 'salut sandra',
+      wakeWordTitle: "Activer 'Salut Sandra'",
+      wakeWordListening: '🎤 Écoute "Salut Sandra"...',
+      wakeWordDeactivate: 'Désactiver wake word'
+    }
+  };
+
+  // Switch language instantly (hot-swap without reload)
+  function switchLanguage(langCode) {
+    if (!LANGUAGE_CONFIG[langCode]) {
+      log.error(`Invalid language code: ${langCode}`);
+      return;
+    }
+
+    const prevLang = currentLanguage;
+    currentLanguage = langCode;
+    const config = LANGUAGE_CONFIG[langCode];
+
+    log.info(`🌍 Language switch: ${prevLang} → ${langCode}`);
+
+    // Update UI immediately
+    updateLanguageUI(langCode);
+
+    // Update voice recognition language
+    if (recognition) {
+      recognition.lang = config.voiceRecognition;
+      log.info(`🎤 Voice recognition updated: ${config.voiceRecognition}`);
+    }
+
+    // Update wake word recognition language
+    if (wakeWordRecognition) {
+      wakeWordRecognition.lang = config.voiceRecognition;
+      log.info(`👂 Wake word language updated: ${config.voiceRecognition}`);
+    }
+
+    // Update input placeholder
+    if (input) {
+      input.placeholder = config.placeholders.input;
+    }
+
+    // Update wake button title
+    if (wakeBtn) {
+      wakeBtn.title = isWakeWordListening
+        ? config.wakeWordDeactivate
+        : config.wakeWordTitle;
+    }
+
+    // Update state message
+    state(config.placeholders.ready);
+
+    // Send system message about language change
+    const messages = {
+      es: `${config.flag} Idioma cambiado a ${config.name}`,
+      en: `${config.flag} Language changed to ${config.name}`,
+      fr: `${config.flag} Langue changée en ${config.name}`
+    };
+
+    pushMsg('system', messages[langCode]);
+
+    log.info(`✅ Language switched to ${config.name}`);
+  }
+
+  // Update language button states
+  function updateLanguageUI(langCode) {
+    const buttons = document.querySelectorAll('.lang-btn');
+    buttons.forEach(btn => {
+      if (btn.dataset.lang === langCode) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  // Initialize language selector
+  function initLanguageSelector() {
+    const langButtons = document.querySelectorAll('.lang-btn');
+    langButtons.forEach(btn => {
+      btn.onclick = () => {
+        const lang = btn.dataset.lang;
+        switchLanguage(lang);
+      };
+    });
+
+    log.info('🌍 Multi-language selector initialized (ES/EN/FR)');
+  }
+
+  // Get current language config
+  function getCurrentLanguageConfig() {
+    return LANGUAGE_CONFIG[currentLanguage];
+  }
+
   const messages = [];
   let isProcessing = false;  // ENTERPRISE: Lock de concurrencia
   let requestId = 0;         // ENTERPRISE: Tracking de requests
   let isSandraPlaying = false; // Barge-in: Sandra hablando flag
   let currentProcessingId = null; // ID del request actual
 
-  // WAKE WORD DETECTION - "HOLA SANDRA"
+  // WAKE WORD DETECTION - Multi-language
   let isWakeWordListening = false;
   let wakeWordRecognition = null;
-  const WAKE_WORD = "hola sandra";
 
   // ENTERPRISE: Logging estructurado
   const log = {
@@ -151,7 +319,7 @@
 
   function pushMsg(role, content) {
     const div = document.createElement('div');
-    div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+    div.className = 'msg ' + (role === 'user' ? 'user' : role === 'system' ? 'system' : 'ai');
     div.textContent = content;
     chatEl.appendChild(div);
     chatEl.scrollTop = chatEl.scrollHeight;
@@ -240,11 +408,11 @@
   // CHATGPT-STYLE VOICE DICTATION (Exact Clone)
   // Pattern: Click mic → record continuously → click mic again → stop
   // Transcription goes directly to input field (editable)
+  // MULTI-LANGUAGE: Uses current language config
   // ====================================================================
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
   let isRecording = false;
-  let locale = (localStorage.getItem('sandra_locale') || (navigator.language || 'es-ES'));
 
   function initRecognition() {
     if (!SpeechRecognition) {
@@ -254,7 +422,8 @@
     }
 
     const rec = new SpeechRecognition();
-    rec.lang = locale;
+    const langConfig = getCurrentLanguageConfig();
+    rec.lang = langConfig.voiceRecognition;
     rec.continuous = true;        // ChatGPT: continuous recording
     rec.interimResults = true;    // ChatGPT: show partial results
 
@@ -262,7 +431,8 @@
       isRecording = true;
       micBtn.classList.add('recording');
       wave.classList.add('active');
-      state('🎤 Escuchando');     // ChatGPT style: clean, simple
+      const config = getCurrentLanguageConfig();
+      state(config.placeholders.listening);
       log.info('Recording started');
     };
 
@@ -278,14 +448,16 @@
           isRecording = false;
           micBtn.classList.remove('recording');
           wave.classList.remove('active');
-          state('🟢 Listo');
+          const config = getCurrentLanguageConfig();
+          state(config.placeholders.ready);
           log.error('Auto-restart failed:', err);
         }
       } else {
         // Stopped intentionally
         micBtn.classList.remove('recording');
         wave.classList.remove('active');
-        state('🟢 Listo');
+        const config = getCurrentLanguageConfig();
+        state(config.placeholders.ready);
         log.info('Recording stopped');
       }
     };
@@ -316,6 +488,16 @@
       }
 
       // ChatGPT behavior: add transcription to input field
+      // GUARDIAN PROTOCOL: Check for emergency commands FIRST
+      if (finalTranscript) {
+        const guardianCmd = detectGuardianCommand(finalTranscript);
+        if (guardianCmd) {
+          log.info(\`🛡️ Guardian command detected: \${guardianCmd.type}\`);
+          executeGuardianCommand(guardianCmd.type);
+          return; // Don't add to input field
+        }
+      }
+
       if (finalTranscript) {
         const currentText = input.value.trim();
         input.value = currentText + (currentText ? ' ' : '') + finalTranscript.trim();
@@ -336,6 +518,10 @@
       recognition = initRecognition();
       if (!recognition) return; // Browser doesn't support it
     }
+
+    // Update language before starting
+    const langConfig = getCurrentLanguageConfig();
+    recognition.lang = langConfig.voiceRecognition;
 
     isRecording = true;
 
@@ -367,8 +553,9 @@
   }
 
   // ====================================================================
-  // WAKE WORD DETECTION - "HOLA SANDRA"
+  // WAKE WORD DETECTION - Multi-language support
   // GALAXY LEVEL FEATURE - Continuous listening for activation phrase
+  // LANGUAGES: "hola sandra" (ES) / "hey sandra" (EN) / "salut sandra" (FR)
   // ====================================================================
 
   // Initialize wake word recognition (continuous listening)
@@ -380,7 +567,8 @@
 
     wakeWordRecognition = new SpeechRecognition();
 
-    wakeWordRecognition.lang = 'es-ES';
+    const langConfig = getCurrentLanguageConfig();
+    wakeWordRecognition.lang = langConfig.voiceRecognition;
     wakeWordRecognition.continuous = true;
     wakeWordRecognition.interimResults = false;
     wakeWordRecognition.maxAlternatives = 1;
@@ -389,9 +577,12 @@
       const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
       log.info('🎤 Wake word heard:', transcript);
 
-      // Check if "hola sandra" or variations detected
-      if (transcript.includes('hola sandra') ||
-          transcript.includes('ola sandra') ||
+      const config = getCurrentLanguageConfig();
+      const wakeWord = config.wakeWord;
+
+      // Check if wake word detected (with variations)
+      if (transcript.includes(wakeWord) ||
+          transcript.includes(wakeWord.replace('hola ', 'ola ')) || // Spanish variation
           transcript === 'sandra') {
         log.info('✅ Wake word detected! Activating Sandra...');
         stopWakeWord();
@@ -434,11 +625,15 @@
     if (!wakeWordRecognition) initWakeWord();
     if (!wakeWordRecognition) return;
 
+    // Update language before starting
+    const langConfig = getCurrentLanguageConfig();
+    wakeWordRecognition.lang = langConfig.voiceRecognition;
+
     isWakeWordListening = true;
     try {
       wakeWordRecognition.start();
-      state('🎤 Escuchando "Hola Sandra"...');
-      log.info('🎧 Wake word listening started');
+      state(langConfig.wakeWordListening);
+      log.info(`🎧 Wake word listening started: "${langConfig.wakeWord}"`);
     } catch (e) {
       log.error('Wake word start failed:', e);
     }
@@ -459,12 +654,98 @@
 
   // Activate Sandra when wake word detected
   function activateSandra() {
-    state('👂 Sandra activada - Escuchando...');
+    const config = getCurrentLanguageConfig();
+    state(`👂 Sandra activada - ${config.placeholders.listening}`);
     // Start regular voice recording
     if (!isRecording) {
       startRecording();
     }
   }
+
+  // ============================================
+  // GUARDIAN PROTOCOL - SOS/RESTAURAR COMMANDS
+  // Emergency snapshot and restoration system
+  // CEO Requirement: Voice-activated emergency commands
+  // ============================================
+
+  const GUARDIAN_COMMANDS = {
+    SOS: ['sos', 'emergencia', 'guardar estado', 'punto de restauración', 'snapshot'],
+    RESTAURAR: ['restaurar', 'volver atrás', 'restauración', 'recovery', 'recuperar']
+  };
+
+  // Check if transcript contains Guardian command
+  function detectGuardianCommand(transcript) {
+    const text = transcript.toLowerCase().trim();
+
+    // Check SOS commands
+    for (const cmd of GUARDIAN_COMMANDS.SOS) {
+      if (text.includes(cmd)) {
+        return { type: 'SOS', command: cmd };
+      }
+    }
+
+    // Check RESTAURAR commands
+    for (const cmd of GUARDIAN_COMMANDS.RESTAURAR) {
+      if (text.includes(cmd)) {
+        return { type: 'RESTAURAR', command: cmd };
+      }
+    }
+
+    return null;
+  }
+
+  // Execute Guardian Protocol command
+  async function executeGuardianCommand(type) {
+    try {
+      state(\`🛡️ Guardian Protocol: \${type}...\`);
+      log.info(\`Guardian Protocol activated: \${type}\`);
+
+      // Show visual indicator
+      $("#panelChat").classList.add('guardian-active');
+
+      const response = await fetch('/api/guardian', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: type,
+          timestamp: new Date().toISOString(),
+          context: {
+            conversationHistory: messages.slice(-5), // Last 5 messages
+            userState: 'active'
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(\`Guardian API error: \${response.status}\`);
+      }
+
+      const data = await response.json();
+
+      // Remove visual indicator
+      $("#panelChat").classList.remove('guardian-active');
+
+      if (type === 'SOS') {
+        pushMsg('assistant', \`✅ Punto de restauración creado: \${data.snapshotId}\n\n\` +
+                \`🛡️ Estado guardado de forma segura. Puedes continuar con confianza.\`);
+        state('🟢 Listo - Snapshot guardado');
+      } else {
+        pushMsg('assistant', \`✅ Sistema restaurado al punto: \${data.restoredFrom}\n\n\` +
+                \`🛡️ Estado recuperado exitosamente.\`);
+        state('🟢 Listo - Estado restaurado');
+      }
+
+      log.info(\`Guardian Protocol \${type} completed:\`, data);
+
+    } catch (error) {
+      log.error(\`Guardian Protocol \${type} failed:\`, error);
+      $("#panelChat").classList.remove('guardian-active');
+      pushMsg('assistant', \`⚠️ Error en Guardian Protocol: \${error.message}\n\n\` +
+              \`Por favor, intenta nuevamente.\`);
+      state('🔴 Error Guardian');
+    }
+  }
+
 
   // CHATGPT PATTERN: Simple toggle (click = start/stop)
   micBtn.onclick = async (e) => {
@@ -485,24 +766,32 @@
 
   // Wake word button toggle
   wakeBtn.onclick = () => {
+    const config = getCurrentLanguageConfig();
+
     if (!isWakeWordListening) {
       startWakeWord();
       wakeBtn.classList.add('active');
-      wakeBtn.title = "Desactivar wake word";
+      wakeBtn.title = config.wakeWordDeactivate;
     } else {
       stopWakeWord();
       wakeBtn.classList.remove('active');
-      state('🟢 Listo');
-      wakeBtn.title = "Activar 'Hola Sandra'";
+      state(config.placeholders.ready);
+      wakeBtn.title = config.wakeWordTitle;
     }
   };
 
   function state(t){ stateEl.textContent = t; }
 
-  // Backends
+  // Backends with multi-language support
   const MODE = (window.SANDRA_MODE || null);
   async function chatLLM(text){
-    const body = { messages: messages.slice(-12).concat([{ role:'user', content: text }]), locale, mode: MODE || null };
+    const langConfig = getCurrentLanguageConfig();
+    const body = {
+      messages: messages.slice(-12).concat([{ role:'user', content: text }]),
+      locale: langConfig.code,
+      language: currentLanguage, // NEW: Send current language
+      mode: MODE || null
+    };
 
     // ENTERPRISE: Timeout controller (15s)
     const controller = new AbortController();
@@ -537,6 +826,8 @@
     }
   }
   async function ttsSpeak(text){
+    const langConfig = getCurrentLanguageConfig();
+
     // ENTERPRISE: Timeout controller (10s)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -545,7 +836,11 @@
       const r = await fetch('/api/tts', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          text,
+          locale: langConfig.ttsLocale, // NEW: Send language-specific locale
+          language: currentLanguage // NEW: Send current language
+        }),
         signal: controller.signal
       });
 
@@ -578,6 +873,7 @@
     // BARGE-IN FIX: Permitir interrupción
     if (isProcessing && !isBargeIn) {
       log.warn('Query already in progress, ignoring duplicate');
+      const config = getCurrentLanguageConfig();
       state('⚠️ Ya procesando consulta anterior...');
       return;
     }
@@ -594,8 +890,10 @@
     sendBtn.disabled = true;
     micBtn.disabled = true;
 
+    const config = getCurrentLanguageConfig();
+
     try {
-      state('🤖 Pensando...');
+      state(config.placeholders.thinking);
 
       // Chat con métricas
       const chatStart = Date.now();
@@ -611,14 +909,14 @@
       if (!answer) throw new Error('Empty response from LLM');
       pushMsg('assistant', answer);
 
-      state('📢 Hablando...');
+      state(config.placeholders.speaking);
 
       // TTS con métricas
       const ttsStart = Date.now();
       await ttsSpeak(answer);
       trackMetric('tts', Date.now() - ttsStart);
 
-      state('🟢 Listo');
+      state(config.placeholders.ready);
     }
     catch(e){
       log.error('handleQuery error:', e);
@@ -785,7 +1083,8 @@
       pushMsg('user', '📷 [Imagen capturada desde cámara]');
       pushMsg('assistant', `Veo: ${analysis}`);
 
-      state('🟢 Listo');
+      const config = getCurrentLanguageConfig();
+      state(config.placeholders.ready);
 
     } catch (err) {
       log.error('Image capture error:', err);
@@ -808,7 +1107,8 @@
       currentStream = null;
     }
     cameraModal.style.display = 'none';
-    state('🟢 Listo');
+    const config = getCurrentLanguageConfig();
+    state(config.placeholders.ready);
   };
 
   // Upload de imagen desde archivo
@@ -866,7 +1166,8 @@
     }
 
     cameraInput.value = '';
-    state('🟢 Listo');
+    const config = getCurrentLanguageConfig();
+    state(config.placeholders.ready);
   };
 
   // MULTIMODAL: Video handler
@@ -904,7 +1205,8 @@
     }
 
     videoInput.value = '';
-    state('🟢 Listo');
+    const config = getCurrentLanguageConfig();
+    state(config.placeholders.ready);
   };
 
   // MULTIMODAL: PDF handler
@@ -941,7 +1243,8 @@
     }
 
     pdfInput.value = '';
-    state('🟢 Listo');
+    const config = getCurrentLanguageConfig();
+    state(config.placeholders.ready);
   };
 
   // MULTIMODAL: Generic file handler
@@ -979,7 +1282,8 @@
     }
 
     fileInput.value = '';
-    state('🟢 Listo');
+    const config = getCurrentLanguageConfig();
+    state(config.placeholders.ready);
   };
 
   // MULTIMODAL: Helper functions
@@ -1023,8 +1327,17 @@
   function showSOS(){ sosEl.textContent = '🚨 SOS detectado (placeholder). Integra aquí tu rutina de emergencia/restauración.';
     sosEl.style.display='block'; setTimeout(()=> sosEl.style.display='none', 5000); }
 
-  pushMsg('assistant', 'Hola, soy Sandra. Escribe, habla o adjunta archivos para comenzar. Di "Hola Sandra" para activarme por voz.');
-  state('🟢 Listo');
+  // Welcome message in current language
+  const welcomeMessages = {
+    es: 'Hola, soy Sandra. Escribe, habla o adjunta archivos para comenzar. Di "Hola Sandra" para activarme por voz.',
+    en: 'Hello, I\'m Sandra. Type, speak or attach files to get started. Say "Hey Sandra" to activate me by voice.',
+    fr: 'Bonjour, je suis Sandra. Tapez, parlez ou joignez des fichiers pour commencer. Dites "Salut Sandra" pour m\'activer par la voix.'
+  };
+
+  pushMsg('assistant', welcomeMessages[currentLanguage]);
+  const config = getCurrentLanguageConfig();
+  state(config.placeholders.ready);
+
   // CLEANUP: Manage install prompt visibility
   const installBox = document.querySelector('#installBox');
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -1089,7 +1402,13 @@
     }
   }, { passive: false });
 
+  // ============================================
+  // INITIALIZE MULTI-LANGUAGE SYSTEM
+  // ============================================
+  initLanguageSelector();
+
   log.info('✅ Native app behavior enabled - web gestures disabled');
   log.info('📱 App behaves like WhatsApp/Telegram: fixed, serious, professional');
-  log.info('🎧 Wake word "Hola Sandra" ready - click 👂 button to activate');
+  log.info('🎧 Wake word ready - click 👂 button to activate');
+  log.info('🌍 Multi-language system initialized: ES/EN/FR hot-swap ready');
 })();
