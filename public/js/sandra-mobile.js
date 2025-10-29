@@ -20,19 +20,41 @@
       </div>
       <div class="panel" id="panelChat"></div>
 
-      <!-- MULTIMODAL INPUT BAR - Galaxy Enterprise -->
+      <!-- MULTIMODAL INPUT BAR - Galaxy Enterprise (ChatGPT/Claude Style) -->
       <div class="multimodal-input-bar">
-        <div class="input-wrapper">
-          <input id="input" type="text" placeholder="Escribe, habla, adjunta..." autocomplete="off"/>
-          <div class="multimodal-actions">
-            <button class="action-btn" id="cameraBtn" title="Cámara/Imagen" aria-label="Capturar o subir imagen">📷</button>
-            <button class="action-btn" id="videoBtn" title="Video" aria-label="Grabar o subir video">🎥</button>
-            <button class="action-btn" id="pdfBtn" title="PDF" aria-label="Subir documento PDF">📄</button>
-            <button class="action-btn" id="fileBtn" title="Archivos" aria-label="Adjuntar archivo">📎</button>
-          </div>
+        <button class="clip-btn" id="clipBtn" aria-label="Adjuntar archivos">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <!-- Menú desplegable discreto -->
+        <div class="clip-menu" id="clipMenu">
+          <button class="clip-menu-item" id="cameraBtn" aria-label="Subir imagen">
+            📷 Imagen
+          </button>
+          <button class="clip-menu-item" id="videoBtn" aria-label="Subir video">
+            🎥 Video
+          </button>
+          <button class="clip-menu-item" id="pdfBtn" aria-label="Subir PDF">
+            📄 PDF
+          </button>
+          <button class="clip-menu-item" id="fileBtn" aria-label="Adjuntar archivo">
+            📎 Archivo
+          </button>
         </div>
-        <button class="btn voice-btn-hold" id="micBtn" aria-label="Mantener para hablar">🎤</button>
-        <button class="btn send-btn" id="sendBtn" aria-label="Enviar mensaje">▶️</button>
+
+        <div class="input-wrapper">
+          <textarea id="input" placeholder="Escribe tu mensaje..." autocomplete="off" rows="1"></textarea>
+        </div>
+
+        <button class="voice-btn" id="micBtn" aria-label="Click para dictar (ChatGPT style)">
+          🎤
+        </button>
+
+        <button class="send-btn" id="sendBtn" aria-label="Enviar mensaje">
+          ➤
+        </button>
       </div>
 
       <!-- Hidden file inputs -->
@@ -72,6 +94,8 @@
   const input = $("#input");
   const sendBtn = $("#sendBtn");
   const micBtn = $("#micBtn");
+  const clipBtn = $("#clipBtn");
+  const clipMenu = $("#clipMenu");
 
   const messages = [];
   let isProcessing = false;  // ENTERPRISE: Lock de concurrencia
@@ -187,67 +211,96 @@
     loop();
   }
 
-  // Speech Recognition
+  // Speech Recognition - CHATGPT STYLE: Click to start/stop, transcribe to input
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let rec, recognizing=false, wakeMode=true;
+  let rec, recognizing=false;
+  let isDictating = false; // Estado de dictado (toggle)
+  let interimTranscript = ''; // Transcripción temporal
   let locale = (localStorage.getItem('sandra_locale') || (navigator.language || 'es-ES'));
+
   function initRec(){
     if (!SpeechRecognition) { state('⚠️ Este navegador no soporta reconocimiento de voz.'); return; }
     rec = new SpeechRecognition();
     rec.lang = locale;
     rec.continuous = true;
     rec.interimResults = true;
-    rec.onstart = () => { recognizing = true; wave.classList.add('active'); state('🎙️ Escuchando...'); };
-    rec.onend = () => { recognizing = false; wave.classList.remove('active'); state('🟢 Listo'); };
-    rec.onerror = (e) => { state('⚠️ Voz: '+e.error); };
+
+    rec.onstart = () => {
+      recognizing = true;
+      wave.classList.add('active');
+      micBtn.classList.add('recording');
+      state('🎙️ Dictando... (click para parar)');
+    };
+
+    rec.onend = () => {
+      recognizing = false;
+      wave.classList.remove('active');
+      micBtn.classList.remove('recording');
+
+      // Si estábamos dictando y termina inesperadamente, reiniciar
+      if (isDictating) {
+        try { rec.start(); } catch {}
+      } else {
+        state('🟢 Listo');
+      }
+    };
+
+    rec.onerror = (e) => {
+      state('⚠️ Voz: '+e.error);
+      isDictating = false;
+      micBtn.classList.remove('recording');
+    };
+
     rec.onresult = (evt) => {
-      const last = evt.results[evt.results.length-1];
-      const text = last[0].transcript.trim();
+      let interim = '';
+      let final = '';
 
-      if (wakeMode && /^(hola\s*sandra|ok\s*sandra)/i.test(text)) {
-        wakeMode = false;
-        state('🔓 Activada. Te escucho.');
-        return;
+      // Procesar todos los resultados
+      for (let i = evt.resultIndex; i < evt.results.length; i++) {
+        const transcript = evt.results[i][0].transcript;
+        if (evt.results[i].isFinal) {
+          final += transcript + ' ';
+        } else {
+          interim += transcript;
+        }
       }
 
-      if (/^(sos|emergencia|ayuda)/i.test(text)) {
-        showSOS();
-        return;
+      // CHATGPT STYLE: Actualizar textarea con transcripción
+      if (final) {
+        // Agregar al input existente (permite edición acumulativa)
+        const currentValue = input.value.trim();
+        input.value = currentValue + (currentValue ? ' ' : '') + final.trim();
+
+        // Ajustar altura del textarea
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+
+        interimTranscript = '';
       }
 
-      // BARGE-IN FIX: Detección de interrupción
-      if (last.isFinal && !wakeMode) {
-        stopRec();  // Detener reconocimiento primero
-
-        // BARGE-IN: Si Sandra está hablando, es una interrupción
-        const isBargeIn = isSandraPlaying;
-
-        // BARGE-IN: Cancelar audio de Sandra si está hablando
-        if (currentAudio) {
-          try {
-            currentAudio.stop();
-            currentAudio.disconnect();
-          } catch(e) {
-            log.warn('Audio stop error:', e);
-          }
-          currentAudio = null;
-          isSandraPlaying = false;
-        }
-
-        // BARGE-IN: Cancelar procesamiento anterior si existe
-        if (isBargeIn && isProcessing) {
-          log.info('BARGE-IN DETECTED: Cancelando procesamiento anterior');
-          isProcessing = false; // Liberar el lock
-          currentProcessingId = null; // Reset ID
-        }
-
-        pushMsg('user', text);
-        handleQuery(text, isBargeIn);
+      // Mostrar transcripción temporal (opcional - comentar si no se desea)
+      if (interim && isDictating) {
+        const currentFinal = input.value.trim();
+        // state(`🎙️ "${interim}..."`);
       }
     };
   }
-  function startRec(){ if (!rec) initRec(); try { rec.start(); } catch{} }
-  function stopRec(){ if (rec && recognizing) try { rec.stop(); } catch{} }
+
+  function startDictation(){
+    if (!rec) initRec();
+    isDictating = true;
+    interimTranscript = '';
+    try { rec.start(); } catch{}
+  }
+
+  function stopDictation(){
+    isDictating = false;
+    if (rec && recognizing) {
+      try { rec.stop(); } catch{}
+    }
+    state('🟢 Listo - Revisa y envía');
+  }
+
   function state(t){ stateEl.textContent = t; }
 
   // Backends
@@ -407,107 +460,48 @@
     input.value='';
     handleQuery(v);
   };
-  // MULTIMODAL: Voice hold-to-speak (5min max, chunks 30s)
-  let isHolding = false;
-  let voiceChunks = [];
-  let voiceRecorder = null;
-  let voiceStartTime = 0;
-  const MAX_VOICE_DURATION = 5 * 60 * 1000; // 5 minutos
-  const CHUNK_DURATION = 30 * 1000; // 30 segundos por chunk
-
-  micBtn.onpointerdown = async (e) => {
+  // CHATGPT STYLE: Click to start/stop dictation (simple toggle)
+  micBtn.onclick = async (e) => {
     e.preventDefault();
-    if (!audioCtx) ensureAudio();
-    await audioCtx.resume();
 
-    // Iniciar grabación de audio
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      voiceRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-      voiceChunks = [];
-      voiceStartTime = Date.now();
-      isHolding = true;
-
-      voiceRecorder.ondataavailable = (evt) => {
-        if (evt.data.size > 0) voiceChunks.push(evt.data);
-      };
-
-      voiceRecorder.onstop = async () => {
-        const blob = new Blob(voiceChunks, { type: 'audio/webm' });
-        stream.getTracks().forEach(track => track.stop());
-
-        // Enviar audio a procesamiento
-        if (voiceChunks.length > 0) {
-          await processVoiceInput(blob);
-        }
-      };
-
-      voiceRecorder.start();
-      wave.classList.add('active');
-      state('🎙️ Grabando... (suelta para enviar)');
-
-      // Chunks de 30s
-      const chunkInterval = setInterval(() => {
-        if (!isHolding) {
-          clearInterval(chunkInterval);
-          return;
-        }
-        if (Date.now() - voiceStartTime >= MAX_VOICE_DURATION) {
-          clearInterval(chunkInterval);
-          micBtn.onpointerup();
-        }
-      }, CHUNK_DURATION);
-    } catch (err) {
-      log.error('Voice recording error:', err);
-      state('❌ Error al acceder al micrófono');
-      metrics.errors.voice++;
+    // Toggle: Si está dictando, parar. Si no, iniciar.
+    if (isDictating) {
+      // PARAR DICTADO
+      stopDictation();
+    } else {
+      // INICIAR DICTADO
+      if (!rec) initRec();
+      if (audioCtx) await audioCtx.resume();
+      startDictation();
     }
   };
 
-  micBtn.onpointerup = () => {
-    if (isHolding && voiceRecorder && voiceRecorder.state === 'recording') {
-      voiceRecorder.stop();
-      isHolding = false;
-      wave.classList.remove('active');
-      state('⚡ Procesando audio...');
-    }
+  // CHATGPT/CLAUDE STYLE: Clip menu toggle
+  clipBtn.onclick = (e) => {
+    e.stopPropagation();
+    clipMenu.classList.toggle('show');
   };
 
-  micBtn.onpointercancel = micBtn.onpointerup;
-
-  async function processVoiceInput(audioBlob) {
-    // ENTERPRISE: Enviar audio al backend para transcripción
-    const formData = new FormData();
-    formData.append('audio', audioBlob, 'voice.webm');
-
-    try {
-      const r = await fetch('/api/transcribe', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!r.ok) throw new Error('Transcription failed');
-
-      const { text } = await r.json();
-      if (text && text.trim()) {
-        pushMsg('user', text);
-        handleQuery(text);
-      } else {
-        state('⚠️ No se detectó voz clara');
-      }
-    } catch (err) {
-      log.error('Voice transcription error:', err);
-      state('❌ Error al procesar audio');
-      metrics.errors.voice++;
-
-      // Fallback: usar Speech Recognition si está disponible
-      if (SpeechRecognition) {
-        state('🔄 Usando reconocimiento de voz alternativo...');
-        wakeMode = false;
-        startRec();
-      }
+  // Cerrar menú al hacer click fuera
+  document.addEventListener('click', (e) => {
+    if (!clipMenu.contains(e.target) && e.target !== clipBtn) {
+      clipMenu.classList.remove('show');
     }
-  }
+  });
+
+  // TEXTAREA AUTOEXPANDIBLE (ChatGPT/Claude style)
+  input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+  });
+
+  // Enter para enviar, Shift+Enter para nueva línea
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
 
   // MULTIMODAL: File handlers
   const cameraBtn = $('#cameraBtn');
@@ -520,10 +514,22 @@
   const pdfInput = $('#pdfInput');
   const fileInput = $('#fileInput');
 
-  cameraBtn.onclick = () => cameraInput.click();
-  videoBtn.onclick = () => videoInput.click();
-  pdfBtn.onclick = () => pdfInput.click();
-  fileBtn.onclick = () => fileInput.click();
+  cameraBtn.onclick = () => {
+    clipMenu.classList.remove('show');
+    cameraInput.click();
+  };
+  videoBtn.onclick = () => {
+    clipMenu.classList.remove('show');
+    videoInput.click();
+  };
+  pdfBtn.onclick = () => {
+    clipMenu.classList.remove('show');
+    pdfInput.click();
+  };
+  fileBtn.onclick = () => {
+    clipMenu.classList.remove('show');
+    fileInput.click();
+  };
 
   // MULTIMODAL: Camera/Image handler
   cameraInput.onchange = async (e) => {
