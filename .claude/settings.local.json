@@ -120,7 +120,17 @@
       "Bash(tee:*)",
       "Bash(python3 -c \"\ncontent = ''''''# SANDRA IA 7.0 - IMMEDIATE ACTION CHECKLIST\n\nPriority: URGENT - Before Staging Deployment\nTime Required: 1-2 hours\nStatus: READY FOR EXECUTION\n\n## PHASE 1: PRE-STAGING VERIFICATION (30 minutes)\n\n### Step 1: Verify Netlify Environment Variables\nOwner: CEO | Time: 15 minutes\n\nRun: netlify env:list\n\nConfirm these variables are set:\n- OPENAI_API_KEY\n- ANTHROPIC_API_KEY  \n- GROQ_API_KEY\n- CARTESIA_API_KEY\n- CARTESIA_VOICE_ID\n\n### Step 2: Test Build Locally\nOwner: CEO | Time: 5 minutes\n\nRun: npm run build\n\nExpected: All optimizations complete, manifest and service worker generated.\n\n### Step 3: Security Scan\nStatus: VERIFIED CLEAN by Quality Gate Agent\n\n## PHASE 2: STAGING DEPLOYMENT (15 minutes)\n\n### Step 4: Deploy to Staging\nRun: npm run deploy:staging\n\nSaves staging URL for testing.\n\n### Step 5: Verify Deployment\nCheck staging URL:\n- Page loads without errors\n- Chat interface appears\n- No console errors (F12)\n- Mobile PWA works\n\n## PHASE 3: FUNCTIONAL TESTING (30 minutes)\n\n### Step 6: Test Chat\n- Text chat works\n- Voice conversation functional\n- Error handling proper\n\n### Step 7: Test Mobile PWA\niOS: Add to Home Screen from Safari\nAndroid: Install app from Chrome\n\n### Step 8: Monitor Logs\nRun: netlify logs --live\nWatch for errors, timeouts, API key issues\n\n## PHASE 4: DOCUMENTATION (15 minutes)\n\n### Step 9: Fix SECURITY.md\nReplace real-looking examples with: sk-proj-EXAMPLE_YOUR_KEY_HERE\n\n### Step 10: Document Staging URL\nCreate STAGING-ENVIRONMENT.md with URL, status, monitoring links\n\n### Step 11: Share Test Plan\nDistribute staging test plan to team (48-72 hour testing period)\n\n## PHASE 5: MONITORING (10 minutes)\n\n### Step 12: Enable Netlify Analytics\nSet up alerts for function failures, build errors\n\n### Step 13: Error Alerts\nConfigure alerts for API key errors, 500 errors, build failures\n\n## COMPLETION CHECKLIST\n\nPre-Deployment:\n- Netlify env vars verified\n- Local build successful\n- No secrets in code\n\nDeployment:\n- Staging deployed\n- URL accessible\n- No errors\n\nTesting:\n- Chat works\n- Voice works\n- Mobile PWA installs\n\nDocumentation:\n- SECURITY.md fixed\n- Staging documented\n- Test plan shared\n\nMonitoring:\n- Analytics enabled\n- Alerts configured\n- Logs monitored\n\n## SUCCESS METRICS\n\nStaging successful if:\n- All test cases pass\n- No critical errors\n- Response time < 5 seconds\n- Error rate < 5%\n- Mobile PWA functional\n\n## NEXT STEPS\n\nAfter 48-72 hours staging:\n- Production readiness review\n- Phase 12 accessibility work\n- Production deployment planning\n\nGenerated: 2025-10-28\nOwner: CEO Clayton\nValidator: Enhanced Quality Gate Agent\n''''''\nwith open(''IMMEDIATE-ACTION-CHECKLIST.md'', ''w'', encoding=''utf-8'') as f:\n    f.write(content)\nprint(''Checklist created successfully'')\n\")",
       "Bash(export NETLIFY_AUTH_TOKEN:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(if [ -f \".env\" ])",
+      "Bash(then echo \"WARNING: .env file exists\")",
+      "Bash(fi)",
+      "Bash(if [ -f \".env.local\" ])",
+      "Bash(then echo \"WARNING: .env.local file exists\")",
+      "Bash(awk:*)",
+      "Bash(npm pkg set:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git clean:*)",
+      "Bash(task-master list:*)"
     ],
     "deny": [],
     "ask": []

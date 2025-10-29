@@ -1,15 +1,13 @@
 // SANDRA IA - SOCKET.IO SERVER (Netlify Function)
-// Real-time bidirectional communication with WebSocket support
-// Architecture: Socket.IO with Redis adapter for horizontal scaling
+// ⚠️ WARNING: Socket.IO requires persistent connections. Netlify Functions timeout after 10-30s.
+// For production, deploy separate WebSocket server or use Supabase Realtime/Pusher
+// This is a simplified implementation for development/fallback.
 
 const { Server } = require('socket.io');
-const SocketHandlers = require('../../lib/socket-handlers');
-const SessionManager = require('../../lib/session-manager');
 
 // Global instances (persisted across function invocations)
 let io = null;
-let socketHandlers = null;
-let sessionManager = null;
+let sessions = new Map(); // Simple in-memory session storage
 
 // CORS configuration
 const CORS_CONFIG = {
@@ -41,21 +39,8 @@ async function initializeSocketIO() {
     serveClient: false
   });
 
-  // Initialize session manager
-  sessionManager = new SessionManager({
-    redisEnabled: false, // Enable when Redis is available
-    sessionTTL: 3600
-  });
-
-  await sessionManager.initialize();
-  sessionManager.startCleanupInterval();
-
-  // Initialize socket handlers
-  socketHandlers = new SocketHandlers(io, {
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-    cartesiaApiKey: process.env.CARTESIA_API_KEY,
-    cartesiaVoiceId: process.env.CARTESIA_VOICE_ID
-  });
+  // ✅ Simplified socket initialization (removed external dependencies)
+  // For production deployment, implement proper session management and handlers
 
   // Socket.IO namespace for Sandra conversations
   const sandraNamespace = io.of('/sandra');

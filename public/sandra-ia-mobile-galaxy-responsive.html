@@ -1489,32 +1489,27 @@
 
                 const systemPrompt = this.buildMobileSystemPrompt(context);
 
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                // ✅ CORRECTO: Usa Ollama 4-tier cascade FREE via Netlify Functions
+                const response = await fetch('/.netlify/functions/chat-local', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.apiKey}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4',
                         messages: [
                             { role: 'system', content: systemPrompt },
                             ...this.context.slice(-6), // Reduced for mobile
                             { role: 'user', content: this.formatMobileMessage(context) }
-                        ],
-                        max_tokens: 600, // Reduced for mobile
-                        temperature: 0.7,
-                        frequency_penalty: 0.3,
-                        presence_penalty: 0.3
+                        ]
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                    throw new Error(`Chat Error: ${response.status}`);
                 }
 
                 const data = await response.json();
-                return data.choices[0].message.content.trim();
+                return data.text || data.choices?.[0]?.message?.content || 'Sin respuesta';
             }
 
             buildMobileSystemPrompt(context) {
