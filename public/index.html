@@ -31,6 +31,47 @@
 
   <!-- HEYGEN VIDEO AVATAR STYLES -->
   <style>
+    /* Loading screen - visible until app loads */
+    #loadingScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    #loadingScreen .logo {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    #loadingScreen h1 {
+      color: #2C3E50;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+    }
+
+    #loadingScreen p {
+      color: #546E7A;
+      font-size: 16px;
+      margin: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
     /* HeyGen Video Avatar Container */
     #videoAvatarContainer {
       display: none;
@@ -91,6 +132,13 @@
   </style>
 </head>
 <body>
+  <!-- Loading screen - Safari iOS fallback -->
+  <div id="loadingScreen">
+    <img class="logo" src="/img/avatar-sandra.png" alt="Sandra IA" onerror="this.style.display='none'">
+    <h1>Sandra IA</h1>
+    <p>Cargando interfaz...</p>
+  </div>
+
   <!-- Avatar scripts - LOAD BEFORE sandra-mobile.js -->
   <script src="/js/avatar-sync.js"></script>
   <script src="/js/heygen-integration.js"></script>
@@ -105,6 +153,14 @@
           .catch(err => console.error('❌ Service Worker error:', err));
       });
     }
+
+    // Hide loading screen after app loads
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) loader.style.display = 'none';
+      }, 1000);
+    });
   </script>
 </body>
 </html>

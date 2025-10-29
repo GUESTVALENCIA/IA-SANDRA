@@ -1,31 +1,33 @@
 // ═══════════════════════════════════════════════════════════════════
 // SANDRA IA MOBILE GALAXY - SERVICE WORKER
 // Galaxy Level PWA Service Worker 98.0.0
-// Environment: development
-// Domain: localhost:8080
-// Generated: 2025-10-28T19:31:01.193Z
+// Environment: production
+// Domain: sandra.guestsvalencia.es
+// Generated: 2025-10-29T06:30:00.000Z
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'sandra-mobile-galaxy-98.0.0-development';
+const CACHE_NAME = 'sandra-mobile-galaxy-98.0.0-production';
 const STATIC_CACHE = 'sandra-static-98.0.0';
 const DYNAMIC_CACHE = 'sandra-dynamic-98.0.0';
 const API_CACHE = 'sandra-api-98.0.0';
 const RUNTIME_CACHE = 'sandra-runtime-98.0.0';
 
-// Environment configuration
-const ENV = 'development';
-const DOMAIN = 'localhost:8080';
-const BASE_URL = 'http://localhost:8080';
-const API_BASE = 'http://localhost:8080/api';
+// Environment configuration - AUTO-DETECT
+const ENV = 'production';
+const DOMAIN = self.location.hostname;
+const BASE_URL = self.location.origin;
+const API_BASE = `${self.location.origin}/api`;
 
 // Files to cache for offline functionality
 const STATIC_FILES = [
     '/',
-    '/sandra-ia-mobile-galaxy-responsive.html',
+    '/index.html',
     '/manifest.json',
-    '/sandra-mobile-performance-optimizations.js',
-    '/sandra-responsive-enhancements.css',
-    '/responsive-utils.js'
+    '/css/sandra-mobile.css',
+    '/js/sandra-mobile.js',
+    '/js/avatar-sync.js',
+    '/js/heygen-integration.js',
+    '/img/avatar-sandra.png'
 ];
 
 // API endpoints to cache strategically
@@ -230,7 +232,7 @@ async function handleDocumentRequest(request) {
         console.warn('Document request failed:', error);
         // Return main app if available
         const cache = await caches.open(STATIC_CACHE);
-        const fallback = await cache.match('/sandra-ia-mobile-galaxy-responsive.html');
+        const fallback = await cache.match('/index.html');
         return fallback || createFallbackResponse();
     }
 }
@@ -487,7 +489,7 @@ self.addEventListener('notificationclick', event => {
 
     if (event.action === 'open') {
         event.waitUntil(
-            clients.openWindow('http://localhost:8080/sandra-ia-mobile-galaxy-responsive.html')
+            clients.openWindow(BASE_URL)
         );
     }
 });

@@ -6,6 +6,23 @@
    ============================================================================= */
 
 /* =========================================
+   SAFARI iOS PWA CRITICAL FIXES
+   Prevent blank screen and ensure visibility
+   ========================================= */
+@supports (-webkit-touch-callout: none) {
+  /* Safari iOS specific fixes */
+  html {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* =========================================
    NATIVE APP BEHAVIOR - CRITICAL FIXES
    Disable zoom, bounce, and web gestures
    ========================================= */
