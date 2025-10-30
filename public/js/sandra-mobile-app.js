@@ -190,6 +190,9 @@ async function init() {
     
     // Setup event listeners (PRIMERO - para que los botones funcionen inmediatamente)
     setupEventListeners();
+
+    // Deshabilitar gestos y zoom de navegador (modo app)
+    hardenMobileGestures();
     
     // Marcar como conectado inmediatamente (los botones funcionan sin LiveKit)
     AppState.isConnected = true;
@@ -279,6 +282,30 @@ function setupEventListeners() {
             CONFIG.textInput.focus();
         });
     });
+}
+
+// ============================================================
+// MOBILE HARDENING: BLOQUEAR GESTOS/ZOOM/PULL-TO-REFRESH
+// ============================================================
+
+function hardenMobileGestures() {
+    // Bloquear gestos pinch/zoom
+    ['gesturestart','gesturechange','gestureend'].forEach(evt => {
+        document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive: false });
+    });
+
+    // Bloquear doble tap para zoom
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e){
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+    }, { passive: false });
+
+    // Prevenir pull-to-refresh y multi-touch scrolling
+    document.body.addEventListener('touchmove', function(e){
+        if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
 }
 
 // ============================================================
