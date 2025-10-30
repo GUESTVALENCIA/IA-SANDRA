@@ -9,7 +9,7 @@
  */
 
 import { SpeechToText, TranscriptionResult, createSTT } from './stt';
-import { TextToSpeech, AudioChunk, createTTS } from './tts';
+import { TextToSpeech, AudioChunk, createTTS } from './tts_cartesia';
 import OpenAI from 'openai';
 import { createLogger } from 'winston';
 import { EventEmitter } from 'events';
