@@ -730,14 +730,14 @@ function handleSendMessage() {
     
     console.log('📤 Enviando mensaje:', text);
     
+    // Añadir mensaje de usuario al chat (antes de limpiar)
+    addUserMessage(text);
+
     // Limpiar input inmediatamente
     CONFIG.textInput.value = '';
     CONFIG.sendBtn.disabled = true;
     CONFIG.textInput.style.height = 'auto';
-    
-    // Añadir mensaje de usuario al chat
-    addUserMessage(text);
-    
+
     // Procesar comando o enviar como mensaje normal
     if (text.toLowerCase().includes(CONFIG.WAKE_WORD.toLowerCase())) {
         const command = text.replace(new RegExp(CONFIG.WAKE_WORD, 'gi'), '').trim();
@@ -764,10 +764,12 @@ async function sendToBackend(message) {
                 'X-Sandra-Role': 'guests-valencia'
             },
             body: JSON.stringify({
-                message,
                 role: 'guests-valencia',
                 locale: 'es-ES',
-                messages: AppState.conversationHistory.slice(-10)
+                messages: [
+                    ...AppState.conversationHistory.slice(-10),
+                    { role: 'user', content: message }
+                ]
             })
         });
         
