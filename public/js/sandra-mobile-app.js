@@ -316,16 +316,24 @@ function hardenMobileGestures() {
 async function checkBackendConnection() {
     try {
         const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/health`, {
-            method: 'GET'
-        }).catch(() => null);
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Request-ID': `m-${Date.now()}`
+            }
+        }).catch((e) => { console.warn('health error:', e); return null; });
         
         if (response && response.ok) {
             console.log('✅ Backend accesible');
+            AppState.isConnected = true;
+            updateStatus('Conectado', 'connected');
             return true;
         }
     } catch (error) {
-        console.warn('⚠️ Backend no disponible (continuando sin él)');
+        console.warn('⚠️ Backend no disponible (continuando sin él)', error);
     }
+    AppState.isConnected = false;
+    updateStatus('Sin conexión', 'disconnected');
     return false;
 }
 
@@ -739,7 +747,12 @@ async function sendToBackend(message) {
         // Usar Netlify Function para chat
         const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/chat`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Idempotency-Key': `msg-${Date.now()}`,
+                'X-Sandra-Role': 'guests-valencia'
+            },
             body: JSON.stringify({
                 message,
                 role: 'guests-valencia',
@@ -748,6 +761,10 @@ async function sendToBackend(message) {
             })
         });
         
+        if (!response.ok) {
+            const text = await response.text().catch(()=> '');
+            throw new Error(`HTTP ${response.status} ${response.statusText} ${text}`);
+        }
         const data = await response.json();
         const latency = performance.now() - startTime;
         
@@ -779,8 +796,11 @@ async function sendToBackend(message) {
         
     } catch (error) {
         hideTypingIndicator();
-        addSystemMessage('❌ Error: ' + error.message);
+        addSystemMessage('❌ API error: ' + (error.message || 'desconocido'));
         console.error('Error enviando mensaje:', error);
+        showToast('Error de conexión. Reintentando...', 'error');
+        AppState.isConnected = false;
+        updateStatus('Sin conexión', 'disconnected');
     }
 }
 
@@ -863,6 +883,29 @@ function scrollToBottom() {
         CONFIG.chatContainer.scrollTop = CONFIG.chatContainer.scrollHeight;
     }, 100);
 }
+
+// Toast simple para feedback de errores
+function showToast(text, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.position = 'fixed';
+    toast.style.left = '50%';
+    toast.style.bottom = '20px';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.background = type === 'error' ? '#ffeded' : '#e6fff3';
+    toast.style.color = type === 'error' ? '#b00020' : '#0a4';
+    toast.style.border = '1px solid rgba(0,0,0,0.06)';
+    toast.style.borderRadius = '10px';
+    toast.style.padding = '10px 14px';
+    toast.style.fontSize = '14px';
+    toast.style.boxShadow = '0 4px 14px rgba(0,0,0,0.12)';
+    toast.style.zIndex = '99999';
+    toast.textContent = text;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+
+// Heartbeat ligero cada 30s para reconexión visual
+setInterval(() => { checkBackendConnection(); }, 30000);
 
 function updateStatus(text, type) {
     CONFIG.statusText.textContent = text;
