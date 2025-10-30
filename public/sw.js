@@ -6,7 +6,7 @@
 // Generated: 2025-10-29T06:30:00.000Z
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'sandra-mobile-galaxy-99.0.0-production';
+const CACHE_NAME = 'sandra-mobile-galaxy-99.1.0-production';
 const STATIC_CACHE = 'sandra-static-98.0.0';
 const DYNAMIC_CACHE = 'sandra-dynamic-98.0.0';
 const API_CACHE = 'sandra-api-98.0.0';
@@ -24,7 +24,11 @@ const STATIC_FILES = [
     '/sandra-mobile-app.html',
     '/manifest.json',
     '/js/sandra-mobile-app.js',
-    '/img/avatar-sandra.png'
+    '/img/avatar-sandra.png',
+    // Desktop COE
+    '/desktop/index.html',
+    '/desktop/styles.css',
+    '/desktop/app.js'
 ];
 
 // API endpoints to cache strategically
@@ -341,7 +345,7 @@ async function preCacheCriticalResources() {
 async function cleanOldCaches() {
     const cacheNames = await caches.keys();
     const oldCaches = cacheNames.filter(name =>
-        name.startsWith('sandra-') && !name.includes('98.0.0')
+        name.startsWith('sandra-') && !name.includes('99.1.0')
     );
 
     await Promise.all(

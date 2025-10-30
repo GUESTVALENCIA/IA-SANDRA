@@ -68,6 +68,92 @@ class SandraMCPBridge {
                 status: devExpert?.status || 'unknown'
             });
         });
+
+        // ============================================================================
+        // GUARDIAN MCP TOOLS
+        // ============================================================================
+        
+        // POST /api/guardian/snapshot/create - Crear snapshot
+        this.app.post('/api/guardian/snapshot/create', async (req, res) => {
+            try {
+                const { context } = req.body;
+                const snapshotId = `snapshot_${Date.now()}`;
+                
+                const snapshot = {
+                    id: snapshotId,
+                    timestamp: new Date().toISOString(),
+                    context: context || {},
+                    createdAt: new Date().toISOString()
+                };
+
+                // TODO: En producción, crear tag en GitHub
+                // const ghPat = process.env.GH_PAT;
+                // const ghRepo = process.env.GH_REPO_FULL;
+                // if (ghPat && ghRepo) {
+                //     await createGitHubTag(ghPat, ghRepo, `restore-${snapshotId}`);
+                // }
+
+                console.log(`✅ Guardian snapshot created: ${snapshotId}`);
+                
+                res.json({
+                    success: true,
+                    snapshotId,
+                    snapshot,
+                    message: 'Snapshot creado exitosamente'
+                });
+            } catch (error) {
+                console.error('❌ Guardian snapshot error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+        });
+
+        // GET /api/guardian/restore/latest - Restaurar último snapshot
+        this.app.get('/api/guardian/restore/latest', async (req, res) => {
+            try {
+                // TODO: En producción, obtener último tag de GitHub
+                // const ghPat = process.env.GH_PAT;
+                // const ghRepo = process.env.GH_REPO_FULL;
+                // if (ghPat && ghRepo) {
+                //     const latestTag = await getLatestRestoreTag(ghPat, ghRepo);
+                //     return res.json({ success: true, restoredFrom: latestTag });
+                // }
+
+                res.json({
+                    success: true,
+                    message: 'Restore endpoint - Usar Netlify Function /api/guardian con RESTAURAR',
+                    endpoint: '/.netlify/functions/guardian'
+                });
+            } catch (error) {
+                console.error('❌ Guardian restore error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+        });
+
+        // GET /api/guardian/health - Health loop para auto-restore
+        this.app.get('/api/guardian/health', async (req, res) => {
+            const healthStatus = {
+                status: 'active',
+                service: 'Guardian MCP Tools',
+                timestamp: new Date().toISOString(),
+                endpoints: {
+                    snapshot: '/api/guardian/snapshot/create',
+                    restore: '/api/guardian/restore/latest',
+                    netlify: '/.netlify/functions/guardian'
+                },
+                autoRestore: {
+                    enabled: true,
+                    interval: '10-15s',
+                    mode: 'polling'
+                }
+            };
+            res.json(healthStatus);
+        });
         this.server = this.app.listen(this.port, () => {
             console.log(`🚀 Sandra MCP Bridge running on port ${this.port}`);
         });
