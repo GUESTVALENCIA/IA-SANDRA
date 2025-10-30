@@ -45,33 +45,60 @@ async function loadLiveKit() {
 // CONFIGURACIÓN
 // ============================================================
 
-const CONFIG = {
+// CONFIG se inicializa después de que el DOM esté listo
+let CONFIG = {
     // Backend URLs - Detectar automáticamente
     BACKEND_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:7788'
         : (window.location.origin.includes('netlify') 
             ? 'https://sandra.guestsvalencia.es'
             : window.location.origin),
-    LIVEKIT_URL: process.env.LIVEKIT_URL || 'wss://sandra-livekit.guestsvalencia.es',
+    LIVEKIT_URL: process.env?.LIVEKIT_URL || 'wss://sandra-livekit.guestsvalencia.es',
     NETLIFY_BASE: window.location.origin,
     
     // Wake Word
     WAKE_WORD: 'Hola Sandra',
     
-    // UI Elements
-    chatContainer: document.getElementById('chatContainer'),
-    textInput: document.getElementById('textInput'),
-    voiceBtn: document.getElementById('voiceBtn'),
-    sendBtn: document.getElementById('sendBtn'),
-    statusText: document.getElementById('statusText'),
-    statusDot: document.getElementById('statusDot'),
-    avatarContainer: document.getElementById('avatarContainer'),
-    statusBtn: document.getElementById('statusBtn'),
-    statusModal: document.getElementById('statusModal'),
-    
-    // Command Hints
-    commandHints: document.getElementById('commandHints'),
+    // UI Elements (se inicializarán después)
+    chatContainer: null,
+    textInput: null,
+    voiceBtn: null,
+    sendBtn: null,
+    statusText: null,
+    statusDot: null,
+    avatarContainer: null,
+    statusBtn: null,
+    statusModal: null,
+    commandHints: null,
 };
+
+// Función para inicializar elementos del DOM
+function initializeDOMElements() {
+    CONFIG.chatContainer = document.getElementById('chatContainer');
+    CONFIG.textInput = document.getElementById('textInput');
+    CONFIG.voiceBtn = document.getElementById('voiceBtn');
+    CONFIG.sendBtn = document.getElementById('sendBtn');
+    CONFIG.statusText = document.getElementById('statusText');
+    CONFIG.statusDot = document.getElementById('statusDot');
+    CONFIG.avatarContainer = document.getElementById('avatarContainer');
+    CONFIG.statusBtn = document.getElementById('statusBtn');
+    CONFIG.statusModal = document.getElementById('statusModal');
+    CONFIG.commandHints = document.getElementById('commandHints');
+    
+    // Verificar que todos los elementos existen
+    const requiredElements = [
+        'chatContainer', 'textInput', 'voiceBtn', 'sendBtn', 
+        'statusText', 'statusDot', 'avatarContainer', 'statusBtn', 'statusModal'
+    ];
+    
+    const missing = requiredElements.filter(key => !CONFIG[key]);
+    if (missing.length > 0) {
+        console.error('❌ Elementos faltantes del DOM:', missing);
+        return false;
+    }
+    
+    return true;
+}
 
 // ============================================================
 // ESTADO DE LA APLICACIÓN
@@ -179,11 +206,20 @@ const VoiceCommands = {
 async function init() {
     console.log('🚀 Iniciando Sandra Mobile App...');
     
+    // Inicializar elementos del DOM
+    if (!initializeDOMElements()) {
+        console.error('❌ No se pudieron inicializar los elementos del DOM');
+        return;
+    }
+    
     // Configurar fecha de bienvenida
-    document.getElementById('welcomeTime').textContent = new Date().toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    const welcomeTime = document.getElementById('welcomeTime');
+    if (welcomeTime) {
+        welcomeTime.textContent = new Date().toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
     
     // Setup event listeners
     setupEventListeners();
@@ -191,8 +227,10 @@ async function init() {
     // Inicializar reconocimiento de voz
     setupVoiceRecognition();
     
-    // Conectar a LiveKit
-    await connectToLiveKit();
+    // Conectar a LiveKit (no bloqueante)
+    connectToLiveKit().catch(err => {
+        console.warn('LiveKit no disponible, continuando sin él:', err);
+    });
     
     // Actualizar estado
     updateStatus('Conectado', 'connected');
@@ -205,28 +243,54 @@ async function init() {
 // ============================================================
 
 function setupEventListeners() {
+    if (!CONFIG.sendBtn || !CONFIG.textInput || !CONFIG.voiceBtn) {
+        console.error('❌ Elementos no disponibles para event listeners');
+        return;
+    }
+    
     // Send button
-    CONFIG.sendBtn.addEventListener('click', handleSendMessage);
+    CONFIG.sendBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSendMessage();
+    });
     
     // Enter key in text input
     CONFIG.textInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
+            e.stopPropagation();
             handleSendMessage();
         }
     });
     
-    // Text input change
-    CONFIG.textInput.addEventListener('input', () => {
-        CONFIG.sendBtn.disabled = !CONFIG.textInput.value.trim();
+    // Text input change - FIX: Evitar que el texto desaparezca
+    CONFIG.textInput.addEventListener('input', (e) => {
+        const value = CONFIG.textInput.value;
+        CONFIG.sendBtn.disabled = !value.trim();
         
-        // Auto-resize textarea
+        // Auto-resize textarea - FIX: Preservar valor
+        const scrollHeight = CONFIG.textInput.scrollHeight;
         CONFIG.textInput.style.height = 'auto';
-        CONFIG.textInput.style.height = Math.min(CONFIG.textInput.scrollHeight, 120) + 'px';
+        CONFIG.textInput.style.height = Math.min(scrollHeight, 120) + 'px';
+        
+        // Asegurar que el valor no se pierda
+        if (CONFIG.textInput.value !== value) {
+            CONFIG.textInput.value = value;
+        }
+    });
+    
+    // FIX: Evitar que el textarea pierda el foco al redimensionar
+    CONFIG.textInput.addEventListener('focus', () => {
+        CONFIG.textInput.style.height = 'auto';
     });
     
     // Voice button
-    CONFIG.voiceBtn.addEventListener('click', toggleVoiceRecording);
+    CONFIG.voiceBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleVoiceRecording();
+    });
     
     // Status button
     CONFIG.statusBtn.addEventListener('click', () => {
@@ -932,12 +996,20 @@ async function playAudio(url) {
 // INITIALIZE APP
 // ============================================================
 
-// Inicializar cuando el DOM esté listo
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
+// Inicializar cuando el DOM esté completamente listo
+function startApp() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(init, 100); // Pequeño delay para asegurar que todo está listo
+        });
+    } else {
+        // DOM ya está listo, pero esperamos un momento más
+        setTimeout(init, 100);
+    }
 }
+
+// Iniciar aplicación
+startApp();
 
 // Service Worker registration para PWA
 if ('serviceWorker' in navigator) {

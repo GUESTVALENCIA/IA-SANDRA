@@ -409,8 +409,13 @@
             resize: none;
             max-height: 120px;
             min-height: 44px;
+            height: 44px;
             outline: none;
             transition: border-color 0.2s;
+            overflow-y: auto;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
         
         .text-input:focus {
@@ -622,6 +627,7 @@
                 id="textInput" 
                 placeholder="Escribe un mensaje o usa el micrófono..."
                 rows="1"
+                style="min-height: 44px; overflow-y: auto;"
             ></textarea>
         </div>
         <button class="send-btn" id="sendBtn" title="Enviar mensaje" disabled>

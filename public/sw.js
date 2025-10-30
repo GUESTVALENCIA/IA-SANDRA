@@ -6,7 +6,7 @@
 // Generated: 2025-10-29T06:30:00.000Z
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'sandra-mobile-galaxy-98.0.0-production';
+const CACHE_NAME = 'sandra-mobile-galaxy-99.0.0-production';
 const STATIC_CACHE = 'sandra-static-98.0.0';
 const DYNAMIC_CACHE = 'sandra-dynamic-98.0.0';
 const API_CACHE = 'sandra-api-98.0.0';
@@ -21,12 +21,9 @@ const API_BASE = `${self.location.origin}/api`;
 // Files to cache for offline functionality
 const STATIC_FILES = [
     '/',
-    '/index.html',
+    '/sandra-mobile-app.html',
     '/manifest.json',
-    '/css/sandra-mobile.css',
-    '/js/sandra-mobile.js',
-    '/js/avatar-sync.js',
-    '/js/heygen-integration.js',
+    '/js/sandra-mobile-app.js',
     '/img/avatar-sandra.png'
 ];
 
