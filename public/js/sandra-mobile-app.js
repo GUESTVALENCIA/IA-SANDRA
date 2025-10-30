@@ -8,38 +8,7 @@
  * CALIDAD: GALAXY LEVEL PRO ENTERPRISE
  */
 
-// LiveKit será cargado dinámicamente para evitar problemas de módulos
-let LiveKitClient = null;
-
-// Cargar LiveKit dinámicamente
-async function loadLiveKit() {
-    if (LiveKitClient) return LiveKitClient;
-    
-    try {
-        // Intentar cargar desde CDN si no está disponible como módulo
-        if (typeof window !== 'undefined' && !window.livekit) {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/livekit-client@latest/dist/livekit-client.umd.js';
-            document.head.appendChild(script);
-            
-            await new Promise((resolve, reject) => {
-                script.onload = resolve;
-                script.onerror = reject;
-            });
-            
-            LiveKitClient = window.livekit;
-        } else {
-            // Si está como módulo ES6
-            const module = await import('livekit-client');
-            LiveKitClient = module;
-        }
-        
-        return LiveKitClient;
-    } catch (error) {
-        console.warn('⚠️ LiveKit no disponible, usando modo básico');
-        return null;
-    }
-}
+// NO USAMOS LIVEKIT - Solo código PWA base, servicios propios
 
 // ============================================================
 // CONFIGURACIÓN
@@ -53,7 +22,7 @@ let CONFIG = {
         : (window.location.origin.includes('netlify') 
             ? 'https://sandra.guestsvalencia.es'
             : window.location.origin),
-    LIVEKIT_URL: process.env?.LIVEKIT_URL || 'wss://sandra-livekit.guestsvalencia.es',
+    // Servicios propios - configuración desde variables de entorno
     NETLIFY_BASE: window.location.origin,
     
     // Wake Word
@@ -105,8 +74,6 @@ function initializeDOMElements() {
 // ============================================================
 
 const AppState = {
-    room: null,
-    localParticipant: null,
     isConnected: false,
     isListening: false,
     isSpeaking: false,
@@ -234,12 +201,6 @@ async function init() {
     // Inicializar reconocimiento de voz
     setupVoiceRecognition();
     
-    // Conectar a LiveKit en background (opcional, no bloquea)
-    connectToLiveKit().catch(err => {
-        console.warn('LiveKit no disponible, continuando sin él:', err);
-        updateStatus('En línea (modo básico)', 'connected');
-    });
-    
     console.log('✅ Sandra Mobile App iniciada correctamente - Botones activos');
 }
 
@@ -321,15 +282,14 @@ function setupEventListeners() {
 }
 
 // ============================================================
-// LIVEKIT INTEGRATION
+// BACKEND CONNECTION - SERVICIOS PROPIOS
 // ============================================================
 
 // Verificar conexión con backend (rápido)
 async function checkBackendConnection() {
     try {
         const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/health`, {
-            method: 'GET',
-            timeout: 3000
+            method: 'GET'
         }).catch(() => null);
         
         if (response && response.ok) {
@@ -340,97 +300,6 @@ async function checkBackendConnection() {
         console.warn('⚠️ Backend no disponible (continuando sin él)');
     }
     return false;
-}
-
-async function connectToLiveKit() {
-    // Timeout de 10 segundos para no bloquear
-    const timeout = new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({ timeout: true });
-        }, 10000);
-    });
-    
-    try {
-        // No cambiar estado a "Conectando" - la app ya está lista
-        console.log('🔄 Intentando conectar LiveKit en background...');
-        
-        const connectPromise = (async () => {
-            try {
-                // Cargar LiveKit client
-                const lk = await loadLiveKit();
-                
-                if (!lk) {
-                    return { success: false, reason: 'LiveKit library not available' };
-                }
-                
-                const { Room, RoomEvent } = lk;
-                
-                // Obtener token del backend con timeout
-                const tokenResponse = await Promise.race([
-                    fetch(`${CONFIG.BACKEND_URL}/token`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            roomName: `sandra-mobile-${Date.now()}`,
-                            participantName: `mobile-user-${Date.now()}`
-                        })
-                    }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-                ]);
-                
-                if (!tokenResponse.ok) {
-                    return { success: false, reason: 'Token request failed' };
-                }
-                
-                const { token, url } = await tokenResponse.json();
-                
-                // Conectar a la sala
-                const room = new Room();
-                
-                room.on(RoomEvent.Connected, () => {
-                    console.log('✅ Conectado a LiveKit');
-                    AppState.room = room;
-                    AppState.localParticipant = room.localParticipant;
-                    updateStatus('En línea (+ LiveKit)', 'connected');
-                });
-                
-                room.on(RoomEvent.Disconnected, () => {
-                    console.log('❌ Desconectado de LiveKit');
-                    // No cambiar el estado principal, solo el de LiveKit
-                });
-                
-                room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
-                    if (track.kind === 'audio') {
-                        handleRemoteAudio(track, participant);
-                    }
-                });
-                
-                // Conectar con timeout
-                await Promise.race([
-                    room.connect(url || CONFIG.LIVEKIT_URL, token),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 8000))
-                ]);
-                
-                return { success: true };
-            } catch (error) {
-                return { success: false, reason: error.message };
-            }
-        })();
-        
-        const result = await Promise.race([connectPromise, timeout]);
-        
-        if (result.timeout || !result.success) {
-            console.log('ℹ️ LiveKit no disponible o timeout - usando modo básico');
-            // No cambiar estado - la app ya está marcada como conectada
-            return;
-        }
-        
-        console.log('✅ LiveKit conectado exitosamente');
-        
-    } catch (error) {
-        console.warn('⚠️ LiveKit error:', error.message);
-        // No cambiar estado - continuar en modo básico
-    }
 }
 
 // ============================================================
@@ -990,7 +859,7 @@ function updateStatusModal() {
         AppState.isConnected ? 'Conectado' : 'Desconectado';
     
     document.getElementById('modalLiveKit').textContent = 
-        AppState.room ? 'Activo' : 'Inactivo';
+        'N/A (servicios propios)';
     
     document.getElementById('modalAgents').textContent = 
         AppState.metrics.commandsExecuted + ' ejecutados';
@@ -1011,13 +880,7 @@ function escapeHtml(text) {
 // AUDIO HANDLING
 // ============================================================
 
-async function handleRemoteAudio(track, participant) {
-    if (track.kind === 'audio') {
-        const audioElement = new Audio();
-        audioElement.srcObject = new MediaStream([track.mediaStreamTrack]);
-        audioElement.play().catch(console.error);
-    }
-}
+// Audio handling - usando servicios propios
 
 async function playAudio(url) {
     try {
@@ -1065,6 +928,16 @@ window.SandraApp = {
     init,
     executeCommand,
     sendToBackend,
-    connectToLiveKit
+    checkBackendConnection
+};
+
+// Configuración de servicios propios - será rellenada con tus variables
+window.SandraServices = {
+    // Aquí irán tus APIs configuradas desde variables de entorno
+    // Ejemplo estructura:
+    // chatAPI: '',
+    // voiceAPI: '',
+    // avatarAPI: '',
+    // etc...
 };
 
