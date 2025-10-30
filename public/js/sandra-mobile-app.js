@@ -217,12 +217,16 @@ function setupEventListeners() {
         return;
     }
     
+    console.log('🧩 Binding UI events for send and voice');
+
     // Send button
-    CONFIG.sendBtn.addEventListener('click', (e) => {
+    const onSend = (e) => {
         e.preventDefault();
         e.stopPropagation();
         handleSendMessage();
-    });
+    };
+    CONFIG.sendBtn.addEventListener('click', onSend);
+    CONFIG.sendBtn.addEventListener('touchstart', onSend, { passive: false });
     
     // Enter key in text input
     CONFIG.textInput.addEventListener('keydown', (e) => {
@@ -255,11 +259,17 @@ function setupEventListeners() {
     });
     
     // Voice button
-    CONFIG.voiceBtn.addEventListener('click', (e) => {
+    const onVoice = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            showToast('Voz no disponible en este dispositivo/navegador', 'error');
+            return;
+        }
         toggleVoiceRecording();
-    });
+    };
+    CONFIG.voiceBtn.addEventListener('click', onVoice);
+    CONFIG.voiceBtn.addEventListener('touchstart', onVoice, { passive: false });
     
     // Status button
     CONFIG.statusBtn.addEventListener('click', () => {

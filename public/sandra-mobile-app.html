@@ -600,7 +600,8 @@
     </header>
     
     <!-- Chat Area -->
-    <div id="app-container" class="chat-container" id="chatContainer">
+    <div id="app-container" style="position:fixed; inset:0; display:flex; flex-direction:column;">
+        <div class="chat-container" id="chatContainer">
         <div class="message received">
             <div class="message-avatar">🤖</div>
             <div class="message-content">
@@ -615,6 +616,7 @@
                 <span class="message-time"></span>
             </div>
         </div>
+        </div>
     </div>
     
     <!-- Command Hints -->
@@ -628,7 +630,7 @@
     
     <!-- Input Area -->
     <div class="input-area">
-        <button class="voice-btn" id="voiceBtn" title="Grabar mensaje de voz">
+        <button class="voice-btn" id="voiceBtn" title="Grabar mensaje de voz" type="button">
             🎤
         </button>
         <div class="input-wrapper">
@@ -640,7 +642,7 @@
                 style="min-height: 44px; overflow-y: auto;"
             ></textarea>
         </div>
-        <button class="send-btn" id="sendBtn" title="Enviar mensaje" disabled>
+        <button class="send-btn" id="sendBtn" title="Enviar mensaje" type="button" disabled>
             ➤
         </button>
     </div>
