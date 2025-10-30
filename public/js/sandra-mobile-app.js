@@ -39,6 +39,7 @@ let CONFIG = {
     statusBtn: null,
     statusModal: null,
     commandHints: null,
+    llmModeBtn: null,
 };
 
 // Función para inicializar elementos del DOM
@@ -53,6 +54,7 @@ function initializeDOMElements() {
     CONFIG.statusBtn = document.getElementById('statusBtn');
     CONFIG.statusModal = document.getElementById('statusModal');
     CONFIG.commandHints = document.getElementById('commandHints');
+    CONFIG.llmModeBtn = document.getElementById('llmModeBtn');
     
     // Verificar que todos los elementos existen
     const requiredElements = [
@@ -96,7 +98,8 @@ const AppState = {
         commandsExecuted: 0,
         avgLatency: 0,
         lastLatency: 0
-    }
+    },
+    llmMode: 'cloud' // 'cloud' | 'local' | 'auto'
 };
 
 // ============================================================
@@ -190,6 +193,13 @@ async function init() {
     
     // Setup event listeners (PRIMERO - para que los botones funcionen inmediatamente)
     setupEventListeners();
+
+    // LLM mode: cargar y reflejar UI
+    const savedMode = localStorage.getItem('sandra-llm-mode');
+    if (savedMode === 'cloud' || savedMode === 'local' || savedMode === 'auto') {
+        AppState.llmMode = savedMode;
+    }
+    renderLlmMode();
 
     // Deshabilitar gestos y zoom de navegador (modo app)
     hardenMobileGestures();
@@ -292,6 +302,12 @@ function setupEventListeners() {
             CONFIG.textInput.focus();
         });
     });
+
+    // LLM mode toggle button
+    if (CONFIG.llmModeBtn) {
+        CONFIG.llmModeBtn.addEventListener('click', () => cycleLlmMode());
+        CONFIG.llmModeBtn.addEventListener('touchstart', (e) => { e.preventDefault(); cycleLlmMode(); }, { passive: false });
+    }
 }
 
 // ============================================================
@@ -766,6 +782,7 @@ async function sendToBackend(message) {
             body: JSON.stringify({
                 role: 'guests-valencia',
                 locale: 'es-ES',
+                llm_mode: AppState.llmMode,
                 messages: [
                     ...AppState.conversationHistory.slice(-10),
                     { role: 'user', content: message }
@@ -934,6 +951,24 @@ function updateStatus(text, type) {
     } else {
         CONFIG.statusDot.style.background = '#888';
     }
+
+    renderLlmMode();
+}
+
+function renderLlmMode() {
+    if (!CONFIG.llmModeBtn) return;
+    const map = { cloud: '☁️', local: '🖥️', auto: '🤖' };
+    CONFIG.llmModeBtn.textContent = map[AppState.llmMode] || '☁️';
+    CONFIG.llmModeBtn.title = `Motor LLM: ${AppState.llmMode.toUpperCase()} (tocar para cambiar)`;
+}
+
+function cycleLlmMode() {
+    const order = ['cloud', 'local', 'auto'];
+    const idx = order.indexOf(AppState.llmMode);
+    AppState.llmMode = order[(idx + 1) % order.length];
+    localStorage.setItem('sandra-llm-mode', AppState.llmMode);
+    renderLlmMode();
+    showToast(`Modo LLM: ${AppState.llmMode.toUpperCase()}`);
 }
 
 function updateStatusModal() {

@@ -70,7 +70,8 @@ exports.handler = async (event) => {
       messages = [], 
       locale = process.env.DEFAULT_LOCALE || 'es-ES', 
       mode = process.env.DEFAULT_MODE || 'dev',
-      role = 'guests-valencia'
+      role = 'guests-valencia',
+      llm_mode = 'cloud'
     } = body;
 
     // Validar rol
@@ -86,24 +87,35 @@ exports.handler = async (event) => {
     const msgs = messages.slice(-20);
     let result;
 
-    // FREE/LOCAL ONLY FALLBACK CHAIN (Ollama)
-    try {
-      console.log(`🤖 Intentando Ollama qwen2.5:7b ...`);
-      result = await callOllama('qwen2.5:7b', msgs, body.role);
-    } catch (e1) {
-      console.warn('⚠️ qwen2.5:7b falló:', e1.message);
+    // HYBRID: cloud (GROQ via gateway) | local (Ollama) | auto
+    const modeSel = (llm_mode || '').toLowerCase();
+    const tryLocal = async () => {
       try {
-        console.log(`🤖 Intentando Ollama mistral:7b ...`);
-        result = await callOllama('mistral:7b', msgs, body.role);
-      } catch (e2) {
-        console.warn('⚠️ mistral:7b falló:', e2.message);
+        console.log(`🤖 Ollama qwen2.5:7b`);
+        return await callOllama('qwen2.5:7b', msgs, body.role);
+      } catch (e1) {
+        console.warn('⚠️ qwen2.5:7b falló:', e1.message);
         try {
-          console.log(`🤖 Intentando Ollama llama3.1:8b ...`);
-          result = await callOllama('llama3.1:8b', msgs, body.role);
-        } catch (e3) {
-          console.error('❌ Todos los modelos locales fallaron');
-          throw new Error('All local LLMs failed');
+          console.log(`🤖 Ollama mistral:7b`);
+          return await callOllama('mistral:7b', msgs, body.role);
+        } catch (e2) {
+          console.warn('⚠️ mistral:7b falló:', e2.message);
+          console.log(`🤖 Ollama llama3.1:8b`);
+          return await callOllama('llama3.1:8b', msgs, body.role);
         }
+      }
+    };
+
+    if (modeSel === 'local') {
+      result = await tryLocal();
+    } else if (modeSel === 'cloud') {
+      // Cloud primario: GROQ via gateway (si en el futuro se habilita)
+      throw new Error('Cloud mode disabled in current FREE/LOCAL build');
+    } else { // auto
+      try {
+        result = await tryLocal();
+      } catch {
+        throw new Error('Auto: no local LLM available');
       }
     }
 
