@@ -103,10 +103,6 @@ module.exports = {
         encoding: 'pcm_f32le',
         sample_rate: 44100
       }
-    },
-    elevenlabs: {
-      baseUrl: 'https://api.elevenlabs.io/v1',
-      model: 'eleven_multilingual_v2'
     }
   },
 

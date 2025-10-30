@@ -35,8 +35,7 @@ const STATIC_FILES = [
 const API_ENDPOINTS = [
     'https://api.openai.com/v1/chat/completions',
     'https://api.groq.com/openai/v1/chat/completions',
-    'https://api.anthropic.com/v1/messages',
-    'https://api.elevenlabs.io/v1/text-to-speech'
+    'https://api.anthropic.com/v1/messages'
 ];
 
 // Cache strategies

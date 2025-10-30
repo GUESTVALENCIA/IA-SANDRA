@@ -148,7 +148,7 @@ app.get('/agent/config', (req, res) => {
     },
     tts: {
       primary: 'cartesia',
-      fallback: 'elevenlabs',
+      fallback: 'none',
       voice: 'sandra-es'
     },
     llm: {

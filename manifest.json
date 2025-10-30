@@ -234,8 +234,7 @@
       "anthropic"
     ],
     "voice_providers": [
-      "elevenlabs",
-      "openai"
+      "cartesia"
     ],
     "supported_languages": [
       "es",
