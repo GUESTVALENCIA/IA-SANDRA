@@ -221,21 +221,26 @@ async function init() {
         });
     }
     
-    // Setup event listeners
+    // Setup event listeners (PRIMERO - para que los botones funcionen inmediatamente)
     setupEventListeners();
+    
+    // Marcar como conectado inmediatamente (los botones funcionan sin LiveKit)
+    AppState.isConnected = true;
+    updateStatus('En línea', 'connected');
+    
+    // Verificar conexión con backend (rápido, no bloqueante)
+    checkBackendConnection();
     
     // Inicializar reconocimiento de voz
     setupVoiceRecognition();
     
-    // Conectar a LiveKit (no bloqueante)
+    // Conectar a LiveKit en background (opcional, no bloquea)
     connectToLiveKit().catch(err => {
         console.warn('LiveKit no disponible, continuando sin él:', err);
+        updateStatus('En línea (modo básico)', 'connected');
     });
     
-    // Actualizar estado
-    updateStatus('Conectado', 'connected');
-    
-    console.log('✅ Sandra Mobile App iniciada correctamente');
+    console.log('✅ Sandra Mobile App iniciada correctamente - Botones activos');
 }
 
 // ============================================================
@@ -319,85 +324,112 @@ function setupEventListeners() {
 // LIVEKIT INTEGRATION
 // ============================================================
 
-async function connectToLiveKit() {
+// Verificar conexión con backend (rápido)
+async function checkBackendConnection() {
     try {
-        updateStatus('Conectando a LiveKit...', 'connecting');
+        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/health`, {
+            method: 'GET',
+            timeout: 3000
+        }).catch(() => null);
         
-        // Cargar LiveKit client
-        const lk = await loadLiveKit();
-        
-        if (!lk) {
-            console.warn('⚠️ LiveKit no disponible, usando modo básico sin voz en tiempo real');
-            updateStatus('Modo básico (sin LiveKit)', 'connected');
-            AppState.isConnected = true;
-            return;
+        if (response && response.ok) {
+            console.log('✅ Backend accesible');
+            return true;
         }
+    } catch (error) {
+        console.warn('⚠️ Backend no disponible (continuando sin él)');
+    }
+    return false;
+}
+
+async function connectToLiveKit() {
+    // Timeout de 10 segundos para no bloquear
+    const timeout = new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({ timeout: true });
+        }, 10000);
+    });
+    
+    try {
+        // No cambiar estado a "Conectando" - la app ya está lista
+        console.log('🔄 Intentando conectar LiveKit en background...');
         
-        const { Room, RoomEvent } = lk;
-        
-        // Obtener token del backend
-        const tokenResponse = await fetch(`${CONFIG.BACKEND_URL}/token`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                roomName: `sandra-mobile-${Date.now()}`,
-                participantName: `mobile-user-${Date.now()}`
-            })
-        });
-        
-        if (!tokenResponse.ok) {
-            // Si falla el token, continuar en modo básico
-            console.warn('⚠️ No se pudo obtener token LiveKit, usando modo básico');
-            updateStatus('Modo básico activo', 'connected');
-            AppState.isConnected = true;
-            return;
-        }
-        
-        const { token, url } = await tokenResponse.json();
-        
-        // Conectar a la sala
-        const room = new Room();
-        
-        room.on(RoomEvent.Connected, () => {
-            console.log('✅ Conectado a LiveKit');
-            AppState.isConnected = true;
-            AppState.room = room;
-            AppState.localParticipant = room.localParticipant;
-            updateStatus('En línea (LiveKit)', 'connected');
-        });
-        
-        room.on(RoomEvent.Disconnected, () => {
-            console.log('❌ Desconectado de LiveKit');
-            AppState.isConnected = false;
-            updateStatus('Desconectado', 'disconnected');
-            
-            // Intentar reconectar
-            setTimeout(() => connectToLiveKit(), 5000);
-        });
-        
-        room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
-            if (track.kind === 'audio') {
-                handleRemoteAudio(track, participant);
+        const connectPromise = (async () => {
+            try {
+                // Cargar LiveKit client
+                const lk = await loadLiveKit();
+                
+                if (!lk) {
+                    return { success: false, reason: 'LiveKit library not available' };
+                }
+                
+                const { Room, RoomEvent } = lk;
+                
+                // Obtener token del backend con timeout
+                const tokenResponse = await Promise.race([
+                    fetch(`${CONFIG.BACKEND_URL}/token`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            roomName: `sandra-mobile-${Date.now()}`,
+                            participantName: `mobile-user-${Date.now()}`
+                        })
+                    }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                ]);
+                
+                if (!tokenResponse.ok) {
+                    return { success: false, reason: 'Token request failed' };
+                }
+                
+                const { token, url } = await tokenResponse.json();
+                
+                // Conectar a la sala
+                const room = new Room();
+                
+                room.on(RoomEvent.Connected, () => {
+                    console.log('✅ Conectado a LiveKit');
+                    AppState.room = room;
+                    AppState.localParticipant = room.localParticipant;
+                    updateStatus('En línea (+ LiveKit)', 'connected');
+                });
+                
+                room.on(RoomEvent.Disconnected, () => {
+                    console.log('❌ Desconectado de LiveKit');
+                    // No cambiar el estado principal, solo el de LiveKit
+                });
+                
+                room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+                    if (track.kind === 'audio') {
+                        handleRemoteAudio(track, participant);
+                    }
+                });
+                
+                // Conectar con timeout
+                await Promise.race([
+                    room.connect(url || CONFIG.LIVEKIT_URL, token),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 8000))
+                ]);
+                
+                return { success: true };
+            } catch (error) {
+                return { success: false, reason: error.message };
             }
-        });
+        })();
         
-        room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
-            console.log('Track unsubscribed:', track.kind);
-        });
+        const result = await Promise.race([connectPromise, timeout]);
         
-        // Conectar
-        await room.connect(url || CONFIG.LIVEKIT_URL, token);
+        if (result.timeout || !result.success) {
+            console.log('ℹ️ LiveKit no disponible o timeout - usando modo básico');
+            // No cambiar estado - la app ya está marcada como conectada
+            return;
+        }
+        
+        console.log('✅ LiveKit conectado exitosamente');
         
     } catch (error) {
-        console.error('❌ Error conectando a LiveKit:', error);
-        
-        // No fallar completamente, usar modo básico
-        updateStatus('Modo básico', 'connected');
-        AppState.isConnected = true;
-        addSystemMessage('LiveKit no disponible. Funcionando en modo básico con comandos de voz.');
-        
-        // Intentar reconectar después de 10 segundos
-        setTimeout(() => connectToLiveKit(), 10000);
+        console.warn('⚠️ LiveKit error:', error.message);
+        // No cambiar estado - continuar en modo básico
     }
 }
 
@@ -777,18 +809,28 @@ async function handleRestore(commandText) {
 
 function handleSendMessage() {
     const text = CONFIG.textInput.value.trim();
-    if (!text) return;
+    if (!text) {
+        console.log('⚠️ Mensaje vacío, ignorando');
+        return;
+    }
     
-    addUserMessage(text);
+    console.log('📤 Enviando mensaje:', text);
+    
+    // Limpiar input inmediatamente
     CONFIG.textInput.value = '';
     CONFIG.sendBtn.disabled = true;
     CONFIG.textInput.style.height = 'auto';
     
+    // Añadir mensaje de usuario al chat
+    addUserMessage(text);
+    
     // Procesar comando o enviar como mensaje normal
     if (text.toLowerCase().includes(CONFIG.WAKE_WORD.toLowerCase())) {
         const command = text.replace(new RegExp(CONFIG.WAKE_WORD, 'gi'), '').trim();
+        console.log('🎯 Procesando comando:', command);
         executeCommand(command);
     } else {
+        console.log('💬 Enviando como mensaje normal');
         sendToBackend(text);
     }
 }
