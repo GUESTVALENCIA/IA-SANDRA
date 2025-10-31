@@ -19,9 +19,10 @@
     "validate:config": "node scripts/validate-configuration.js",
     "test:smoke": "node tests/smoke-tests.js",
     "test:e2e": "node tests/e2e-tests.js",
-    "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && npx netlify deploy --prod",
-    "deploy:staging": "npm run build:prod && npm run validate:deploy && npm run test:smoke && npx netlify deploy",
-    "deploy:simple": "npx netlify deploy --prod --dir=frontend --functions=netlify/functions"
+    "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && git push origin main",
+    "deploy:staging": "npm run build:prod && npm run validate:deploy && npm run test:smoke && git push origin staging",
+    "deploy:check": "npm run build:prod && npm run validate:deploy && npm run test:smoke",
+    "deploy:force-api": "npm run build:prod && npm run validate:deploy && npm run test:smoke && npx netlify deploy --prod"
   },
   "dependencies": {
     "@sentry/node": "^8.55.0",
