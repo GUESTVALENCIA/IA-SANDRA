@@ -69,6 +69,16 @@ class SandraAPIClient {
   }
 
   /**
+   * Chat method (método principal para chat)
+   */
+  async chat(message, options = {}) {
+    return await this.request('/chat', {
+      method: 'POST',
+      body: { message, ...options }
+    });
+  }
+
+  /**
    * Llamada API unificada (Golden Path)
    */
   async request(endpoint, options = {}) {

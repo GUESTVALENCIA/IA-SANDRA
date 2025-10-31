@@ -83,8 +83,20 @@
 [functions.chat]
   included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
   
+[functions.chat-resilient]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
 [functions.voice-conversation]
   included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.voice-conversation-optimized]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.ai-multi-model]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.avatar-heygen]
+  included_files = ["orchestrator/**", "package.json"]
 
 # ============================================================================
 # ENVIRONMENT CONTEXTS

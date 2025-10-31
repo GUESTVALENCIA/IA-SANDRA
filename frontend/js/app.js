@@ -282,14 +282,16 @@ class SandraApp {
                 conversationId: this.conversationId
             };
 
-            // Usar API Client Wrapper (Golden Path) si está disponible
+            // Usar API Client Wrapper (Golden Path) - PRIORIDAD
             let response;
             if (window.sandraAPIClient) {
-                // Usar wrapper unificado - funciona en cualquier entorno
+                // Usar el API client wrapper que detecta automáticamente Netlify Functions
                 response = await window.sandraAPIClient.chat(message, options);
+            } else if (window.sandraAPI) {
+                // Fallback al API client legacy
+                response = await window.sandraAPI.sendMessage(message, options);
             } else {
-                // Fallback al método anterior
-                response = await this.api.sendMessage(message, options);
+                throw new Error('API client not initialized');
             }
 
             if (response.success) {
