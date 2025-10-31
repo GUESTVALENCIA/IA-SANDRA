@@ -1377,8 +1377,13 @@
             async processMessage(message, attachments = []) {
                 const startTime = Date.now();
 
-                // Show typing indicator immediately
-                this.showTypingIndicator();
+                // ✅ USAR ESTADOS UI para loading
+                if (window.estadosUI) {
+                    window.estadosUI.showLoadingState('Sandra está pensando...');
+                } else {
+                    // Fallback al typing indicator original
+                    this.showTypingIndicator();
+                }
 
                 try {
                     // Enrich context with mobile-specific data
@@ -1386,6 +1391,13 @@
 
                     // Generate response with mobile optimizations
                     const response = await this.generateMobileOptimizedResponse(enrichedContext);
+
+                    // ✅ OCULTAR LOADING STATE
+                    if (window.estadosUI) {
+                        window.estadosUI.hideLoadingState();
+                    } else {
+                        this.hideTypingIndicator();
+                    }
 
                     // Update analytics and memory
                     this.updateMemory(message, response);
@@ -1396,6 +1408,17 @@
 
                 } catch (error) {
                     console.error('Error procesando mensaje móvil:', error);
+                    
+                    // ✅ USAR ESTADOS UI para error
+                    if (window.estadosUI) {
+                        window.estadosUI.hideLoadingState();
+                        window.estadosUI.showErrorState(error, () => {
+                            return this.processMessage(message, attachments);
+                        });
+                    } else {
+                        this.hideTypingIndicator();
+                    }
+                    
                     return 'Lo siento, he tenido un problema técnico. Mi sistema Mobile Galaxy se está autoreparando...';
                 }
             }
@@ -1483,33 +1506,44 @@
             }
 
             async generateMobileOptimizedResponse(context) {
-                if (!this.apiKey) {
-                    return 'Por favor, configura tu API key para activar todas mis capacidades Mobile Galaxy.';
+                // ✅ USAR API CLIENT UNIFICADO (Golden Path)
+                if (!window.sandraAPI) {
+                    console.error('[Sandra Mobile] API Client no disponible');
+                    return 'Error: API Client no inicializado. Por favor, recarga la página.';
                 }
 
-                const systemPrompt = this.buildMobileSystemPrompt(context);
+                try {
+                    // Construir mensaje formateado
+                    const message = this.formatMobileMessage(context);
+                    
+                    // Usar API Client con contexto mobile
+                    const result = await window.sandraAPI.chat(message, {
+                        mobileOptimized: true,
+                        systemPrompt: this.buildMobileSystemPrompt(context),
+                        context: this.context.slice(-6), // Reduced for mobile
+                        device: context.device,
+                        orientation: context.orientation
+                    });
 
-                // ✅ CORRECTO: Usa Ollama 4-tier cascade FREE via Netlify Functions
-                const response = await fetch('/.netlify/functions/chat-local', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            ...this.context.slice(-6), // Reduced for mobile
-                            { role: 'user', content: this.formatMobileMessage(context) }
-                        ]
-                    })
-                });
+                    // Retornar respuesta o error
+                    if (result.success) {
+                        return result.response;
+                    } else {
+                        throw new Error(result.error || 'Error desconocido');
+                    }
 
-                if (!response.ok) {
-                    throw new Error(`Chat Error: ${response.status}`);
+                } catch (error) {
+                    console.error('[Sandra Mobile] Error generating response:', error);
+                    
+                    // Usar estados UI para mostrar error
+                    if (window.estadosUI) {
+                        window.estadosUI.showErrorState(error, () => {
+                            return this.generateMobileOptimizedResponse(context);
+                        });
+                    }
+                    
+                    return 'Lo siento, estoy teniendo problemas para procesar tu mensaje. ¿Puedes intentar de nuevo?';
                 }
-
-                const data = await response.json();
-                return data.text || data.choices?.[0]?.message?.content || 'Sin respuesta';
             }
 
             buildMobileSystemPrompt(context) {
