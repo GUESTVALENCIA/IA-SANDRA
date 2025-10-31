@@ -2135,6 +2135,31 @@ INSTRUCCIONES:
             lastTouchEnd = now;
         }, false);
 
+        // ✅ CARGAR API CLIENT Y ESTADOS UI
+        const loadFrontendComponents = () => {
+            const components = [
+                '/frontend/js/api-client.js',
+                '/frontend/js/estados-ui.js'
+            ];
+
+            components.forEach((src, index) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onerror = () => {
+                    console.warn(`[Sandra Mobile] No se pudo cargar ${src} - usando fallback`);
+                };
+                if (index === components.length - 1) {
+                    script.onload = () => {
+                        console.log('[Sandra Mobile] Componentes frontend cargados');
+                    };
+                }
+                document.head.appendChild(script);
+            });
+        };
+
+        // Cargar componentes frontend mejorados
+        loadFrontendComponents();
+
     </script>
 </body>
 </html>
