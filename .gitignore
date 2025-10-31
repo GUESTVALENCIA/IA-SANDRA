@@ -111,3 +111,6 @@ Thumbs.db
 backup/
 *.backup
 
+# Netlify token (si se guarda localmente)
+.netlify-token
+
