@@ -60,7 +60,12 @@ class SandraAPIClient {
     }
 
     // Prioridad 3: HTTP API directa (desarrollo o servidor propio)
-    const configUrl = window.SANDRA_API_URL || process.env.API_BASE_URL || 'http://localhost:7777';
+    // SOLO en desarrollo - nunca en producción
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1' ||
+                         window.location.hostname.includes('localhost');
+    const configUrl = window.SANDRA_API_URL || process.env.API_BASE_URL || 
+                      (isDevelopment ? 'http://localhost:7777' : '');
     return {
       mode: 'http-api',
       baseUrl: configUrl,

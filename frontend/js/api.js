@@ -49,8 +49,10 @@ class SandraAPI {
             return configUrl;
         }
         
-        // Fallback a localhost para desarrollo
-        return 'http://localhost:7777';
+        // Fallback a localhost SOLO en desarrollo
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1';
+        return isDevelopment ? 'http://localhost:7777' : '';
     }
 
     async init() {

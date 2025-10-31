@@ -37,10 +37,15 @@ jobs:
       - name: Validate deployment
         run: npm run validate:deploy
       
+      - name: Validate configuration
+        run: npm run validate:config
+      
       - name: Build for production
         run: npm run build:prod
         env:
           NODE_ENV: production
+          # Forzar production en build script
+          CI: true
       
       - name: Smoke tests
         run: npm run test:smoke

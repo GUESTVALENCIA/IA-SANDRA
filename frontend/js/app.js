@@ -282,10 +282,25 @@ class SandraApp {
                 conversationId: this.conversationId
             };
 
-            // Usar API Client Wrapper (Golden Path) - PRIORIDAD
+            // PRIORIDAD 1: Resilient AI Client (Multi-layer fallback)
             let response;
-            if (window.sandraAPIClient) {
-                // Usar el API client wrapper que detecta automáticamente Netlify Functions
+            if (window.resilientAI) {
+                // Usar cliente resiliente con circuit breakers y fallbacks
+                response = await window.resilientAI.chat(message, options);
+                // Normalizar respuesta
+                if (response && typeof response === 'object') {
+                    response = {
+                        success: response.success !== false,
+                        text: response.text || response.response,
+                        conversationId: options.conversationId || this.conversationId,
+                        timestamp: new Date().toISOString(),
+                        services: {
+                            ai: { success: response.success !== false, model: response.model || 'gpt-4o' }
+                        }
+                    };
+                }
+            } else if (window.sandraAPIClient) {
+                // Fallback al API client wrapper
                 response = await window.sandraAPIClient.chat(message, options);
             } else if (window.sandraAPI) {
                 // Fallback al API client legacy

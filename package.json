@@ -16,6 +16,7 @@
     "security-audit": "npm audit --audit-level=moderate",
     "security-check": "node scripts/security-check.js",
     "validate:deploy": "node scripts/pre-deploy-validation.js",
+    "validate:config": "node scripts/validate-configuration.js",
     "test:smoke": "node tests/smoke-tests.js",
     "test:e2e": "node tests/e2e-tests.js",
     "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && netlify deploy --prod",
