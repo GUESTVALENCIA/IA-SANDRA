@@ -19,11 +19,12 @@
     "validate:config": "node scripts/validate-configuration.js",
     "test:smoke": "node tests/smoke-tests.js",
     "test:e2e": "node tests/e2e-tests.js",
-    "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && netlify deploy --prod",
-    "deploy:staging": "npm run build:prod && npm run validate:deploy && npm run test:smoke && netlify deploy"
+    "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && npx netlify deploy --prod",
+    "deploy:staging": "npm run build:prod && npm run validate:deploy && npm run test:smoke && npx netlify deploy",
+    "deploy:simple": "npx netlify deploy --prod --dir=frontend --functions=netlify/functions"
   },
   "dependencies": {
-    "@sentry/node": "^8.40.0",
+    "@sentry/node": "^8.55.0",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -34,8 +35,8 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "electron-updater": "^6.1.7",
     "electron-builder": "^24.9.1",
+    "electron-updater": "^6.1.7",
     "eslint": "^9.38.0",
     "jest": "^29.7.0"
   },
