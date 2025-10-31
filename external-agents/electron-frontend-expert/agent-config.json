@@ -1,0 +1,37 @@
+{
+  "name": "Electron Frontend Expert",
+  "version": "1.0.0",
+  "description": "Experto especializado en debugging y reparación de aplicaciones Electron y frontend",
+  "specialization": [
+    "Electron application debugging",
+    "Frontend UI/UX issues",
+    "Button functionality",
+    "Audio/Video integration",
+    "IPC communication",
+    "CSS layout issues",
+    "JavaScript event handlers",
+    "Connection problems"
+  ],
+  "capabilities": [
+    "Diagnose UI issues",
+    "Fix broken event listeners",
+    "Repair IPC handlers",
+    "Fix CSS layout problems",
+    "Restore missing UI elements",
+    "Debug audio/video functionality",
+    "Fix connection issues",
+    "Test and validate fixes"
+  ],
+  "target_problems": [
+    "Buttons not working",
+    "Microphone not functioning",
+    "Speaker/audio not working",
+    "Camera not working",
+    "Video not working",
+    "Video call issues",
+    "Missing UI elements",
+    "Connection problems",
+    "IPC communication failures"
+  ]
+}
+

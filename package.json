@@ -1,0 +1,44 @@
+{
+  "name": "sandra-devconsole",
+  "version": "1.0.0",
+  "description": "Sandra DevConsole - AI Assistant with MCP Architecture",
+  "main": "main.js",
+  "author": "Clayton CEO",
+  "license": "MIT",
+  "scripts": {
+    "start": "node main.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint .",
+    "build": "node scripts/build-automated.js",
+    "build:dev": "set NODE_ENV=development&& node scripts/build-automated.js",
+    "build:prod": "set NODE_ENV=production&& node scripts/build-automated.js",
+    "security-audit": "npm audit --audit-level=moderate",
+    "security-check": "node scripts/security-check.js",
+    "validate:deploy": "node scripts/pre-deploy-validation.js",
+    "test:smoke": "node tests/smoke-tests.js",
+    "test:e2e": "node tests/e2e-tests.js",
+    "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && netlify deploy --prod",
+    "deploy:staging": "npm run build:prod && npm run validate:deploy && npm run test:smoke && netlify deploy"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "helmet": "^8.1.0",
+    "prom-client": "^15.1.0",
+    "uuid": "^11.0.3",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron-updater": "^6.1.7",
+    "electron-builder": "^24.9.1",
+    "eslint": "^9.38.0",
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

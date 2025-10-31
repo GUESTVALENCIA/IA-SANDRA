@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandra DevConsole - CEO Clayton</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#764ba2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <h1>Sandra DevConsole</h1>
+                </div>
+                <div class="status-indicator" id="connectionStatus">
+                    <div class="status-dot offline"></div>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="service-indicators" id="serviceIndicators">
+                    <div class="service-status" data-service="ai" title="AI Core">
+                        <i class="fas fa-brain"></i>
+                        <span class="status-dot"></span>
+                    </div>
+                    <div class="service-status" data-service="voice" title="Voice Synthesis">
+                        <i class="fas fa-volume-up"></i>
+                        <span class="status-dot"></span>
+                    </div>
+                    <div class="service-status" data-service="avatar" title="Avatar Video">
+                        <i class="fas fa-video"></i>
+                        <span class="status-dot"></span>
+                    </div>
+                    <div class="service-status" data-service="payments" title="Payments">
+                        <i class="fas fa-credit-card"></i>
+                        <span class="status-dot"></span>
+                    </div>
+                </div>
+
+                <div class="header-controls">
+                    <button id="settingsBtn" class="header-btn" title="Configuración">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button id="metricsBtn" class="header-btn" title="Métricas del sistema">
+                        <i class="fas fa-chart-line"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="sandra-info">
+                        <div class="sandra-avatar">
+                            <img src="assets/images/sandra-avatar.svg" alt="Sandra" id="sandraAvatarImg" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;width:60px;height:60px;border-radius:50%;background:var(--sandra-blue);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:24px;&quot;>S</div>'">
+                            <div class="avatar-status online" id="sandraStatus"></div>
+                        </div>
+                        <div class="sandra-details">
+                            <h3>Sandra IA 7.0</h3>
+                            <p class="sandra-subtitle">Tu Aliada Digital Empática</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-controls">
+                        <button id="voiceToggle" class="toggle-btn" title="Activar/Desactivar Voz">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button id="avatarToggle" class="toggle-btn" title="Activar/Desactivar Avatar">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <button id="clearChat" class="toggle-btn" title="Limpiar Chat">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="welcome-message">
+                        <div class="message sandra-message">
+                            <div class="message-avatar">
+                                <img src="assets/images/sandra-avatar.svg" alt="Sandra" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;width:40px;height:40px;border-radius:50%;background:var(--sandra-blue);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:16px;&quot;>S</div>'">
+                            </div>
+                            <div class="message-content">
+                                <div class="message-text">
+                                    ¡Hola Clayton! 💙 Soy Sandra, tu aliada digital. Estoy aquí para apoyarte en todos tus proyectos empresariales.
+                                    ¿En qué puedo asistirte hoy?
+                                </div>
+                                <div class="message-timestamp">
+                                    Ahora mismo
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="multimodal-controls">
+                        <div class="mode-indicators">
+                            <span class="mode-indicator active" data-mode="text">
+                                <i class="fas fa-keyboard"></i> Texto
+                            </span>
+                            <span class="mode-indicator" data-mode="voice" id="voiceIndicator">
+                                <i class="fas fa-microphone"></i> Voz
+                            </span>
+                            <span class="mode-indicator" data-mode="avatar" id="avatarIndicator">
+                                <i class="fas fa-video"></i> Avatar
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="input-area">
+                        <div class="message-input-wrapper">
+                            <textarea
+                                id="messageInput"
+                                placeholder="Escribe tu mensaje para Sandra..."
+                                rows="1"
+                                maxlength="2000"></textarea>
+
+                            <div class="input-actions">
+                                <button id="attachBtn" class="action-btn" title="Adjuntar archivo">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+
+                                <button id="voiceInputBtn" class="action-btn" title="Entrada por voz">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+
+                                <button id="sendBtn" class="send-btn" title="Enviar mensaje">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="processing-indicator" id="processingIndicator">
+                        <div class="spinner"></div>
+                        <span id="processingText">Sandra está pensando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3>Panel de Control</h3>
+                    <button id="closeSidebar" class="close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="sidebar-content">
+                    <!-- Metrics Panel -->
+                    <div class="panel metrics-panel" id="metricsPanel">
+                        <h4><i class="fas fa-chart-line"></i> Métricas del Sistema</h4>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <span class="metric-label">Uptime</span>
+                                <span class="metric-value" id="uptimeMetric">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Requests/min</span>
+                                <span class="metric-value" id="requestsMetric">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Response Time</span>
+                                <span class="metric-value" id="responseTimeMetric">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Success Rate</span>
+                                <span class="metric-value" id="successRateMetric">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div class="panel settings-panel" id="settingsPanel">
+                        <h4><i class="fas fa-cog"></i> Configuración</h4>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Modo de Respuesta</label>
+                            <select id="responseMode" class="setting-select">
+                                <option value="text">Solo Texto</option>
+                                <option value="text-voice">Texto + Voz</option>
+                                <option value="multimodal">Multimodal Completo</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Velocidad de Voz</label>
+                            <input type="range" id="voiceSpeed" min="0.5" max="2" step="0.1" value="1" class="setting-range">
+                            <span class="range-value">1.0x</span>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Tema</label>
+                            <select id="themeSelect" class="setting-select">
+                                <option value="dark">Oscuro</option>
+                                <option value="light">Claro</option>
+                                <option value="auto">Automático</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <button id="resetServices" class="setting-btn primary">
+                                <i class="fas fa-sync"></i> Reiniciar Servicios
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Conversation History -->
+                    <div class="panel history-panel" id="historyPanel">
+                        <h4><i class="fas fa-history"></i> Historial</h4>
+                        <div class="conversation-list" id="conversationList">
+                            <div class="conversation-item active">
+                                <div class="conversation-preview">
+                                    <span class="conversation-title">Sesión Actual</span>
+                                    <span class="conversation-time">Ahora</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Modals -->
+        <div id="errorModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Error del Sistema</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body" id="errorMessage">
+                    Ha ocurrido un error inesperado.
+                </div>
+                <div class="modal-footer">
+                    <button class="btn secondary" onclick="closeModal('errorModal')">Cerrar</button>
+                    <button class="btn primary" id="retryBtn">Reintentar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <h3>Iniciando Sandra DevConsole</h3>
+                <p id="loadingStatus">Conectando con los servicios...</p>
+            </div>
+        </div>
+
+        <!-- Audio Player -->
+        <audio id="audioPlayer" preload="none"></audio>
+
+        <!-- Video Player -->
+        <video id="videoPlayer" preload="none" style="display: none;"></video>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/api-client-wrapper.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/multimodal.js"></script>
+    <script src="js/metrics.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const baseUrl = window.location.origin;
+                navigator.serviceWorker.register(`${baseUrl}/sw.js`)
+                    .then((registration) => {
+                        console.log('[SW] Service Worker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.warn('[SW] Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+env:
+  NODE_ENV: production
+  NODE_VERSION: '18'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run security check
+        run: npm run security-check
+      
+      - name: Validate deployment
+        run: npm run validate:deploy
+      
+      - name: Build for production
+        run: npm run build:prod
+        env:
+          NODE_ENV: production
+      
+      - name: Smoke tests
+        run: npm run test:smoke
+      
+      - name: Deploy to Netlify
+        uses: netlify/actions/cli@master
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        with:
+          args: deploy --prod --dir=frontend --functions=netlify/functions
+      
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+        if: success()
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.NETLIFY_URL }}
+

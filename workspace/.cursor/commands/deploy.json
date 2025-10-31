@@ -1,0 +1,49 @@
+{
+  "name": "Deploy to Production",
+  "description": "Despliega a producción con validaciones completas",
+  "steps": [
+    {
+      "step": 1,
+      "name": "Verificar Tests",
+      "command": "npm test",
+      "description": "Ejecutar suite completa de tests",
+      "onFailure": "stop",
+      "critical": true
+    },
+    {
+      "step": 2,
+      "name": "Verificar Build",
+      "command": "npm run build",
+      "description": "Compilar proyecto sin errores",
+      "onFailure": "stop",
+      "critical": true
+    },
+    {
+      "step": 3,
+      "name": "Verificar Variables de Entorno",
+      "command": "node scripts/verify-env.js",
+      "description": "Confirmar que todas las variables necesarias están configuradas",
+      "onFailure": "stop",
+      "critical": true
+    },
+    {
+      "step": 4,
+      "name": "Deploy",
+      "command": "npm run deploy:prod",
+      "description": "Ejecutar deployment a producción",
+      "onFailure": "rollback",
+      "critical": true
+    },
+    {
+      "step": 5,
+      "name": "Verificar Deployment",
+      "command": "npm run verify:deployment",
+      "description": "Confirmar que el deployment fue exitoso",
+      "onFailure": "alert",
+      "critical": true
+    }
+  ],
+  "requires": ["tests", "build", "env-check"],
+  "prompt": "Ejecutar deploy a producción después de validar:\n1. ✅ Tests pasan\n2. ✅ Build sin errores\n3. ✅ Variables de entorno configuradas\n4. ✅ Deploy ejecutado\n5. ✅ Deployment verificado"
+}
+

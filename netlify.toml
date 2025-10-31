@@ -1,0 +1,116 @@
+# Netlify Configuration para Sandra DevConsole
+# Configuración completa de headers, redirects, functions y PWA
+
+[build]
+  # Publish directory corregido (debe apuntar al directorio correcto)
+  publish = "frontend"
+  functions = "netlify/functions"
+  # Forzar NODE_ENV=production en build
+  command = "NODE_ENV=production npm run build:prod"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# ============================================================================
+# SECURITY HEADERS (Global)
+# ============================================================================
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.openai.com https://*.netlify.app https://*.netlify.com;"
+
+# ============================================================================
+# API HEADERS (CORS Restrictivo)
+# ============================================================================
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    # CORS: Solo permitir origen específico (NO "*")
+    Access-Control-Allow-Origin = "https://sandra.guestsvalencia.es"
+    Access-Control-Allow-Methods = "POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, X-API-Key, Authorization"
+    Access-Control-Max-Age = "86400"
+    Access-Control-Allow-Credentials = "true"
+    
+    # Rate limiting headers
+    X-RateLimit-Limit = "10"
+    X-RateLimit-Window = "60"
+
+# ============================================================================
+# PWA HEADERS (Service Worker y Manifest)
+# ============================================================================
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=3600"
+
+# ============================================================================
+# REDIRECTS (SPA y API)
+# ============================================================================
+# Redirect API calls to Netlify Functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = false
+
+# SPA fallback - todas las rutas van al index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ============================================================================
+# FUNCTION CONFIGURATION
+# ============================================================================
+[functions]
+  node_bundler = "esbuild"
+  # Timeout de 26 segundos (máximo de Netlify)
+  
+[functions.chat]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.voice-conversation]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+
+# ============================================================================
+# ENVIRONMENT CONTEXTS
+# ============================================================================
+[context.production]
+  command = "npm run build"
+  
+[context.production.environment]
+  NODE_ENV = "production"
+  ALLOWED_ORIGIN = "https://sandra.guestsvalencia.es"
+  REQUIRE_AUTH = "true"
+  AUTH_REQUIRED = "true"
+
+[context.staging]
+  command = "npm run build"
+  
+[context.staging.environment]
+  NODE_ENV = "staging"
+  ALLOWED_ORIGIN = "https://staging.sandra.guestsvalencia.es"
+  REQUIRE_AUTH = "true"
+  AUTH_REQUIRED = "false"
+
+[context.development]
+  command = "npm run build"
+  
+[context.development.environment]
+  NODE_ENV = "development"
+  ALLOWED_ORIGIN = "http://localhost:7777"
+
