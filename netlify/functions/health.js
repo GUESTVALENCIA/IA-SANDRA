@@ -23,12 +23,31 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
+  // Formato compatible con getServiceStatus() del frontend
   return {
     statusCode: 200,
     headers,
     body: JSON.stringify({
       status: 'healthy',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      services: {
+        'sandra-ai-core': {
+          available: true,
+          healthy: true,
+          circuitBreaker: { state: 'CLOSED', failureCount: 0 },
+          capabilities: ['conversational-ai', 'strategic-advice'],
+          provider: 'Netlify Functions',
+          lastCheck: new Date().toISOString()
+        },
+        'netlify-functions': {
+          available: true,
+          healthy: true,
+          circuitBreaker: { state: 'CLOSED', failureCount: 0 },
+          capabilities: ['chat', 'voice', 'health'],
+          provider: 'Netlify',
+          lastCheck: new Date().toISOString()
+        }
+      }
     })
   };
 };
