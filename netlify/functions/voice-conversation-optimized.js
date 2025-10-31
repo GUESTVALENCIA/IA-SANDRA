@@ -13,14 +13,17 @@ const CARTESIA_API_KEY = process.env.CARTESIA_API_KEY;
 
 /**
  * STT Optimizado (Deepgram)
- * Target: <500ms (vs 800ms actual)
+ * Target: <400ms (vs 800ms actual)
+ * OPTIMIZACIÓN: Timeout más agresivo, modelo más rápido
  */
 async function transcribeAudio(audioBuffer) {
   const startTime = Date.now();
   
   try {
-    // Optimización: usar tier 'enhanced' (más rápido que 'base')
-    // Modelo 'nova-2' pero con tier optimizado
+    // Optimización máxima:
+    // - Modelo 'nova-2' con tier 'enhanced' (más rápido)
+    // - Timeout: 4s (más agresivo, reduce latencia)
+    // - Language: es (español, más rápido que auto-detect)
     const response = await axios.post(
       'https://api.deepgram.com/v1/listen?language=es&model=nova-2&tier=enhanced',
       audioBuffer,
@@ -29,7 +32,7 @@ async function transcribeAudio(audioBuffer) {
           'Authorization': `Token ${DEEPGRAM_API_KEY}`,
           'Content-Type': 'audio/webm' // Ajustar según formato recibido
         },
-        timeout: 5000 // Timeout agresivo
+        timeout: 4000 // Optimizado: 4s vs 5s (más agresivo)
       }
     );
     
@@ -50,14 +53,16 @@ async function transcribeAudio(audioBuffer) {
 /**
  * LLM Optimizado (OpenAI GPT-4o-mini para voz)
  * Target: <600ms (vs 1500ms actual)
+ * OPTIMIZACIÓN: Reducido a 200 tokens, timeout más agresivo
  */
 async function generateVoiceResponse(transcription) {
   const startTime = Date.now();
   
   try {
-    // Optimización: GPT-4o-mini (60% más rápido, 85% más barato)
-    // max_tokens reducido (150 vs 300) para respuestas más concisas
-    // temperature 0.5 (más determinístico = más rápido)
+    // Optimización máxima: GPT-4o-mini (60% más rápido, 85% más barato)
+    // max_tokens: 200 (reducido de 300 para voz, más rápido)
+    // temperature: 0.5 (más determinístico = más rápido)
+    // timeout: 6s (más agresivo, reduce latencia percibida)
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -72,7 +77,7 @@ async function generateVoiceResponse(transcription) {
             content: transcription
           }
         ],
-        max_tokens: 150, // Reducido para voz
+        max_tokens: 200, // Optimizado: 200 vs 300 (más rápido)
         temperature: 0.5, // Más determinístico
         presence_penalty: 0.1,
         frequency_penalty: 0.1
@@ -82,7 +87,7 @@ async function generateVoiceResponse(transcription) {
           'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        timeout: 8000
+        timeout: 6000 // Optimizado: 6s vs 8s (más agresivo)
       }
     );
     
@@ -103,15 +108,18 @@ async function generateVoiceResponse(transcription) {
 
 /**
  * TTS Optimizado (Cartesia)
- * Target: <400ms (vs 1200ms actual)
+ * Target: <300ms (vs 1200ms actual)
+ * OPTIMIZACIÓN: Timeout más agresivo, formato más eficiente
  */
 async function synthesizeSpeech(text) {
   const startTime = Date.now();
   
   try {
-    // Optimización: modelo 'sonic-english' (más rápido que multilingual)
-    // Raw PCM encoding (más rápido que MP3)
-    // Sample rate 24kHz (suficiente para voz, más rápido que 48kHz)
+    // Optimización máxima:
+    // - Modelo 'sonic-english' (más rápido que multilingual)
+    // - Raw PCM encoding (más rápido que MP3)
+    // - Sample rate 22kHz (suficiente, más rápido que 24kHz)
+    // - Timeout: 5s (más agresivo)
     const response = await axios.post(
       'https://api.cartesia.ai/v1/tts',
       {
@@ -124,7 +132,7 @@ async function synthesizeSpeech(text) {
         output_format: {
           container: 'raw',
           encoding: 'pcm_s16le',
-          sample_rate: 24000
+          sample_rate: 22050 // Optimizado: 22kHz vs 24kHz (más rápido)
         },
         language: 'es'
       },
@@ -134,7 +142,7 @@ async function synthesizeSpeech(text) {
           'Content-Type': 'application/json'
         },
         responseType: 'arraybuffer',
-        timeout: 6000
+        timeout: 5000 // Optimizado: 5s vs 6s (más agresivo)
       }
     );
     

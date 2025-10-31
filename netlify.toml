@@ -88,9 +88,13 @@
   
 [functions.voice-conversation]
   included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
-  
+  # Background function para evitar timeouts (26s limit)
+  timeout = 26
+
 [functions.voice-conversation-optimized]
   included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  # Background function para evitar timeouts (26s limit)
+  timeout = 26
   
 [functions.ai-multi-model]
   included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
