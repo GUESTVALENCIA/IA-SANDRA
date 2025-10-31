@@ -19,9 +19,10 @@
     "validate:config": "node scripts/validate-configuration.js",
     "test:smoke": "node tests/smoke-tests.js",
     "test:e2e": "node tests/e2e-tests.js",
-    "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && git push origin main",
-    "deploy:staging": "npm run build:prod && npm run validate:deploy && npm run test:smoke && git push origin staging",
+    "deploy": "npm run build:prod && npm run validate:deploy && npm run test:smoke && git push origin main && node scripts/verificar-deploy-netlify.js",
+    "deploy:staging": "npm run build:prod && npm run validate:deploy && npm run test:smoke && git push origin staging && node scripts/verificar-deploy-netlify.js",
     "deploy:check": "npm run build:prod && npm run validate:deploy && npm run test:smoke",
+    "deploy:verify": "node scripts/verificar-deploy-netlify.js",
     "deploy:force-api": "npm run build:prod && npm run validate:deploy && npm run test:smoke && npx netlify deploy --prod"
   },
   "dependencies": {
