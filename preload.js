@@ -39,6 +39,7 @@ const electronAPI = {
     if (message.length > 10000) {
       throw new Error('Message too long (max 10000 characters)');
     }
+    console.log('[PRELOAD] sendMessage called via electronAPI');
     return await ipcRenderer.invoke('send-message', message, options);
   },
 
@@ -56,8 +57,16 @@ const electronAPI = {
 
   // Reset Services
   resetServices: async () => {
+    console.log('[PRELOAD] resetServices called via electronAPI');
     validateChannel('reset-services');
-    return await ipcRenderer.invoke('reset-services');
+    try {
+      const result = await ipcRenderer.invoke('reset-services');
+      console.log('[PRELOAD] reset-services result:', result);
+      return result;
+    } catch (error) {
+      console.error('[PRELOAD] Error in resetServices:', error);
+      throw error;
+    }
   },
 
   // Voice Command
@@ -125,21 +134,24 @@ const electronAPI = {
 // Exponer al renderer
 try {
   contextBridge.exposeInMainWorld('electronAPI', electronAPI);
+  console.log('[PRELOAD] ========================================');
   console.log('[PRELOAD] ✅ electronAPI exposed to window.electronAPI');
   console.log('[PRELOAD] Methods exposed:', Object.keys(electronAPI));
+  console.log('[PRELOAD] resetServices available:', 'resetServices' in electronAPI);
+  console.log('[PRELOAD] Secure IPC bridge initialized');
+  console.log('[PRELOAD] ========================================');
 } catch (error) {
   console.error('[PRELOAD] ❌ Error exposing electronAPI:', error);
-  // Fallback: exponer directamente si contextBridge falla
-  if (typeof window !== 'undefined') {
-    window.electronAPI = electronAPI;
-    console.log('[PRELOAD] ⚠️ Fallback: electronAPI exposed directly to window');
+  console.error('[PRELOAD] Error details:', error.message, error.stack);
+  // Fallback: exponer directamente si contextBridge falla (no recomendado pero necesario)
+  try {
+    if (typeof window !== 'undefined') {
+      window.electronAPI = electronAPI;
+      console.log('[PRELOAD] ⚠️ Fallback: electronAPI exposed directly to window');
+      console.log('[PRELOAD] This may indicate Context Isolation is disabled');
+    }
+  } catch (fallbackError) {
+    console.error('[PRELOAD] ❌ Fallback also failed:', fallbackError);
   }
 }
-
-// Log de inicialización
-console.log('[PRELOAD] ========================================');
-console.log('[PRELOAD] Secure IPC bridge initialized');
-console.log('[PRELOAD] Available methods:', Object.keys(contextBridge.exposeInMainWorld ? { electronAPI: {} } : {}));
-console.log('[PRELOAD] electronAPI.resetServices available:', typeof electronAPI !== 'undefined' && electronAPI.resetServices !== undefined);
-console.log('[PRELOAD] ========================================');
 
