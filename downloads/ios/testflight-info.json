@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "testFlightLink": "https://testflight.apple.com/join/TUVQH62I",
+  "bundleId": "com.guestsvalencia.sandra",
+  "appStoreUrl": "https://apps.apple.com/app/sandra-ia-galaxy-guestsvalencia",
+  "metadata": {
+    "app_name": "Sandra IA Galaxy",
+    "bundle_id": "com.guestsvalencia.sandra",
+    "version": "98.0.0",
+    "build_number": "9800",
+    "min_ios_version": "14.0",
+    "test_information": {
+      "beta_group_name": "Sandra IA Beta Testers",
+      "testing_instructions": "\nBienvenido a la beta de Sandra IA Galaxy!\n\nINSTRUCCIONES DE TESTING:\n1. Abre la app y verifica que carga correctamente\n2. Prueba las funciones de chat de texto\n3. Prueba las funciones de voz (permite micrófono)\n4. Prueba subir imágenes o archivos\n5. Verifica que la interfaz se adapta a tu dispositivo\n6. Reporta cualquier error o sugerencia\n\nFUNCIONES A PROBAR:\n- Chat conversacional con IA\n- Grabación y reproducción de voz\n- Carga de archivos e imágenes\n- Navegación entre secciones\n- Rendimiento general\n\nFEEDBACK:\nEnvía feedback directamente desde TestFlight o contacta:\nsoporte@guestsvalencia.es\n\nGracias por ayudar a mejorar Sandra IA!\n                ",
+      "what_to_test": "Todas las funciones principales de Sandra IA Galaxy",
+      "feedback_email": "soporte@guestsvalencia.es"
+    }
+  }
+}

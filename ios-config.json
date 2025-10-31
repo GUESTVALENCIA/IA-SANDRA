@@ -1,0 +1,461 @@
+{
+  "name": "Sandra IA Mobile Galaxy",
+  "version": "98.0.0",
+  "description": "Sandra IA Galaxy Ultimate optimizada para iOS 14+ con soporte completo para iPhone Pro y iPad Pro",
+
+  "ios": {
+    "deployment_target": "14.0",
+    "supported_devices": [
+      "iPhone SE (2nd generation)",
+      "iPhone 12 mini",
+      "iPhone 12",
+      "iPhone 12 Pro",
+      "iPhone 12 Pro Max",
+      "iPhone 13 mini",
+      "iPhone 13",
+      "iPhone 13 Pro",
+      "iPhone 13 Pro Max",
+      "iPhone 14",
+      "iPhone 14 Plus",
+      "iPhone 14 Pro",
+      "iPhone 14 Pro Max",
+      "iPhone 15",
+      "iPhone 15 Plus",
+      "iPhone 15 Pro",
+      "iPhone 15 Pro Max",
+      "iPad Pro (11-inch) (2nd generation)",
+      "iPad Pro (12.9-inch) (4th generation)",
+      "iPad Pro (11-inch) (3rd generation)",
+      "iPad Pro (12.9-inch) (5th generation)",
+      "iPad Pro (11-inch) (4th generation)",
+      "iPad Pro (12.9-inch) (6th generation)",
+      "iPad Air (4th generation)",
+      "iPad Air (5th generation)"
+    ],
+
+    "screen_sizes": {
+      "iPhone_SE": {
+        "width": 375,
+        "height": 667,
+        "scale": 2.0,
+        "safe_area": {
+          "top": 20,
+          "bottom": 0,
+          "left": 0,
+          "right": 0
+        }
+      },
+      "iPhone_12_mini": {
+        "width": 375,
+        "height": 812,
+        "scale": 3.0,
+        "safe_area": {
+          "top": 50,
+          "bottom": 34,
+          "left": 0,
+          "right": 0
+        }
+      },
+      "iPhone_12_Pro": {
+        "width": 390,
+        "height": 844,
+        "scale": 3.0,
+        "safe_area": {
+          "top": 47,
+          "bottom": 34,
+          "left": 0,
+          "right": 0
+        }
+      },
+      "iPhone_14_Pro": {
+        "width": 393,
+        "height": 852,
+        "scale": 3.0,
+        "safe_area": {
+          "top": 59,
+          "bottom": 34,
+          "left": 0,
+          "right": 0
+        },
+        "dynamic_island": {
+          "width": 126,
+          "height": 37,
+          "top": 11
+        }
+      },
+      "iPhone_14_Pro_Max": {
+        "width": 430,
+        "height": 932,
+        "scale": 3.0,
+        "safe_area": {
+          "top": 59,
+          "bottom": 34,
+          "left": 0,
+          "right": 0
+        },
+        "dynamic_island": {
+          "width": 126,
+          "height": 37,
+          "top": 11
+        }
+      },
+      "iPad_Pro_11": {
+        "width": 834,
+        "height": 1194,
+        "scale": 2.0,
+        "safe_area": {
+          "top": 24,
+          "bottom": 20,
+          "left": 0,
+          "right": 0
+        }
+      },
+      "iPad_Pro_12_9": {
+        "width": 1024,
+        "height": 1366,
+        "scale": 2.0,
+        "safe_area": {
+          "top": 24,
+          "bottom": 20,
+          "left": 0,
+          "right": 0
+        }
+      }
+    },
+
+    "performance_targets": {
+      "launch_time": "< 2 seconds",
+      "memory_usage": "< 150MB",
+      "cpu_usage": "< 30% average",
+      "battery_drain": "< 5% per hour active use",
+      "network_efficiency": "< 1MB per conversation",
+      "frame_rate": "60 FPS smooth scrolling"
+    },
+
+    "capabilities": {
+      "camera_access": true,
+      "microphone_access": true,
+      "push_notifications": true,
+      "background_audio": true,
+      "offline_mode": "limited",
+      "siri_shortcuts": true,
+      "handoff": true,
+      "spotlight_indexing": true,
+      "universal_links": true
+    },
+
+    "background_modes": [
+      "audio",
+      "voip",
+      "background-processing"
+    ],
+
+    "required_device_capabilities": [
+      "arm64",
+      "microphone",
+      "wifi",
+      "bluetooth-le"
+    ],
+
+    "supported_interface_orientations": [
+      "Portrait",
+      "PortraitUpsideDown",
+      "LandscapeLeft",
+      "LandscapeRight"
+    ]
+  },
+
+  "web_app_manifest": {
+    "name": "Sandra IA Mobile Galaxy",
+    "short_name": "Sandra IA",
+    "description": "Inteligencia Artificial Galaxy Ultimate optimizada para iOS",
+    "start_url": "/sandra-ia-mobile-galaxy.html",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "theme_color": "#00ff88",
+    "background_color": "#0a0a0a",
+
+    "icons": [
+      {
+        "src": "icons/icon-72x72.png",
+        "sizes": "72x72",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icons/icon-96x96.png",
+        "sizes": "96x96",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icons/icon-128x128.png",
+        "sizes": "128x128",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icons/icon-144x144.png",
+        "sizes": "144x144",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icons/icon-152x152.png",
+        "sizes": "152x152",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icons/icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icons/icon-384x384.png",
+        "sizes": "384x384",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "icons/icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ],
+
+    "apple_touch_icons": [
+      {
+        "src": "icons/apple-touch-icon-57x57.png",
+        "sizes": "57x57"
+      },
+      {
+        "src": "icons/apple-touch-icon-72x72.png",
+        "sizes": "72x72"
+      },
+      {
+        "src": "icons/apple-touch-icon-76x76.png",
+        "sizes": "76x76"
+      },
+      {
+        "src": "icons/apple-touch-icon-114x114.png",
+        "sizes": "114x114"
+      },
+      {
+        "src": "icons/apple-touch-icon-120x120.png",
+        "sizes": "120x120"
+      },
+      {
+        "src": "icons/apple-touch-icon-144x144.png",
+        "sizes": "144x144"
+      },
+      {
+        "src": "icons/apple-touch-icon-152x152.png",
+        "sizes": "152x152"
+      },
+      {
+        "src": "icons/apple-touch-icon-180x180.png",
+        "sizes": "180x180"
+      }
+    ]
+  },
+
+  "performance_optimizations": {
+    "viewport_meta": {
+      "width": "device-width",
+      "initial_scale": 1.0,
+      "user_scalable": "no",
+      "viewport_fit": "cover"
+    },
+
+    "critical_css_inlining": true,
+    "resource_preloading": [
+      "fonts",
+      "critical_images",
+      "api_endpoints"
+    ],
+
+    "compression": {
+      "gzip": true,
+      "brotli": true,
+      "images": "webp_with_fallback"
+    },
+
+    "caching_strategy": {
+      "static_assets": "1 year",
+      "api_responses": "10 minutes",
+      "user_data": "session"
+    },
+
+    "network_optimizations": {
+      "connection_pooling": true,
+      "request_batching": false,
+      "compression": true,
+      "timeout": 30000,
+      "retry_policy": {
+        "max_attempts": 3,
+        "backoff": "exponential"
+      }
+    }
+  },
+
+  "accessibility": {
+    "voiceover_support": true,
+    "large_text_support": true,
+    "high_contrast_support": true,
+    "reduced_motion_support": true,
+    "voice_control_support": true,
+    "switch_control_support": true,
+
+    "aria_labels": {
+      "mic_button": "Activar micrófono para grabación de voz",
+      "call_button": "Iniciar llamada de voz con Sandra",
+      "send_button": "Enviar mensaje a Sandra",
+      "file_button": "Adjuntar archivo o imagen",
+      "sidebar_toggle": "Abrir menú de opciones",
+      "message_input": "Escribir mensaje para Sandra IA"
+    },
+
+    "semantic_html": true,
+    "keyboard_navigation": true,
+    "focus_management": true
+  },
+
+  "security": {
+    "content_security_policy": {
+      "default_src": "'self'",
+      "script_src": "'self' 'unsafe-inline'",
+      "style_src": "'self' 'unsafe-inline'",
+      "img_src": "'self' data: blob:",
+      "media_src": "'self' blob:",
+      "connect_src": "'self' https://api.openai.com https://api.groq.com wss:",
+      "font_src": "'self'",
+      "object_src": "'none'",
+      "base_uri": "'self'"
+    },
+
+    "permissions_policy": {
+      "microphone": "self",
+      "camera": "self",
+      "geolocation": "none",
+      "notification": "self",
+      "payment": "none"
+    },
+
+    "data_protection": {
+      "local_storage_encryption": false,
+      "api_key_protection": true,
+      "conversation_privacy": true,
+      "auto_clear_sensitive_data": true
+    }
+  },
+
+  "testing": {
+    "devices_to_test": [
+      "iPhone 12 Pro (iOS 14.0)",
+      "iPhone 13 Pro (iOS 15.0)",
+      "iPhone 14 Pro (iOS 16.0)",
+      "iPhone 15 Pro (iOS 17.0)",
+      "iPad Pro 11\" (iPadOS 14.0)",
+      "iPad Pro 12.9\" (iPadOS 15.0)"
+    ],
+
+    "test_scenarios": [
+      "First launch and setup",
+      "Voice recording and playback",
+      "File attachment and processing",
+      "Background mode transitions",
+      "Low battery behavior",
+      "Poor network conditions",
+      "Memory pressure handling",
+      "Orientation changes",
+      "Multitasking and app switching",
+      "Dark/Light mode switching"
+    ],
+
+    "performance_benchmarks": {
+      "cold_start": "< 2s",
+      "message_response": "< 3s",
+      "voice_recognition": "< 1s",
+      "file_upload": "< 5s",
+      "memory_footprint": "< 150MB",
+      "battery_usage_per_hour": "< 5%"
+    }
+  },
+
+  "deployment": {
+    "distribution_methods": [
+      "Progressive Web App (PWA)",
+      "App Store (future)",
+      "Enterprise deployment",
+      "TestFlight beta"
+    ],
+
+    "build_targets": {
+      "development": {
+        "minification": false,
+        "source_maps": true,
+        "debug_logging": true
+      },
+      "staging": {
+        "minification": true,
+        "source_maps": true,
+        "debug_logging": false
+      },
+      "production": {
+        "minification": true,
+        "source_maps": false,
+        "debug_logging": false,
+        "performance_monitoring": true
+      }
+    }
+  },
+
+  "features": {
+    "core_features": [
+      "Conversational AI chat",
+      "Voice recording and synthesis",
+      "File and image processing",
+      "Real-time streaming responses",
+      "Persistent conversation memory",
+      "Multi-modal input support"
+    ],
+
+    "ios_specific_features": [
+      "Siri Shortcuts integration",
+      "Handoff between devices",
+      "Picture in Picture mode",
+      "Spotlight search integration",
+      "Context menus and haptic feedback",
+      "Dynamic Island integration (iPhone 14 Pro+)"
+    ],
+
+    "performance_features": [
+      "Adaptive quality based on device",
+      "Battery-aware optimizations",
+      "Network-adaptive responses",
+      "Intelligent caching system",
+      "Background processing limits",
+      "Memory pressure handling"
+    ]
+  },
+
+  "analytics": {
+    "track_events": [
+      "app_launch",
+      "message_sent",
+      "voice_recording_started",
+      "voice_recording_completed",
+      "file_attached",
+      "api_response_time",
+      "error_occurred",
+      "feature_used"
+    ],
+
+    "privacy_compliant": true,
+    "no_personal_data_collection": true,
+    "anonymized_usage_stats": true
+  }
+}

@@ -1,0 +1,1270 @@
+/* =============================================================================
+   SANDRA IA 7.0 - GALAXY ENTERPRISE PRO UI/UX
+   Diseño: Azul cielo claro profesional (Telegram/Twitter style)
+   Paleta: Fondo azul cielo, chat blanco, contraste perfecto
+   Tipografía: Inter/SF Pro Display
+   ============================================================================= */
+
+/* =========================================
+   SAFARI iOS PWA CRITICAL FIXES
+   Prevent blank screen and ensure visibility
+   ========================================= */
+@supports (-webkit-touch-callout: none) {
+  /* Safari iOS specific fixes */
+  html {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* =========================================
+   NATIVE APP BEHAVIOR - CRITICAL FIXES
+   Disable zoom, bounce, and web gestures
+   ========================================= */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection only in input fields */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Fix html and body to prevent bounce/scroll */
+html,
+body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================
+   VARIABLES DE DISEÑO GALAXY ENTERPRISE
+   PALETA AZUL CIELO CLARO PROFESIONAL
+   ========================================= */
+:root {
+  /* Backgrounds - AZUL CIELO CLARO (como Telegram) */
+  --bg-primary: #E3F2FD;              /* Azul cielo claro - FONDO PRINCIPAL */
+  --bg-secondary: #BBDEFB;            /* Azul cielo medio - MARCOS Y CONTENEDORES */
+  --bg-panel: #FFFFFF;                /* Blanco puro SOLO para panel de chat */
+  --bg-input: #FFFFFF;                /* Blanco para inputs */
+  --bg-header: #2C3E50;               /* Azul oscuro elegante para header (MANTENER) */
+
+  /* Textos - CONTRASTE PERFECTO */
+  --text-primary: #2C3E50;            /* Azul oscuro profesional (excelente legibilidad) */
+  --text-secondary: #546E7A;          /* Gris azulado medio */
+  --text-muted: #90A4AE;              /* Gris azulado suave */
+  --text-inverse: #FFFFFF;            /* Blanco para textos sobre fondos oscuros */
+
+  /* Acentos corporativos - AZUL CIELO VIBRANTE */
+  --accent-blue: #4A90E2;             /* Azul principal vibrante */
+  --accent-blue-light: #E3F2FD;       /* Azul muy claro para fondos */
+  --accent-blue-medium: #90CAF9;      /* Azul medio para bordes */
+
+  --accent-green: #00C853;            /* Verde fresco (éxito/envío) */
+  --accent-green-light: #E8F5E9;      /* Verde claro para fondos */
+  --accent-green-medium: #81C784;     /* Verde medio */
+
+  --accent-violet: #7B68EE;           /* Violeta elegante */
+  --accent-violet-light: #F3E5F5;     /* Violeta muy claro */
+  --accent-violet-medium: #B39DDB;    /* Violeta medio */
+
+  --accent-orange: #FF9800;           /* Naranja cálido (alertas/info) */
+  --accent-orange-light: #FFF3E0;     /* Naranja muy claro */
+
+  /* Mensajes chat - COLORES VISIBLES */
+  --msg-user-bg: linear-gradient(135deg, #90CAF9 0%, #64B5F6 100%);  /* Azul claro visible */
+  --msg-user-border: #64B5F6;                                         /* Borde azul medio visible */
+  --msg-ai-bg: #F5F5F5;                                               /* Gris claro neutral */
+  --msg-ai-border: #E0E0E0;                                           /* Gris medio */
+
+  /* Estados */
+  --success: #00C853;                 /* Verde vibrante */
+  --success-light: #69F0AE;           /* Verde claro */
+  --error: #E74C3C;                   /* Rojo vibrante */
+  --error-light: #EC5E50;             /* Rojo claro */
+  --warning: #FF9800;                 /* Naranja */
+  --warning-light: #FFB74D;           /* Naranja claro */
+
+  /* Bordes y sombras - VISIBLES AZUL CIELO */
+  --border-color: #90CAF9;            /* Azul claro visible para bordes */
+  --border-light: #BBDEFB;            /* Azul muy claro para bordes suaves */
+  --shadow-sm: 0 1px 3px rgba(74, 144, 226, 0.12);
+  --shadow-md: 0 4px 12px rgba(74, 144, 226, 0.15);
+  --shadow-lg: 0 8px 24px rgba(74, 144, 226, 0.18);
+  --shadow-floating: 0 12px 32px rgba(74, 144, 226, 0.22);
+
+  /* Gradientes profesionales */
+  --gradient-blue: linear-gradient(135deg, #5FA5E8 0%, #4A90E2 100%);
+  --gradient-green: linear-gradient(135deg, #69F0AE 0%, #00C853 100%);
+  --gradient-violet: linear-gradient(135deg, #B39DDB 0%, #7B68EE 100%);
+  --gradient-orange: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
+
+  /* Espaciado base */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Radios de borde */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Transiciones suaves */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =========================================
+   BASE STYLES - TIPOGRAFÍA MODERNA
+   ========================================= */
+body {
+  /* Positioning already handled by native app fixes above */
+  background: var(--bg-primary);      /* AZUL CIELO CLARO */
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display',
+               'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================
+   CONTAINER - LAYOUT PRINCIPAL (FIXED NATIVE APP)
+   ========================================= */
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);      /* AZUL CIELO CLARO */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================
+   HEADER - AVATAR Y TÍTULO
+   FONDO DE COLOR ELEGANTE (MANTENER AZUL OSCURO)
+   ========================================= */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  margin: calc(var(--spacing-md) * -1) calc(var(--spacing-md) * -1) var(--spacing-lg);
+  background: var(--bg-header);       /* AZUL OSCURO - MANTENER */
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.avatar {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+}
+
+.avatar:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.4);
+  border-color: var(--accent-blue);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar .pulse {
+  position: absolute;
+  inset: -6px;
+  border: 3px solid var(--accent-green);
+  border-radius: var(--radius-full);
+  opacity: 0;
+  animation: pulse-animation 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+.mouth {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 6px;
+  border-radius: 10px;
+  background: rgba(44, 62, 80, 0.5);
+  transition: transform 60ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-inverse);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.badge {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.01em;
+  margin-top: var(--spacing-xs);
+}
+
+/* =========================================
+   LANGUAGE SELECTOR - MULTI-LANGUAGE HOT-SWAP
+   CEO URGENT REQUIREMENT: ES/EN/FR instant switch
+   ========================================= */
+.language-selector {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  justify-content: center;
+  align-items: center;
+}
+
+.lang-btn {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--text-inverse);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  user-select: none;
+  box-shadow: var(--shadow-sm);
+  min-width: 60px;
+}
+
+.lang-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.lang-btn.active {
+  background: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+  transform: translateY(-1px);
+}
+
+.lang-btn.active:hover {
+  background: var(--accent-blue-medium);
+  border-color: var(--accent-blue-medium);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.5);
+}
+
+.lang-btn:active {
+  transform: scale(0.95);
+}
+
+/* =========================================
+   PANEL - CONTENEDOR DE CHAT (INTEGRADO CON MULTIMODAL BAR)
+   CHATGPT/WHATSAPP STYLE - TODO DENTRO DEL PANEL BLANCO
+   NATIVE APP: Scroll contained within panel only
+   ========================================= */
+.panel {
+  flex: 1;
+  background: var(--bg-panel);        /* BLANCO - ÚNICO ELEMENTO BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* =========================================
+   CHAT - MENSAJES (OCUPA EL ESPACIO DISPONIBLE)
+   ========================================= */
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  max-height: 52vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: var(--spacing-xs);
+  scroll-behavior: smooth;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Scrollbar personalizado */
+.chat::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat::-webkit-scrollbar-thumb {
+  background: var(--border-color);    /* AZUL CLARO VISIBLE */
+  border-radius: 3px;
+  transition: background var(--transition-base);
+}
+
+.chat::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
+
+.msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  line-height: 1.5;
+  font-size: 15px;
+  box-shadow: var(--shadow-sm);
+  animation: message-appear var(--transition-base) ease-out;
+}
+
+@keyframes message-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.msg.user {
+  align-self: flex-end;
+  background: var(--msg-user-bg);     /* AZUL CLARO VISIBLE */
+  color: var(--text-primary);
+  border: 2px solid var(--msg-user-border);  /* BORDE AZUL VISIBLE */
+  border-bottom-right-radius: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.msg.ai {
+  align-self: flex-start;
+  background: var(--msg-ai-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--msg-ai-border);
+  border-bottom-left-radius: var(--spacing-xs);
+}
+
+/* System messages for language changes */
+.msg.system {
+  align-self: center;
+  background: var(--accent-violet-light);
+  border: 2px solid var(--accent-violet);
+  padding: 10px 16px;
+  margin: 8px 0;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: 500;
+  max-width: 90%;
+  box-shadow: var(--shadow-sm);
+  animation: system-message-pulse 0.5s ease-out;
+}
+
+@keyframes system-message-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* =========================================
+   STATE INDICATOR - DENTRO DEL PANEL
+   ========================================= */
+.state {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--accent-blue-light);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* =========================================
+   MULTIMODAL INPUT BAR - INTEGRADA DENTRO DEL PANEL
+   CHATGPT/WHATSAPP PERFECT LAYOUT
+   ========================================= */
+.multimodal-input-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0;
+  margin-top: auto;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* CLIP BUTTON (+) - Alineado izquierda, flex: none */
+.clip-btn {
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--accent-violet);
+  color: var(--accent-violet);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.clip-btn:hover {
+  background: var(--accent-violet);
+  border-color: var(--accent-violet);
+  color: var(--text-inverse);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(123, 104, 238, 0.3);
+}
+
+.clip-btn:active {
+  transform: scale(0.95);
+}
+
+.clip-btn svg {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* CLIP MENU - Menú desplegable fresco */
+.clip-menu {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-floating);
+  padding: var(--spacing-xs);
+  display: none;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 160px;
+  z-index: 1000;
+  animation: menu-slide-up var(--transition-base);
+}
+
+@keyframes menu-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.clip-menu.show {
+  display: flex;
+}
+
+.clip-menu-item {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  user-select: none;
+}
+
+.clip-menu-item:hover {
+  background: var(--accent-violet-light);
+  color: var(--accent-violet);
+}
+
+.clip-menu-item:active {
+  transform: scale(0.98);
+}
+
+/* INPUT WRAPPER - Centrado con flex: 1, borde visible */
+.input-wrapper {
+  flex: 1;
+  flex-shrink: 1;
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: var(--bg-input);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  max-height: 200px;
+  overflow: hidden;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+}
+
+/* TEXTAREA - Expandible dentro del wrapper */
+textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 12px 16px;
+  outline: none;
+  font-size: 15px;
+  font-weight: 400;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: none;
+  min-height: 44px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+/* VOICE BUTTON - Dentro del input wrapper, derecha del textarea */
+.voice-btn {
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--accent-orange);
+  color: var(--accent-orange);
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  margin-right: 4px;
+  border-radius: var(--radius-full);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  flex-grow: 0;
+  position: relative;
+}
+
+.voice-btn:hover {
+  background: var(--accent-orange);
+  border-color: var(--accent-orange);
+  color: var(--text-inverse);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.voice-btn:active {
+  transform: scale(0.95);
+}
+
+/* CHATGPT STYLE: Recording state - Red pulsating button */
+.voice-btn.recording {
+  background: var(--error);
+  border-color: var(--error);
+  color: var(--text-inverse);
+  box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+  animation: voice-recording-pulse 1.5s infinite;
+}
+
+@keyframes voice-recording-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+  }
+}
+
+.voice-btn.recording:hover {
+  transform: scale(1.05);
+  background: var(--error-light);
+  border-color: var(--error-light);
+}
+
+/* WAKE WORD BUTTON - GALAXY LEVEL FEATURE */
+.wake-btn {
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--accent-violet);
+  color: var(--accent-violet);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  flex-grow: 0;
+  position: relative;
+}
+
+.wake-btn:hover {
+  background: var(--accent-violet);
+  border-color: var(--accent-violet);
+  color: var(--text-inverse);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(123, 104, 238, 0.3);
+}
+
+.wake-btn:active {
+  transform: scale(0.95);
+}
+
+/* Wake word active state - Pulsating */
+.wake-btn.active {
+  background: var(--accent-violet);
+  border-color: var(--accent-violet);
+  color: var(--text-inverse);
+  box-shadow: 0 0 0 0 rgba(123, 104, 238, 0.7);
+  animation: wake-word-pulse 2s infinite;
+}
+
+@keyframes wake-word-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(123, 104, 238, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(123, 104, 238, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(123, 104, 238, 0);
+  }
+}
+
+.wake-btn.active:hover {
+  transform: scale(1.05);
+}
+
+.wake-icon {
+  font-size: 1.2rem;
+}
+
+/* SEND BUTTON - Alineado derecha, flex: none */
+.send-btn {
+  background: var(--gradient-green);
+  border: none;
+  color: var(--text-inverse);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 200, 83, 0.4);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.send-btn:disabled,
+.voice-btn:disabled,
+.wake-btn:disabled,
+.clip-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
+  pointer-events: none;
+}
+
+/* =========================================
+   BOTONES GENERALES
+   ========================================= */
+.btn {
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+}
+
+.btn:hover {
+  background: var(--accent-blue-light);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn.primary {
+  background: var(--gradient-blue);
+  border: none;
+  color: var(--text-inverse);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   INSTALL BANNER - BANNER DE INSTALACIÓN
+   ========================================= */
+.install {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: var(--accent-blue-light);
+  border: 2px dashed var(--accent-blue);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+}
+
+.install b {
+  font-weight: 600;
+  color: var(--accent-blue);
+}
+
+.install i {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* =========================================
+   MODAL - VENTANA MODAL
+   ========================================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(44, 62, 80, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  animation: modal-fade-in var(--transition-base);
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal.show {
+  display: grid;
+}
+
+.modal .card {
+  width: min(92vw, 520px);
+  background: var(--bg-panel);        /* BLANCO */
+  border: 2px solid var(--border-color);  /* BORDE AZUL VISIBLE */
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-floating);
+  animation: modal-slide-up var(--transition-slow);
+}
+
+@keyframes modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal h3 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal ol {
+  margin: var(--spacing-md) 0;
+  padding-left: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+.modal li {
+  margin: var(--spacing-sm) 0;
+  line-height: 1.6;
+}
+
+.modal b {
+  font-weight: 600;
+  color: var(--accent-blue);
+}
+
+/* =========================================
+   SMALL TEXT - TEXTO PEQUEÑO
+   ========================================= */
+.small {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* =========================================
+   WAVE ANIMATION - ANIMACIÓN DE ONDAS
+   ========================================= */
+.wave {
+  height: 32px;
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: flex-end;
+  justify-content: center;
+  margin-top: var(--spacing-sm);
+}
+
+.wave span {
+  width: 4px;
+  background: var(--accent-green);
+  border-radius: 2px;
+  height: 8px;
+  opacity: 0.5;
+  transform-origin: bottom;
+  transition: all var(--transition-fast);
+}
+
+.wave.active span {
+  animation: wave-pulse 600ms cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+
+.wave.active span:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.wave.active span:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.wave.active span:nth-child(3) {
+  animation-delay: 200ms;
+}
+
+.wave.active span:nth-child(4) {
+  animation-delay: 300ms;
+}
+
+.wave.active span:nth-child(5) {
+  animation-delay: 400ms;
+}
+
+@keyframes wave-pulse {
+  0% {
+    height: 8px;
+    opacity: 0.5;
+  }
+  100% {
+    height: 24px;
+    opacity: 1;
+  }
+}
+
+/* =========================================
+   ALERT - ALERTAS
+   ========================================= */
+.alert {
+  background: #FFEBEE;
+  color: var(--error);
+  border: 2px solid var(--error-light);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================
+   HIDDEN FILE INPUTS
+   ========================================= */
+input[type="file"] {
+  display: none;
+}
+
+/* =========================================
+   IOS SAFE AREA SUPPORT
+   ========================================= */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .panel {
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--spacing-md));
+  }
+
+  .container {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* =========================================
+   RESPONSIVE - MOBILE OPTIMIZATION
+   ========================================= */
+
+/* Touch Target Optimization */
+@media (pointer: coarse) {
+  .clip-btn,
+  .voice-btn,
+  .wake-btn,
+  .send-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  textarea {
+    font-size: 16px; /* Prevent iOS zoom on focus */
+  }
+}
+
+/* Small screens (iPhone SE, etc.) - RESPONSIVE PERFECTO */
+@media (max-width: 375px) {
+  .container {
+    padding: var(--spacing-sm);
+  }
+
+  .header {
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+  }
+
+  .avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .badge {
+    font-size: 12px;
+  }
+
+  /* Language selector compact on small screens */
+  .language-selector {
+    gap: 6px;
+  }
+
+  .lang-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    min-width: 55px;
+  }
+
+  /* Botones más compactos en pantallas pequeñas */
+  .clip-btn,
+  .voice-btn,
+  .wake-btn,
+  .send-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* Gap reducido en pantallas pequeñas */
+  .multimodal-input-bar {
+    gap: 6px;
+  }
+
+  .clip-menu-item {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .msg {
+    max-width: 90%;
+    padding: 10px 14px;
+  }
+}
+
+/* Large screens (tablet/desktop) */
+@media (min-width: 641px) {
+  .container {
+    padding: var(--spacing-lg);
+  }
+
+  .panel {
+    padding: var(--spacing-lg);
+  }
+
+  .chat {
+    max-height: 60vh;
+  }
+
+  .header {
+    margin: calc(var(--spacing-lg) * -1) calc(var(--spacing-lg) * -1) var(--spacing-lg);
+  }
+}
+
+/* Dark mode support (future) */
+@media (prefers-color-scheme: dark) {
+  /* Dark mode variables can be added here when needed */
+  /* Currently maintaining light theme as per CEO requirements */
+}
+
+/* =========================================
+   ACCESSIBILITY IMPROVEMENTS
+   ========================================= */
+
+/* Focus visible states */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn,
+  .action-btn {
+    border-width: 2px;
+  }
+
+  .msg {
+    border-width: 2px;
+  }
+}
+
+/* =========================================
+   PRINT STYLES
+   ========================================= */
+@media print {
+  .multimodal-input-bar,
+  .clip-btn,
+  .clip-menu,
+  .voice-btn,
+  .wake-btn,
+  .send-btn,
+  .install,
+  .wave,
+  .language-selector {
+    display: none;
+  }
+
+  .chat {
+    max-height: none;
+  }
+
+  body {
+    background: white;
+  }
+}
+
+/* =========================================
+   END OF GALAXY ENTERPRISE PRO STYLES
+   ESQUEMA AZUL CIELO CLARO PROFESIONAL APLICADO
+   MULTIMODAL BAR INTEGRADA DENTRO DEL PANEL (ChatGPT/WhatsApp Style)
+   WAKE WORD BUTTON GALAXY LEVEL FEATURE ACTIVATED
+   MULTI-LANGUAGE SELECTOR HOT-SWAP ES/EN/FR READY
+   ========================================= */
+
+/* =========================================
+   GUARDIAN PROTOCOL - VISUAL INDICATORS
+   Emergency snapshot/restoration feedback
+   ========================================= */
+
+/* Guardian active state - Orange pulse */
+.guardian-active {
+  border: 3px solid var(--accent-orange) !important;
+  animation: guardian-pulse 2s infinite;
+}
+
+@keyframes guardian-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px var(--accent-orange); 
+  }
+  50% { 
+    box-shadow: 0 0 40px var(--accent-orange); 
+  }
+}
+
+/* Guardian badge indicator */
+.guardian-badge {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: var(--accent-orange);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  display: none;
+  z-index: 1000;
+}
+
+.guardian-badge.active {
+  display: block;
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   END GUARDIAN PROTOCOL STYLES
+   ========================================= */

@@ -1,0 +1,331 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SANDRA IA - iOS PWA OPTIMIZATIONS
+   Optimizaciones específicas para Safari iOS y funcionamiento PWA
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* iOS Device Detection and Optimization */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari Specific Optimizations */
+    :root {
+        --ios-safe-top: env(safe-area-inset-top);
+        --ios-safe-bottom: env(safe-area-inset-bottom);
+        --ios-safe-left: env(safe-area-inset-left);
+        --ios-safe-right: env(safe-area-inset-right);
+    }
+
+    /* Prevent iOS Safari UI flickering */
+    * {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    /* iOS Touch Optimizations */
+    html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    /* iOS Viewport Fix */
+    body {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+}
+
+/* PWA Display Mode Optimizations */
+@media all and (display-mode: standalone) {
+    /* Running as PWA */
+    body {
+        background-attachment: fixed;
+        overflow-x: hidden;
+    }
+
+    /* Status Bar Integration */
+    .header {
+        padding-top: max(1rem, env(safe-area-inset-top));
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Main Content Adjustment */
+    main {
+        padding-top: calc(80px + env(safe-area-inset-top));
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+
+    /* iOS Home Indicator Area */
+    .footer-content {
+        padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* iPhone Specific Optimizations */
+@media only screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) {
+    /* iPhone 14 Pro specific adjustments */
+    .main-content {
+        padding-top: 47px; /* Status bar height */
+    }
+}
+
+@media only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+    /* iPhone 14 Pro Max specific adjustments */
+    .main-content {
+        padding-top: 47px; /* Status bar height */
+    }
+}
+
+/* Touch Target Optimization */
+button, .btn, a, [role="button"], input[type="button"], input[type="submit"] {
+    min-height: 44px; /* Apple's minimum touch target */
+    min-width: 44px;
+    -webkit-tap-highlight-color: rgba(0, 255, 136, 0.15);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+/* iOS Form Controls */
+input, textarea, select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+    font-size: 16px; /* Prevents zoom on focus */
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    transition: border-color 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #00ff88;
+    box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+/* iOS Scroll Momentum */
+.scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+}
+
+/* iOS Splash Screen Optimization */
+@media (prefers-color-scheme: dark) {
+    .splash-screen {
+        background: #0a0a0a;
+        color: #ffffff;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    .splash-screen {
+        background: #ffffff;
+        color: #2b2b2b;
+    }
+}
+
+/* iOS Performance Optimizations */
+.gpu-accelerated {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* iOS Animation Optimizations */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* iOS Keyboard Handling */
+.ios-keyboard-fix {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transition: transform 0.3s ease;
+}
+
+/* iOS Camera/Microphone Access Indicators */
+.ios-privacy-indicator {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 10px);
+    right: calc(env(safe-area-inset-right) + 10px);
+    background: rgba(255, 59, 48, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 10000;
+}
+
+/* iOS Pull-to-Refresh Prevention */
+body {
+    overscroll-behavior-y: contain;
+}
+
+/* iOS WebKit Scroll Bars */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* iOS Selection Styling */
+::selection {
+    background: rgba(0, 255, 136, 0.2);
+    color: #0a0a0a;
+}
+
+::-moz-selection {
+    background: rgba(0, 255, 136, 0.2);
+    color: #0a0a0a;
+}
+
+/* iOS Loading States */
+.ios-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 255, 136, 0.3);
+    border-top: 2px solid #00ff88;
+    border-radius: 50%;
+    animation: ios-spin 1s linear infinite;
+}
+
+@keyframes ios-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* iOS Error States */
+.ios-error {
+    background: #ff3b30;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 8px 0;
+    font-weight: 500;
+}
+
+/* iOS Success States */
+.ios-success {
+    background: #34c759;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 8px 0;
+    font-weight: 500;
+}
+
+/* iOS Bottom Sheet Pattern */
+.ios-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+}
+
+.ios-bottom-sheet.active {
+    transform: translateY(0);
+}
+
+.ios-bottom-sheet-handle {
+    width: 36px;
+    height: 4px;
+    background: #c7c7cc;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+}
+
+/* iOS Install Banner Specific Styles */
+.ios-install-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #00ff88, #00aaff);
+    color: #0a0a0a;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+    z-index: 10000;
+    animation: ios-slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ios-slide-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* iOS Voice Recording Indicator */
+.ios-voice-recording {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff3b30;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 10000;
+    animation: ios-pulse 1.5s infinite;
+}
+
+@keyframes ios-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}

@@ -1,0 +1,72 @@
+{
+  "name": "sandra-ia-galaxy-pwa",
+  "version": "2.0.0",
+  "description": "Sandra IA Galaxy Level - PWA con 252 agentes especializados",
+  "main": "app.html",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -c-1",
+    "dev": "npx live-server --port=3000 --no-browser",
+    "build": "npm run build:optimize && npm run build:sw",
+    "build:optimize": "npm run minify:html && npm run minify:css && npm run optimize:images",
+    "build:sw": "node scripts/generate-sw.js",
+    "minify:html": "npx html-minifier --input-dir . --output-dir dist --file-ext html --minify-css --minify-js --remove-comments",
+    "minify:css": "npx clean-css-cli -o dist/styles.min.css sandra-deploy/**/*.css",
+    "optimize:images": "npx imagemin \"**/*.{jpg,jpeg,png,gif,svg}\" --out-dir=dist/optimized",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "jest --config=tests/unit/jest.config.js",
+    "test:integration": "jest --config=tests/integration/jest.config.js",
+    "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:webkit": "playwright test --project=webkit",
+    "test:performance": "node tests/performance/lighthouse-ci.js",
+    "test:performance:production": "lighthouse --chrome-flags=\"--headless\" --output=json --output-path=performance-prod.json https://sandra.guestsvalencia.es",
+    "test:accessibility": "axe --dir . --save accessibility-results.json",
+    "test:smoke:staging": "node tests/smoke/staging-smoke.js",
+    "test:health:production": "node tests/health/production-health.js",
+    "validate:pre-deploy": "npm run test:health && npm run test:accessibility",
+    "validate:post-deploy": "node scripts/post-deploy-validation.js",
+    "lint": "npm run lint:html && npm run lint:css && npm run lint:js",
+    "lint:html": "npx html-validate app.html index.html",
+    "lint:css": "npx stylelint \"**/*.css\"",
+    "lint:js": "npx eslint . --ext .js",
+    "security:scan": "npm audit && npx snyk test",
+    "pwa:audit": "lighthouse --chrome-flags=\"--headless\" --output=json --output-path=pwa-audit.json https://sandra.guestsvalencia.es"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@axe-core/cli": "^4.8.2",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "lighthouse": "^11.3.0",
+    "html-minifier": "^4.0.0",
+    "clean-css-cli": "^5.6.2",
+    "imagemin": "^8.0.1",
+    "imagemin-cli": "^7.0.0",
+    "html-validate": "^8.7.0",
+    "stylelint": "^15.11.0",
+    "eslint": "^8.54.0",
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2",
+    "axe-core": "^4.8.2"
+  },
+  "keywords": [
+    "sandra-ia",
+    "pwa",
+    "galaxy-level",
+    "ai-agents",
+    "voice-conversation",
+    "mobile-app"
+  ],
+  "author": "ClayTom Systems - Sandra IA Team",
+  "license": "MIT",
+  "homepage": "https://sandra.guestsvalencia.es",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GUESTVALENCIA/IA-SANDRA.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GUESTVALENCIA/IA-SANDRA/issues"
+  }
+}

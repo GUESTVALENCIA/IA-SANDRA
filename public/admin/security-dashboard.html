@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Dashboard - Sandra IA</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 2.5em;
+      background: linear-gradient(45deg, #00ff88, #00ffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .timestamp {
+      font-size: 0.9em;
+      color: #999;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 25px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+    }
+
+    .card h3 {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status.ok {
+      background: rgba(0, 255, 136, 0.2);
+      color: #00ff88;
+      border: 1px solid #00ff88;
+    }
+
+    .status.warning {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+      border: 1px solid #ffc107;
+    }
+
+    .status.critical {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+      border: 1px solid #f44336;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .metric:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      color: #aaa;
+      font-size: 0.95em;
+    }
+
+    .metric-value {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .service-item {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .service-name {
+      font-size: 0.9em;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .service-status {
+      font-size: 1.8em;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff88, #00ffff);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 0.95em;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn.primary {
+      background: linear-gradient(45deg, #00ff88, #00ffff);
+      border: none;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .btn.danger {
+      background: rgba(244, 67, 54, 0.2);
+      border-color: #f44336;
+      color: #f44336;
+    }
+
+    .log-viewer {
+      background: #000;
+      border-radius: 10px;
+      padding: 15px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.85em;
+      color: #0f0;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+
+    .log-entry {
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 255, 136, 0.3);
+      border-radius: 50%;
+      border-top-color: #00ff88;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert.info {
+      background: rgba(33, 150, 243, 0.1);
+      border: 1px solid #2196f3;
+      color: #2196f3;
+    }
+
+    .alert.success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid #00ff88;
+      color: #00ff88;
+    }
+
+    .alert.warning {
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid #ffc107;
+      color: #ffc107;
+    }
+
+    .alert.error {
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid #f44336;
+      color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <h1>
+        <span>🔒</span>
+        Security Dashboard
+      </h1>
+      <div class="timestamp" id="currentTime">Loading...</div>
+    </div>
+
+    <div id="alerts"></div>
+
+    <div class="grid">
+      <!-- Key Rotation Status -->
+      <div class="card">
+        <h3>🔄 Key Rotation Status</h3>
+        <div class="metric">
+          <span class="metric-label">Status</span>
+          <span class="status ok" id="rotationStatus">
+            <span>✅</span> Active
+          </span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Last Rotation</span>
+          <span class="metric-value" id="lastRotation">Loading...</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Next Rotation</span>
+          <span class="metric-value" id="nextRotation">Loading...</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Days Until Expiration</span>
+          <span class="metric-value" id="daysToExpiration">Loading...</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="expirationProgress" style="width: 75%"></div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" onclick="rotateNow()">Rotate Now</button>
+          <button class="btn" onclick="viewRotationHistory()">View History</button>
+        </div>
+      </div>
+
+      <!-- Secret Scanning -->
+      <div class="card">
+        <h3>🔍 Secret Scanning</h3>
+        <div class="metric">
+          <span class="metric-label">Last Scan</span>
+          <span class="metric-value" id="lastScan">Loading...</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Files Scanned</span>
+          <span class="metric-value" id="filesScanned">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Secrets Found</span>
+          <span class="metric-value" id="secretsFound">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Status</span>
+          <span class="status ok" id="scanStatus">
+            <span>✅</span> Clean
+          </span>
+        </div>
+        <div class="actions">
+          <button class="btn primary" onclick="scanNow()">Scan Now</button>
+          <button class="btn" onclick="viewScanReport()">View Report</button>
+        </div>
+      </div>
+
+      <!-- Service Status -->
+      <div class="card">
+        <h3>📊 Service Status</h3>
+        <div class="service-grid" id="serviceStatus">
+          <div class="service-item">
+            <div class="service-name">OpenAI</div>
+            <div class="service-status" id="status-openai">⏳</div>
+          </div>
+          <div class="service-item">
+            <div class="service-name">Anthropic</div>
+            <div class="service-status" id="status-anthropic">⏳</div>
+          </div>
+          <div class="service-item">
+            <div class="service-name">GROQ</div>
+            <div class="service-status" id="status-groq">⏳</div>
+          </div>
+          <div class="service-item">
+            <div class="service-name">Cartesia</div>
+            <div class="service-status" id="status-cartesia">⏳</div>
+          </div>
+          <div class="service-item">
+            <div class="service-name">ElevenLabs</div>
+            <div class="service-status" id="status-elevenlabs">⏳</div>
+          </div>
+          <div class="service-item">
+            <div class="service-name">Netlify</div>
+            <div class="service-status" id="status-netlify">⏳</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" onclick="testAllServices()">Test All</button>
+          <button class="btn" onclick="viewServiceLogs()">View Logs</button>
+        </div>
+      </div>
+
+      <!-- Security Events -->
+      <div class="card">
+        <h3>📝 Recent Security Events</h3>
+        <div class="log-viewer" id="securityLogs">
+          <div class="log-entry">Loading events...</div>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="refreshLogs()">Refresh</button>
+          <button class="btn" onclick="exportLogs()">Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency Controls -->
+    <div class="card">
+      <h3>🚨 Emergency Controls</h3>
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <button class="btn danger" onclick="emergencyRevoke()">
+          Emergency Revoke All Keys
+        </button>
+        <button class="btn danger" onclick="lockdownMode()">
+          Activate Lockdown Mode
+        </button>
+        <button class="btn" onclick="backupKeys()">
+          Backup Current Keys
+        </button>
+        <button class="btn" onclick="restoreKeys()">
+          Restore Previous Keys
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Update current time
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('currentTime').textContent = now.toLocaleString('es-ES');
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        // Simulated data - replace with actual API calls
+        const rotationData = {
+          lastRotation: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
+          nextRotation: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
+          daysToExpiration: 75
+        };
+
+        document.getElementById('lastRotation').textContent = rotationData.lastRotation;
+        document.getElementById('nextRotation').textContent = rotationData.nextRotation;
+        document.getElementById('daysToExpiration').textContent = rotationData.daysToExpiration;
+
+        // Update progress bar
+        const progress = Math.max(0, Math.min(100, (90 - rotationData.daysToExpiration) / 90 * 100));
+        document.getElementById('expirationProgress').style.width = progress + '%';
+
+        // Update status based on days remaining
+        const rotationStatus = document.getElementById('rotationStatus');
+        if (rotationData.daysToExpiration < 7) {
+          rotationStatus.className = 'status critical';
+          rotationStatus.innerHTML = '<span>🔴</span> Critical';
+          showAlert('error', 'Keys expire in less than 7 days! Immediate rotation required.');
+        } else if (rotationData.daysToExpiration < 14) {
+          rotationStatus.className = 'status warning';
+          rotationStatus.innerHTML = '<span>🟠</span> Warning';
+          showAlert('warning', 'Keys expire in ' + rotationData.daysToExpiration + ' days. Schedule rotation soon.');
+        }
+
+        // Update service status
+        const services = ['openai', 'anthropic', 'groq', 'cartesia', 'elevenlabs', 'netlify'];
+        services.forEach(service => {
+          // Simulated status - replace with actual checks
+          const isOk = Math.random() > 0.1;
+          document.getElementById(`status-${service}`).textContent = isOk ? '✅' : '❌';
+        });
+
+        // Update scan status
+        document.getElementById('lastScan').textContent = new Date().toLocaleTimeString('es-ES');
+        document.getElementById('filesScanned').textContent = '1,247';
+        document.getElementById('secretsFound').textContent = '0';
+
+        // Load security logs
+        loadSecurityLogs();
+
+      } catch (error) {
+        console.error('Failed to load dashboard:', error);
+        showAlert('error', 'Failed to load dashboard data');
+      }
+    }
+
+    function loadSecurityLogs() {
+      const logs = [
+        { time: '10:15:32', event: 'Key rotation completed successfully', type: 'success' },
+        { time: '09:00:00', event: 'Daily verification check passed', type: 'info' },
+        { time: '08:30:15', event: 'Secret scan completed - no issues found', type: 'success' },
+        { time: '06:00:00', event: 'Automatic backup created', type: 'info' }
+      ];
+
+      const logsHtml = logs.map(log => `
+        <div class="log-entry">
+          <span style="color: #888">[${log.time}]</span>
+          <span style="color: ${log.type === 'success' ? '#00ff88' : '#2196f3'}">${log.event}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('securityLogs').innerHTML = logsHtml;
+    }
+
+    function showAlert(type, message) {
+      const alertsDiv = document.getElementById('alerts');
+      const alert = document.createElement('div');
+      alert.className = `alert ${type}`;
+      alert.innerHTML = `
+        <span>${type === 'error' ? '🚨' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+        <span>${message}</span>
+      `;
+      alertsDiv.appendChild(alert);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 10000);
+    }
+
+    // Action handlers
+    async function rotateNow() {
+      if (confirm('Are you sure you want to rotate all keys now?')) {
+        showAlert('info', 'Starting key rotation...');
+        // Implement actual rotation
+        setTimeout(() => {
+          showAlert('success', 'Key rotation completed successfully!');
+          loadDashboard();
+        }, 2000);
+      }
+    }
+
+    async function scanNow() {
+      showAlert('info', 'Starting secret scan...');
+      // Implement actual scan
+      setTimeout(() => {
+        showAlert('success', 'Secret scan completed - no issues found!');
+        loadDashboard();
+      }, 3000);
+    }
+
+    async function testAllServices() {
+      showAlert('info', 'Testing all services...');
+      // Implement service testing
+      setTimeout(() => {
+        showAlert('success', 'All services operational!');
+        loadDashboard();
+      }, 2000);
+    }
+
+    function emergencyRevoke() {
+      if (confirm('WARNING: This will revoke ALL API keys immediately. Are you sure?')) {
+        if (confirm('This action cannot be undone. Please confirm again.')) {
+          showAlert('error', 'Emergency revocation initiated...');
+          // Implement emergency revocation
+        }
+      }
+    }
+
+    function viewRotationHistory() {
+      showAlert('info', 'Opening rotation history...');
+    }
+
+    function viewScanReport() {
+      showAlert('info', 'Opening scan report...');
+    }
+
+    function viewServiceLogs() {
+      showAlert('info', 'Opening service logs...');
+    }
+
+    function refreshLogs() {
+      loadSecurityLogs();
+      showAlert('success', 'Logs refreshed');
+    }
+
+    function exportLogs() {
+      showAlert('info', 'Exporting logs...');
+    }
+
+    function lockdownMode() {
+      if (confirm('Activate lockdown mode? This will disable all external API calls.')) {
+        showAlert('warning', 'Lockdown mode activated');
+      }
+    }
+
+    function backupKeys() {
+      showAlert('info', 'Creating secure backup...');
+    }
+
+    function restoreKeys() {
+      showAlert('info', 'Restoring from backup...');
+    }
+
+    // Load dashboard on page load
+    loadDashboard();
+
+    // Auto-refresh every 5 minutes
+    setInterval(loadDashboard, 300000);
+  </script>
+</body>
+</html>

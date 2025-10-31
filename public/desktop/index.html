@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandra IA 7.0 - Escritorio COE</title>
+    <meta name="description" content="Sandra IA - Interfaz de escritorio para orquestación completa del ecosistema">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/desktop/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">🤖</span>
+                    <div class="logo-text">
+                        <h1>Sandra IA 7.0</h1>
+                        <p>Escritorio COE</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Conectando...</span>
+                </div>
+                <button class="header-btn" id="settingsBtn" aria-label="Configuración">
+                    ⚙️
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Sidebar - Roles y Funciones -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Roles Disponibles</h3>
+                    <div class="role-list" id="roleList">
+                        <button class="role-item active" data-role="guests-valencia">
+                            <span class="role-icon">🏨</span>
+                            <span class="role-name">GuestsValencia</span>
+                        </button>
+                        <button class="role-item" data-role="receptionist">
+                            <span class="role-icon">📞</span>
+                            <span class="role-name">Recepcionista</span>
+                        </button>
+                        <button class="role-item" data-role="customer-service">
+                            <span class="role-icon">💬</span>
+                            <span class="role-name">Atención al Cliente</span>
+                        </button>
+                        <button class="role-item" data-role="booking-manager">
+                            <span class="role-icon">📅</span>
+                            <span class="role-name">Gestión Reservas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Acciones Rápidas</h3>
+                    <div class="action-list">
+                        <button class="action-btn" id="sosBtn">
+                            <span class="action-icon">🛡️</span>
+                            <span>Guardian SOS</span>
+                        </button>
+                        <button class="action-btn" id="restoreBtn">
+                            <span class="action-icon">🔄</span>
+                            <span>Restaurar Estado</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <div class="messages-container" id="messagesContainer">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">🤖</div>
+                        <h2>Bienvenido a Sandra IA 7.0</h2>
+                        <p>Escritorio COE para orquestación completa del ecosistema</p>
+                        <p class="welcome-hint">Usa comandos de voz o escribe para comenzar</p>
+                    </div>
+                </div>
+
+                <!-- Input Bar -->
+                <div class="input-bar">
+                    <button class="input-btn voice-btn" id="voiceBtn" aria-label="Voz">
+                        🎤
+                    </button>
+                    <textarea 
+                        class="message-input" 
+                        id="messageInput" 
+                        placeholder="Escribe tu mensaje o usa comandos de voz..."
+                        rows="1"
+                    ></textarea>
+                    <button class="input-btn send-btn" id="sendBtn" aria-label="Enviar">
+                        ➤
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Footer -->
+        <footer class="app-footer">
+            <div class="footer-left">
+                <span class="connection-status" id="connectionStatus">Conectando a backend...</span>
+            </div>
+            <div class="footer-right">
+                <span class="model-indicator" id="modelIndicator">GROQ Mixtral</span>
+                <span class="latency-indicator" id="latencyIndicator">--ms</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Configuración</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Modelo LLM:</label>
+                    <select id="modelSelect">
+                        <option value="groq">GROQ Mixtral (Gratis)</option>
+                        <option value="claude">Claude Haiku (Gratis)</option>
+                        <option value="gpt-4o" disabled>GPT-4o (Solo crédito restante)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Idioma:</label>
+                    <select id="localeSelect">
+                        <option value="es-ES">Español (España)</option>
+                        <option value="en-US">English</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="bargeInCheck" checked>
+                        Habilitar Barge-in
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/desktop/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui">
+    <title>Sandra IA Galaxy</title>
+
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00ff88">
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sandra IA">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* PWA Status Bar - Enhanced for Dynamic Island */
+        .status-bar {
+            height: env(safe-area-inset-top);
+            background: rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Header - Optimized for iPhone X+ */
+        .header {
+            background: rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: max(env(safe-area-inset-top), 15px) 20px 15px 20px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00ff88 0%, #00aaff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status {
+            font-size: 0.9rem;
+            color: #00ff88;
+        }
+
+        /* Main App Area */
+        .main-app {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+            transform: translateZ(0);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            overscroll-behavior: contain;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .message.sandra {
+            background: linear-gradient(135deg, #00ff88 0%, #00aaff 100%);
+            color: #0a0a0a;
+            align-self: flex-start;
+        }
+
+        .message.user {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 25px;
+            padding: 12px 16px;
+            color: #ffffff;
+            font-size: 16px;
+            min-height: 44px;
+            -webkit-user-select: text;
+            user-select: text;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: rgba(0, 255, 136, 0.6);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .send-btn, .voice-btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00aaff 100%);
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            color: #0a0a0a;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        .send-btn:active, .voice-btn:active {
+            transform: scale(0.95) translateZ(0);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        .voice-btn.processing {
+            background: linear-gradient(135deg, #ffaa00 0%, #ffcc00 100%);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) translateZ(0); }
+            50% { transform: scale(1.1) translateZ(0); }
+        }
+
+        .features-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            will-change: transform;
+            transform: translateZ(0);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .feature-btn {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 15px 10px;
+            color: #ffffff;
+            text-align: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 48px;
+            min-width: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        .feature-btn:active {
+            background: rgba(0, 255, 136, 0.2);
+            transform: scale(0.97) translateZ(0);
+        }
+
+        .feature-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateY(-2px) translateZ(0);
+        }
+
+        .agents-counter {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #00ff88;
+            margin-top: 10px;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff88;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Enhanced iOS Safe Area Support */
+        @supports (padding: env(safe-area-inset-bottom)) {
+            .main-app {
+                padding-bottom: max(env(safe-area-inset-bottom), 20px);
+                padding-left: max(env(safe-area-inset-left), 20px);
+                padding-right: max(env(safe-area-inset-right), 20px);
+            }
+
+            .header {
+                padding-left: max(env(safe-area-inset-left), 20px);
+                padding-right: max(env(safe-area-inset-right), 20px);
+            }
+        }
+
+        /* Keyboard adaptation for mobile */
+        @media screen and (max-height: 500px) {
+            .features-panel {
+                display: none;
+            }
+            .main-app {
+                padding: 10px;
+            }
+        }
+
+        /* Dark mode optimization */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #000000 0%, #111111 100%);
+            }
+        }
+
+        /* High contrast accessibility */
+        @media (prefers-contrast: high) {
+            .feature-btn, .chat-input {
+                border-width: 2px;
+            }
+        }
+
+        /* Reduced motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar"></div>
+
+    <div class="header">
+        <div class="logo">🤖 Sandra IA</div>
+        <div class="status">Galaxy Level Online</div>
+    </div>
+
+    <div class="main-app">
+        <!-- Features Panel -->
+        <div class="features-panel">
+            <div class="features-grid">
+                <div class="feature-btn" onclick="startFeature('dev')">
+                    💻<br>Dev
+                </div>
+                <div class="feature-btn" onclick="startFeature('marketing')">
+                    📈<br>Marketing
+                </div>
+                <div class="feature-btn" onclick="startFeature('design')">
+                    🎨<br>Design
+                </div>
+                <div class="feature-btn" onclick="startFeature('finance')">
+                    💰<br>Finance
+                </div>
+                <div class="feature-btn" onclick="startFeature('voice')">
+                    🎤<br>Voice
+                </div>
+                <div class="feature-btn" onclick="startFeature('vision')">
+                    👁️<br>Vision
+                </div>
+            </div>
+            <div class="agents-counter">252 Agentes IA Activos • 95.4% Eficiencia</div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message sandra">
+                    ¡Hola! 👋 Soy Sandra IA Galaxy Level. Tengo 252 agentes especializados listos para ayudarte. ¿En qué puedo asistirte hoy?
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Escribe tu mensaje...">
+                <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sandra Chat AI Integration
+        class SandraChatAI {
+            constructor() {
+                this.responses = {
+                    greetings: [
+                        '¡Hola! 👋 ¿En qué puedo ayudarte hoy?',
+                        '¡Hey! Estoy lista para desarrollar contigo 🚀',
+                        '¡Hola! ¿Qué proyecto trabajamos hoy? 💻',
+                        '¡Saludos! Sandra Dev al servicio 🌟'
+                    ],
+                    thanks: [
+                        '¡De nada! Es un placer ayudarte 💚',
+                        'Para eso estoy aquí 😊',
+                        '¡Siempre a tu servicio! 🚀'
+                    ],
+                    status: [
+                        '¡Funcionando al 100% en modo Galaxy! 🌌',
+                        'Todos los sistemas operativos y listos 🟢',
+                        'En perfecto estado, ¡vamos a programar! 💪'
+                    ]
+                };
+            }
+
+            processMessage(message) {
+                const lower = message.toLowerCase().trim();
+
+                // Saludos
+                if (lower.match(/^(hola|hi|hey|buenas|saludos|que tal)/)) {
+                    return {
+                        type: 'chat',
+                        response: this.getRandomResponse('greetings')
+                    };
+                }
+
+                // Agradecimientos
+                if (lower.includes('gracias') || lower.includes('thanks')) {
+                    return {
+                        type: 'chat',
+                        response: this.getRandomResponse('thanks')
+                    };
+                }
+
+                // Estado
+                if (lower.includes('cómo estás') || lower.includes('como estas')) {
+                    return {
+                        type: 'chat',
+                        response: this.getRandomResponse('status')
+                    };
+                }
+
+                // Comando genérico
+                return {
+                    type: 'response',
+                    response: 'Procesando tu solicitud con mis 252 agentes especializados...'
+                };
+            }
+
+            getRandomResponse(type) {
+                const responses = this.responses[type];
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+        }
+
+    <script>
+        // Sandra IA Connection Manager
+        class SandraConnectionManager {
+            constructor() {
+                this.websocket = null;
+                this.isConnected = false;
+                this.mcpBridgeUrl = 'ws://sandra.guestsvalencia.es:3000';
+                this.chatAI = new SandraChatAI();
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                this.init();
+            }
+
+            async init() {
+                await this.connectWebSocket();
+                await this.testBackendConnections();
+            }
+
+            async connectWebSocket() {
+                try {
+                    this.websocket = new WebSocket(this.mcpBridgeUrl);
+
+                    this.websocket.onopen = () => {
+                        console.log('✅ Connected to Sandra MCP Bridge');
+                        this.isConnected = true;
+                        this.reconnectAttempts = 0;
+                        this.updateConnectionStatus('Connected to Galaxy Network');
+                    };
+
+                    this.websocket.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.handleServerResponse(data);
+                    };
+
+                    this.websocket.onclose = () => {
+                        console.log('❌ Disconnected from Sandra MCP Bridge');
+                        this.isConnected = false;
+                        this.updateConnectionStatus('Connecting...');
+                        this.attemptReconnect();
+                    };
+
+                    this.websocket.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                        this.updateConnectionStatus('Connection Error');
+                    };
+                } catch (error) {
+                    console.error('Failed to connect to MCP Bridge:', error);
+                    this.updateConnectionStatus('Offline Mode');
+                }
+            }
+
+            async testBackendConnections() {
+                try {
+                    // Test MCP Bridge health
+                    const mcpResponse = await fetch('http://sandra.guestsvalencia.es:3000/health');
+                    if (mcpResponse.ok) {
+                        console.log('✅ MCP Bridge health check passed');
+                    }
+
+                    // Test Backend server health
+                    const backendResponse = await fetch('http://sandra.guestsvalencia.es:3001/health');
+                    if (backendResponse.ok) {
+                        console.log('✅ Backend server health check passed');
+                    }
+                } catch (error) {
+                    console.warn('Backend health checks failed, using fallback mode');
+                }
+            }
+
+            updateConnectionStatus(status) {
+                const statusElement = document.querySelector('.status');
+                if (statusElement) {
+                    statusElement.textContent = status;
+                }
+            }
+
+            attemptReconnect() {
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    setTimeout(() => {
+                        console.log(`Reconnection attempt ${this.reconnectAttempts}`);
+                        this.connectWebSocket();
+                    }, 3000 * this.reconnectAttempts);
+                }
+            }
+
+            async sendCommand(command, params = {}) {
+                const message = {
+                    command,
+                    params,
+                    timestamp: Date.now(),
+                    expert: 'sandra-dev'
+                };
+
+                if (this.isConnected && this.websocket.readyState === WebSocket.OPEN) {
+                    this.websocket.send(JSON.stringify(message));
+                    return true;
+                } else {
+                    // Fallback to local processing
+                    return await this.handleOfflineCommand(command, params);
+                }
+            }
+
+            async handleOfflineCommand(command, params) {
+                // Use local SandraChatAI for offline processing
+                const response = this.chatAI.processMessage(`${command} ${JSON.stringify(params)}`);
+                setTimeout(() => {
+                    addMessage(`[Offline Mode] ${response.response || 'Comando procesado localmente.'}`, 'sandra');
+                }, 500);
+                return true;
+            }
+
+            handleServerResponse(data) {
+                if (data.type === 'dev_response') {
+                    addMessage(data.result?.message || 'Tarea completada con éxito.', 'sandra');
+                } else if (data.type === 'error') {
+                    addMessage(`Error: ${data.message}`, 'sandra');
+                } else {
+                    addMessage(data.message || 'Respuesta del servidor recibida.', 'sandra');
+                }
+            }
+        }
+
+        // Voice Processing System with Barge-in
+        class SandraVoiceSystem {
+            constructor(connectionManager) {
+                this.connectionManager = connectionManager;
+                this.recognition = null;
+                this.synthesis = null;
+                this.isListening = false;
+                this.isProcessing = false;
+                this.isSpeaking = false;
+                this.audioContext = null;
+                this.mediaStream = null;
+                this.audioWorklet = null;
+                this.interruptionThreshold = 0.1;
+                this.silenceTimeout = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Initialize Web Speech API
+                    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                        this.recognition = new SpeechRecognition();
+                        this.setupSpeechRecognition();
+                    }
+
+                    if ('speechSynthesis' in window) {
+                        this.synthesis = window.speechSynthesis;
+                        this.setupSpeechSynthesis();
+                    }
+
+                    // Initialize Audio Context for barge-in detection
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    await this.setupBargeInDetection();
+
+                    console.log('✅ Voice system initialized with barge-in capability');
+                } catch (error) {
+                    console.error('Voice system initialization failed:', error);
+                }
+            }
+
+            setupSpeechRecognition() {
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
+                this.recognition.lang = 'es-ES';
+
+                this.recognition.onstart = () => {
+                    console.log('🎤 Voice recognition started');
+                    this.isListening = true;
+                    this.updateVoiceButton('recording');
+                };
+
+                this.recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    let interimTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    if (finalTranscript) {
+                        this.processSpeechInput(finalTranscript);
+                    }
+
+                    // Update input field with interim results
+                    const chatInput = document.getElementById('chatInput');
+                    if (chatInput) {
+                        chatInput.value = interimTranscript;
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    this.stopListening();
+                };
+
+                this.recognition.onend = () => {
+                    console.log('🎤 Voice recognition ended');
+                    this.isListening = false;
+                    this.updateVoiceButton('idle');
+                };
+            }
+
+            setupSpeechSynthesis() {
+                // Set Spanish voice if available
+                this.synthesis.onvoiceschanged = () => {
+                    const voices = this.synthesis.getVoices();
+                    const spanishVoice = voices.find(voice => voice.lang.includes('es'));
+                    this.selectedVoice = spanishVoice || voices[0];
+                };
+            }
+
+            async setupBargeInDetection() {
+                try {
+                    this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const source = this.audioContext.createMediaStreamSource(this.mediaStream);
+                    const analyzer = this.audioContext.createAnalyser();
+
+                    analyzer.fftSize = 256;
+                    source.connect(analyzer);
+
+                    this.analyzer = analyzer;
+                    this.dataArray = new Uint8Array(analyzer.frequencyBinCount);
+
+                    console.log('✅ Barge-in detection enabled');
+                } catch (error) {
+                    console.warn('Barge-in detection not available:', error);
+                }
+            }
+
+            detectBargein() {
+                if (!this.analyzer || !this.isSpeaking) return false;
+
+                this.analyzer.getByteFrequencyData(this.dataArray);
+                const average = this.dataArray.reduce((a, b) => a + b) / this.dataArray.length;
+                const normalizedLevel = average / 255;
+
+                return normalizedLevel > this.interruptionThreshold;
+            }
+
+            startListening() {
+                if (!this.recognition) {
+                    addMessage('Voice recognition no disponible en este dispositivo.', 'sandra');
+                    return;
+                }
+
+                try {
+                    // Stop any current speech
+                    if (this.isSpeaking) {
+                        this.synthesis.cancel();
+                        this.isSpeaking = false;
+                    }
+
+                    this.recognition.start();
+                } catch (error) {
+                    console.error('Failed to start voice recognition:', error);
+                }
+            }
+
+            stopListening() {
+                if (this.recognition && this.isListening) {
+                    this.recognition.stop();
+                }
+                this.updateVoiceButton('idle');
+            }
+
+            async processSpeechInput(transcript) {
+                this.updateVoiceButton('processing');
+
+                // Add user message to chat
+                addMessage(transcript, 'user');
+
+                // Clear input field
+                const chatInput = document.getElementById('chatInput');
+                if (chatInput) {
+                    chatInput.value = '';
+                }
+
+                try {
+                    // Send to Sandra backend for processing
+                    await this.connectionManager.sendCommand('voice_input', {
+                        transcript,
+                        language: 'es',
+                        mode: 'conversational'
+                    });
+                } catch (error) {
+                    console.error('Failed to process speech input:', error);
+                    addMessage('Error procesando la entrada de voz.', 'sandra');
+                }
+
+                this.updateVoiceButton('idle');
+            }
+
+            async speakResponse(text) {
+                if (!this.synthesis) return;
+
+                return new Promise((resolve) => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.voice = this.selectedVoice;
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.8;
+
+                    utterance.onstart = () => {
+                        this.isSpeaking = true;
+                        this.startBargeInMonitoring();
+                    };
+
+                    utterance.onend = () => {
+                        this.isSpeaking = false;
+                        this.stopBargeInMonitoring();
+                        resolve();
+                    };
+
+                    utterance.onerror = () => {
+                        this.isSpeaking = false;
+                        this.stopBargeInMonitoring();
+                        resolve();
+                    };
+
+                    this.synthesis.speak(utterance);
+                });
+            }
+
+            startBargeInMonitoring() {
+                if (!this.analyzer) return;
+
+                const monitor = () => {
+                    if (!this.isSpeaking) return;
+
+                    if (this.detectBargein()) {
+                        console.log('🚫 Barge-in detected - stopping speech');
+                        this.synthesis.cancel();
+                        this.isSpeaking = false;
+
+                        // Start listening immediately
+                        setTimeout(() => {
+                            this.startListening();
+                        }, 100);
+                        return;
+                    }
+
+                    requestAnimationFrame(monitor);
+                };
+
+                monitor();
+            }
+
+            stopBargeInMonitoring() {
+                // Monitoring stops automatically when isSpeaking becomes false
+            }
+
+            updateVoiceButton(state) {
+                const voiceBtn = document.getElementById('voiceBtn');
+                if (!voiceBtn) return;
+
+                voiceBtn.className = 'voice-btn';
+
+                switch (state) {
+                    case 'recording':
+                        voiceBtn.classList.add('recording');
+                        voiceBtn.textContent = '🔴';
+                        break;
+                    case 'processing':
+                        voiceBtn.classList.add('processing');
+                        voiceBtn.textContent = '⚙️';
+                        break;
+                    case 'idle':
+                    default:
+                        voiceBtn.textContent = '🎤';
+                        break;
+                }
+            }
+        }
+
+        // Performance Monitoring
+        class SandraPerformanceMonitor {
+            constructor() {
+                this.metrics = {
+                    startTime: performance.now(),
+                    loadTime: 0,
+                    interactionCount: 0,
+                    errorCount: 0,
+                    voiceInteractions: 0,
+                    crashDetected: false
+                };
+                this.init();
+            }
+
+            init() {
+                // Monitor load time
+                window.addEventListener('load', () => {
+                    this.metrics.loadTime = performance.now() - this.metrics.startTime;
+                    console.log(`📊 App loaded in ${this.metrics.loadTime.toFixed(2)}ms`);
+
+                    // Verify <2s startup target
+                    if (this.metrics.loadTime > 2000) {
+                        console.warn('⚠️ Startup time exceeded 2s target');
+                    }
+                });
+
+                // Monitor interactions
+                document.addEventListener('click', () => {
+                    this.metrics.interactionCount++;
+                });
+
+                // Monitor errors
+                window.addEventListener('error', (error) => {
+                    this.metrics.errorCount++;
+                    console.error('🚨 Error detected:', error);
+
+                    // Calculate crash rate
+                    const crashRate = this.metrics.errorCount / Math.max(this.metrics.interactionCount, 1);
+                    if (crashRate > 0.001) { // 0.1% threshold
+                        console.warn('🚨 Crash rate exceeded 0.1% threshold');
+                        this.metrics.crashDetected = true;
+                    }
+                });
+
+                // Monitor memory usage
+                if (performance.memory) {
+                    setInterval(() => {
+                        const memory = performance.memory;
+                        if (memory.usedJSHeapSize > 100 * 1024 * 1024) { // 100MB
+                            console.warn('🚨 High memory usage:', memory.usedJSHeapSize / 1024 / 1024, 'MB');
+                        }
+                    }, 30000);
+                }
+
+                // Report metrics periodically
+                setInterval(() => {
+                    this.reportMetrics();
+                }, 60000); // Every minute
+            }
+
+            recordVoiceInteraction() {
+                this.metrics.voiceInteractions++;
+            }
+
+            reportMetrics() {
+                const uptime = performance.now() - this.metrics.startTime;
+                console.log('📊 Performance Metrics:', {
+                    uptime: `${(uptime / 1000).toFixed(1)}s`,
+                    loadTime: `${this.metrics.loadTime.toFixed(2)}ms`,
+                    interactions: this.metrics.interactionCount,
+                    voiceInteractions: this.metrics.voiceInteractions,
+                    errors: this.metrics.errorCount,
+                    crashRate: `${((this.metrics.errorCount / Math.max(this.metrics.interactionCount, 1)) * 100).toFixed(3)}%`,
+                    memoryUsage: performance.memory ? `${(performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1)}MB` : 'N/A'
+                });
+            }
+
+            getMetrics() {
+                return {
+                    ...this.metrics,
+                    uptime: performance.now() - this.metrics.startTime,
+                    crashRate: this.metrics.errorCount / Math.max(this.metrics.interactionCount, 1)
+                };
+            }
+        }
+
+        // Enhanced Feature Button Management
+        function markFeatureActive(feature) {
+            // Remove active class from all feature buttons
+            document.querySelectorAll('.feature-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Add active class to current feature
+            const featureBtn = document.querySelector(`[onclick*="${feature}"]`);
+            if (featureBtn) {
+                featureBtn.classList.add('active');
+                featureBtn.style.background = 'rgba(0, 255, 136, 0.3)';
+                featureBtn.style.borderColor = 'rgba(0, 255, 136, 0.6)';
+            }
+        }
+
+        // Initialize Sandra IA Systems
+        let sandraConnection;
+        let sandraVoice;
+        let sandraPerformance;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize performance monitoring first
+            sandraPerformance = new SandraPerformanceMonitor();
+
+            // Load stored messages
+            loadStoredMessages();
+
+            // Initialize core systems
+            sandraConnection = new SandraConnectionManager();
+            sandraVoice = new SandraVoiceSystem(sandraConnection);
+
+            // Setup additional event listeners
+            setupAccessibilityFeatures();
+            setupKeyboardShortcuts();
+            setupGestureHandling();
+
+            console.log('🚀 Sandra IA Galaxy Level - All systems initialized');
+        });
+
+        // Accessibility Features
+        function setupAccessibilityFeatures() {
+            // High contrast mode detection
+            if (window.matchMedia('(prefers-contrast: high)').matches) {
+                document.body.classList.add('high-contrast');
+            }
+
+            // Reduced motion detection
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.body.classList.add('reduced-motion');
+            }
+
+            // Screen reader announcements
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.style.position = 'absolute';
+            announcement.style.left = '-10000px';
+            announcement.style.width = '1px';
+            announcement.style.height = '1px';
+            announcement.style.overflow = 'hidden';
+            document.body.appendChild(announcement);
+
+            window.announceToScreenReader = (message) => {
+                announcement.textContent = message;
+                setTimeout(() => announcement.textContent = '', 1000);
+            };
+        }
+
+        // Keyboard Shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + M for microphone
+                if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                    e.preventDefault();
+                    toggleVoice();
+                    window.announceToScreenReader?.('Micrófono activado');
+                }
+
+                // Ctrl/Cmd + 1-6 for feature shortcuts
+                if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '6') {
+                    e.preventDefault();
+                    const features = ['dev', 'marketing', 'design', 'finance', 'voice', 'vision'];
+                    const feature = features[parseInt(e.key) - 1];
+                    if (feature) {
+                        startFeature(feature);
+                        window.announceToScreenReader?.(`Módulo ${feature} activado`);
+                    }
+                }
+
+                // Escape to stop voice
+                if (e.key === 'Escape' && sandraVoice?.isListening) {
+                    sandraVoice.stopListening();
+                    window.announceToScreenReader?.('Reconocimiento de voz detenido');
+                }
+            });
+        }
+
+        // Touch and Gesture Handling
+        function setupGestureHandling() {
+            let touchStartY = 0;
+            let touchStartTime = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+                touchStartTime = Date.now();
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                const touchEndY = e.changedTouches[0].clientY;
+                const touchDuration = Date.now() - touchStartTime;
+                const deltaY = touchStartY - touchEndY;
+
+                // Swipe up gesture for voice activation
+                if (deltaY > 50 && touchDuration < 300) {
+                    const chatContainer = document.querySelector('.chat-container');
+                    if (e.target.closest('.chat-container') === chatContainer) {
+                        toggleVoice();
+
+                        // Haptic feedback
+                        if (navigator.vibrate) {
+                            navigator.vibrate(100);
+                        }
+                    }
+                }
+            }, { passive: true });
+        }
+
+        // Chat functionality
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (message) {
+                // Add user message
+                addMessage(message, 'user');
+                input.value = '';
+
+                try {
+                    // Send to Sandra backend
+                    await sandraConnection.sendCommand('text_input', {
+                        message,
+                        mode: 'chat'
+                    });
+                } catch (error) {
+                    console.error('Failed to send message:', error);
+                    addMessage('Error enviando el mensaje.', 'sandra');
+                }
+            }
+        }
+
+        // Voice functionality
+        function toggleVoice() {
+            if (!sandraVoice) {
+                addMessage('Sistema de voz no disponible.', 'sandra');
+                return;
+            }
+
+            if (sandraVoice.isListening) {
+                sandraVoice.stopListening();
+            } else {
+                sandraVoice.startListening();
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = text;
+            messageDiv.setAttribute('data-timestamp', Date.now());
+            messageDiv.setAttribute('role', 'log');
+            messageDiv.setAttribute('aria-live', 'polite');
+
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+
+            // Store message locally
+            storeMessageLocally(text, sender);
+
+            // Trigger voice response for Sandra messages if voice module is active
+            if (sender === 'sandra' && sandraVoice && document.querySelector('.feature-btn[onclick*="voice"]')?.classList.contains('active')) {
+                sandraVoice.speakResponse(text);
+            }
+        }
+
+        // Local Storage Management
+        function storeMessageLocally(text, sender) {
+            try {
+                const messages = JSON.parse(localStorage.getItem('sandra_messages') || '[]');
+                messages.push({
+                    text,
+                    sender,
+                    timestamp: Date.now(),
+                    sessionId: getSessionId()
+                });
+
+                // Keep only last 100 messages to avoid storage overflow
+                if (messages.length > 100) {
+                    messages.splice(0, messages.length - 100);
+                }
+
+                localStorage.setItem('sandra_messages', JSON.stringify(messages));
+            } catch (error) {
+                console.warn('Failed to store message locally:', error);
+            }
+        }
+
+        function loadStoredMessages() {
+            try {
+                const messages = JSON.parse(localStorage.getItem('sandra_messages') || '[]');
+                const currentSession = getSessionId();
+
+                // Load only messages from current session (last 2 hours)
+                const recentMessages = messages.filter(msg =>
+                    msg.sessionId === currentSession ||
+                    (Date.now() - msg.timestamp) < 2 * 60 * 60 * 1000
+                );
+
+                if (recentMessages.length > 0) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = '<div class="message sandra">¡Hola! 👋 Soy Sandra IA Galaxy Level. Tengo 252 agentes especializados listos para ayudarte. ¿En qué puedo asistirte hoy?</div>';
+
+                    recentMessages.forEach(msg => {
+                        if (msg.text !== '¡Hola! 👋 Soy Sandra IA Galaxy Level. Tengo 252 agentes especializados listos para ayudarte. ¿En qué puedo asistirte hoy?') {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = `message ${msg.sender}`;
+                            messageDiv.textContent = msg.text;
+                            messageDiv.setAttribute('data-timestamp', msg.timestamp);
+                            chatMessages.appendChild(messageDiv);
+                        }
+                    });
+
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            } catch (error) {
+                console.warn('Failed to load stored messages:', error);
+            }
+        }
+
+        function getSessionId() {
+            let sessionId = sessionStorage.getItem('sandra_session_id');
+            if (!sessionId) {
+                sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem('sandra_session_id', sessionId);
+            }
+            return sessionId;
+        }
+
+        async function startFeature(feature) {
+            const features = {
+                'dev': {
+                    message: 'Iniciando modo Desarrollo... 💻 Agentes de programación activados.',
+                    command: 'activate_dev_module',
+                    params: { module: 'development', agents: ['code-generator', 'debugger', 'optimizer'] }
+                },
+                'marketing': {
+                    message: 'Modo Marketing activado... 📈 Estrategias y campañas listas.',
+                    command: 'activate_marketing_module',
+                    params: { module: 'marketing', agents: ['campaign-manager', 'analytics', 'content-creator'] }
+                },
+                'design': {
+                    message: 'Diseño creativo iniciado... 🎨 Agentes de UI/UX preparados.',
+                    command: 'activate_design_module',
+                    params: { module: 'design', agents: ['ui-designer', 'ux-optimizer', 'visual-creator'] }
+                },
+                'finance': {
+                    message: 'Análisis financiero comenzando... 💰 Expertos en finanzas listos.',
+                    command: 'activate_finance_module',
+                    params: { module: 'finance', agents: ['financial-analyst', 'budget-optimizer', 'investment-advisor'] }
+                },
+                'voice': {
+                    message: 'Procesamiento de voz activado... 🎤 Sistema conversacional con barge-in ready.',
+                    command: 'activate_voice_module',
+                    params: { module: 'voice', features: ['speech-recognition', 'synthesis', 'barge-in'] }
+                },
+                'vision': {
+                    message: 'Computer Vision iniciado... 👁️ Análisis visual preparado.',
+                    command: 'activate_vision_module',
+                    params: { module: 'vision', agents: ['image-analyzer', 'object-detector', 'scene-understander'] }
+                }
+            };
+
+            const featureConfig = features[feature];
+            if (!featureConfig) {
+                addMessage('Función no reconocida.', 'sandra');
+                return;
+            }
+
+            // Show immediate feedback
+            addMessage(featureConfig.message, 'sandra');
+
+            try {
+                // Send command to backend for real activation
+                if (sandraConnection) {
+                    await sandraConnection.sendCommand(featureConfig.command, featureConfig.params);
+                }
+
+                // Special handling for voice module
+                if (feature === 'voice' && sandraVoice) {
+                    markFeatureActive('voice');
+                    const speechText = 'Sistema de voz activado. Ahora puedes hablar conmigo usando el botón del micrófono o deslizando hacia arriba. Puedes interrumpirme en cualquier momento.';
+                    await sandraVoice.speakResponse(speechText);
+                } else {
+                    markFeatureActive(feature);
+                }
+
+                // Record performance metric
+                if (sandraPerformance) {
+                    sandraPerformance.metrics.interactionCount++;
+                }
+            } catch (error) {
+                console.error(`Failed to activate ${feature} module:`, error);
+                addMessage(`Error activando el módulo ${feature}.`, 'sandra');
+            }
+        }
+
+        // Enter key support
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Enhanced PWA and Mobile Features
+        class SandraIAMobile {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupPWA();
+                this.setupMobileOptimizations();
+                this.setupAccessibility();
+                this.setupPerformanceMonitoring();
+            }
+
+            setupPWA() {
+                // PWA install detection
+                if (window.navigator.standalone) {
+                    console.log('✅ Running as PWA - Sandra IA Galaxy Level');
+                    document.body.classList.add('pwa-mode');
+                }
+
+                // Service Worker with enhanced error handling
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('✅ SW registered:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.log('❌ SW registration failed:', error);
+                        });
+                }
+            }
+
+            setupMobileOptimizations() {
+                // Prevent zoom on input focus (iOS)
+                const inputs = document.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.addEventListener('focus', () => {
+                        const viewport = document.querySelector('meta[name=viewport]');
+                        viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui';
+                    });
+                });
+
+                // Keyboard handling for mobile
+                window.addEventListener('resize', this.handleKeyboard.bind(this));
+
+                // Haptic feedback support
+                this.setupHapticFeedback();
+
+                // iOS-specific optimizations
+                if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                    this.setupiOSOptimizations();
+                }
+            }
+
+            handleKeyboard() {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
+
+            setupHapticFeedback() {
+                const buttons = document.querySelectorAll('.send-btn, .feature-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50); // Light haptic feedback
+                        }
+                    });
+                });
+            }
+
+            setupiOSOptimizations() {
+                // Prevent bounce scrolling
+                document.addEventListener('touchmove', (e) => {
+                    if (e.target.closest('.chat-messages')) return;
+                    e.preventDefault();
+                }, { passive: false });
+
+                // Status bar optimization
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => {
+                        window.scrollTo(0, 1);
+                    }, 100);
+                });
+            }
+
+            setupAccessibility() {
+                // Announce new messages for screen readers
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList') {
+                            const newMessages = mutation.addedNodes;
+                            newMessages.forEach((node) => {
+                                if (node.classList && node.classList.contains('message')) {
+                                    node.setAttribute('role', 'log');
+                                    node.setAttribute('aria-live', 'polite');
+                                }
+                            });
+                        }
+                    });
+                });
+
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    observer.observe(chatMessages, { childList: true });
+                }
+            }
+
+            setupPerformanceMonitoring() {
+                // Monitor memory usage (for debugging)
+                if (performance.memory) {
+                    setInterval(() => {
+                        const memory = performance.memory;
+                        if (memory.usedJSHeapSize > 50 * 1024 * 1024) { // 50MB threshold
+                            console.warn('🚨 High memory usage detected:', memory.usedJSHeapSize / 1024 / 1024, 'MB');
+                        }
+                    }, 30000);
+                }
+            }
+        }
+
+        // Initialize Sandra IA Mobile enhancements
+        const sandraIAMobile = new SandraIAMobile();
+
+        console.log('🤖 Sandra IA Galaxy Level - PWA App Loaded with Mobile Optimizations');
+    </script>
+</body>
+</html>

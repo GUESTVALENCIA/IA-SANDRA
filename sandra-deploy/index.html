@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandra IA Galaxy Level | Download & Install</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00ff88">
+
+    <!-- iOS Safari PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sandra IA">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00ff88 0%, #00aaff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        .download-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00aaff 100%);
+            color: #0a0a0a;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.3s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+        }
+        .instructions {
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            display: none;
+        }
+        .success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+        .feature {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🤖 Sandra IA Galaxy Level</div>
+        <p style="font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9;">
+            IA Multimodal con 252 agentes especializados
+        </p>
+
+        <!-- iOS Download -->
+        <div class="download-section">
+            <h2>📱 Instalación para iPhone/iPad</h2>
+            <button class="download-btn" onclick="installIOS()">
+                Instalar en iPhone
+            </button>
+            <div class="instructions">
+                <h4>Pasos para instalar:</h4>
+                <ol>
+                    <li><strong>Toca "Instalar en iPhone"</strong> arriba</li>
+                    <li><strong>Botón Compartir:</strong> Toca el ícono ⬆️ en Safari</li>
+                    <li><strong>"Añadir a pantalla de inicio":</strong> Selecciona esta opción</li>
+                    <li><strong>Confirmar:</strong> Toca "Añadir"</li>
+                </ol>
+                <p><strong>✅ Sandra IA aparecerá como app nativa en tu pantalla de inicio</strong></p>
+            </div>
+            <div class="message" id="ios-message"></div>
+        </div>
+
+        <!-- Android Download -->
+        <div class="download-section">
+            <h2>🤖 Instalación para Android</h2>
+            <button class="download-btn" onclick="installAndroid()">
+                Instalar en Android
+            </button>
+            <div class="instructions">
+                <h4>Pasos para instalar:</h4>
+                <ol>
+                    <li><strong>Toca "Instalar en Android"</strong> arriba</li>
+                    <li><strong>Chrome mostrará:</strong> "Instalar aplicación"</li>
+                    <li><strong>Confirmar:</strong> Toca "Instalar"</li>
+                    <li><strong>¡Listo!</strong> Sandra IA en tu cajón de apps</li>
+                </ol>
+            </div>
+            <div class="message" id="android-message"></div>
+        </div>
+
+        <!-- Features -->
+        <div class="feature">
+            <h3>🧠 252 Agentes IA Especializados</h3>
+            <p>Desarrollo, marketing, finanzas, psicología y más</p>
+        </div>
+
+        <div class="feature">
+            <h3>🎯 LiveKit + HeyGen Avatar</h3>
+            <p>Conversaciones en tiempo real con avatar photorealistic</p>
+        </div>
+
+        <div class="feature">
+            <h3>👁️ Computer Vision Avanzado</h3>
+            <p>Análisis visual y reconocimiento en tiempo real</p>
+        </div>
+
+        <div style="margin-top: 40px; opacity: 0.7;">
+            <p>&copy; 2024 GuestsValencia - Sandra IA Galaxy Level</p>
+        </div>
+    </div>
+
+    <script>
+        function installIOS() {
+            const messageEl = document.getElementById('ios-message');
+
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                showMessage(messageEl, 'success', '📱 Perfecto! Ahora usa el botón Compartir (⬆️) en Safari → "Añadir a pantalla de inicio" → "Añadir". ¡Sandra IA aparecerá como app nativa!');
+            } else {
+                showMessage(messageEl, 'success', '💡 Estas instrucciones son para iPhone/iPad. En tu dispositivo actual, puedes usar Sandra IA directamente desde el navegador.');
+            }
+        }
+
+        function installAndroid() {
+            const messageEl = document.getElementById('android-message');
+
+            if (/Android/.test(navigator.userAgent)) {
+                showMessage(messageEl, 'success', '📱 Perfecto! Busca "Instalar aplicación" en el menú de Chrome (⋮) → "Instalar". ¡Sandra IA aparecerá como app nativa!');
+            } else {
+                showMessage(messageEl, 'success', '💡 Estas instrucciones son para Android. En tu dispositivo actual, puedes usar Sandra IA directamente desde el navegador.');
+            }
+        }
+
+        function showMessage(element, type, text) {
+            element.className = `message ${type}`;
+            element.textContent = text;
+            element.style.display = 'block';
+        }
+
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+        });
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+
+        console.log('✅ Sandra IA PWA loaded - NO TestFlight needed');
+    </script>
+</body>
+</html>

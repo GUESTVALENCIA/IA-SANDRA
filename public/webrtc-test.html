@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sandra IA - WebRTC Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 28px;
+      background: linear-gradient(135deg, #00ff88, #00ccff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00ff88, #00ccff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mouth {
+      position: absolute;
+      bottom: 35%;
+      left: 50%;
+      transform: translateX(-50%) scaleY(0.1);
+      width: 30px;
+      height: 15px;
+      background: #ff006e;
+      border-radius: 0 0 15px 15px;
+      transition: transform 0.05s ease;
+    }
+
+    .status {
+      text-align: center;
+      padding: 15px;
+      background: rgba(0, 255, 136, 0.1);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .status.error {
+      background: rgba(255, 0, 110, 0.1);
+      border-color: rgba(255, 0, 110, 0.3);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00ff88, #00ccff);
+      color: #0a0a0a;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, #ff006e, #ff3366);
+      color: #ffffff;
+    }
+
+    .metrics {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+    }
+
+    .metric:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      color: #888;
+    }
+
+    .metric-value {
+      font-weight: bold;
+      color: #00ff88;
+    }
+
+    .metric-value.inactive {
+      color: #ff006e;
+    }
+
+    .volume-meter {
+      height: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .volume-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff88, #00ccff);
+      width: 0%;
+      transition: width 0.05s ease;
+    }
+
+    .volume-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 11px;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .logs {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      color: #888;
+    }
+
+    .log-entry.success {
+      color: #00ff88;
+    }
+
+    .log-entry.error {
+      color: #ff006e;
+    }
+
+    .log-entry.info {
+      color: #00ccff;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎙️ Sandra IA WebRTC Test</h1>
+    <p class="subtitle">Real-time Audio Streaming Test Environment</p>
+
+    <div class="avatar">
+      <div class="mouth" id="mouth"></div>
+    </div>
+
+    <div class="status" id="status">
+      ⏳ System not initialized
+    </div>
+
+    <div class="volume-meter">
+      <div class="volume-bar" id="volumeBar"></div>
+      <div class="volume-label">Volume: <span id="volumeValue">0%</span></div>
+    </div>
+
+    <div class="controls">
+      <button id="btnInit">🚀 Initialize WebRTC</button>
+      <button id="btnShutdown" disabled>🔌 Shutdown</button>
+      <button id="btnStartVAD" class="secondary" disabled>🎤 Start VAD</button>
+      <button id="btnStopVAD" class="secondary" disabled>🛑 Stop VAD</button>
+      <button id="btnTestBarge" class="secondary" disabled>🛑 Test Barge-In</button>
+      <button id="btnTestAvatar" class="secondary" disabled>👄 Test Avatar</button>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <span class="metric-label">WebRTC Supported:</span>
+        <span class="metric-value" id="metricSupported">-</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Connection State:</span>
+        <span class="metric-value" id="metricConnection">-</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">VAD Active:</span>
+        <span class="metric-value" id="metricVAD">-</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Avatar Animating:</span>
+        <span class="metric-value" id="metricAvatar">-</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Session ID:</span>
+        <span class="metric-value" id="metricSession" style="font-size: 10px;">-</span>
+      </div>
+    </div>
+
+    <div class="logs" id="logs">
+      <div class="log-entry info">📋 Console logs will appear here...</div>
+    </div>
+  </div>
+
+  <!-- Load WebRTC modules -->
+  <script src="/js/webrtc-client.js"></script>
+  <script src="/js/vad-handler.js"></script>
+  <script src="/js/avatar-sync.js"></script>
+  <script src="/js/sandra-webrtc-integration.js"></script>
+
+  <!-- Test interface script -->
+  <script>
+    // UI Elements
+    const statusEl = document.getElementById('status');
+    const volumeBar = document.getElementById('volumeBar');
+    const volumeValue = document.getElementById('volumeValue');
+    const logsEl = document.getElementById('logs');
+
+    const btnInit = document.getElementById('btnInit');
+    const btnShutdown = document.getElementById('btnShutdown');
+    const btnStartVAD = document.getElementById('btnStartVAD');
+    const btnStopVAD = document.getElementById('btnStopVAD');
+    const btnTestBarge = document.getElementById('btnTestBarge');
+    const btnTestAvatar = document.getElementById('btnTestAvatar');
+
+    const metricSupported = document.getElementById('metricSupported');
+    const metricConnection = document.getElementById('metricConnection');
+    const metricVAD = document.getElementById('metricVAD');
+    const metricAvatar = document.getElementById('metricAvatar');
+    const metricSession = document.getElementById('metricSession');
+
+    // Logging
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logsEl.appendChild(entry);
+      logsEl.scrollTop = logsEl.scrollHeight;
+      console.log(message);
+    }
+
+    // Update status
+    function updateStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.className = isError ? 'status error' : 'status';
+    }
+
+    // Update metrics
+    function updateMetrics() {
+      const status = window.SandraWebRTC.getStatus();
+
+      metricSupported.textContent = status.supported ? '✅ Yes' : '❌ No';
+      metricConnection.textContent = status.connected ? '✅ Connected' : '❌ Disconnected';
+      metricConnection.className = status.connected ? 'metric-value' : 'metric-value inactive';
+
+      metricVAD.textContent = status.vadActive ? '✅ Active' : '❌ Inactive';
+      metricVAD.className = status.vadActive ? 'metric-value' : 'metric-value inactive';
+
+      metricAvatar.textContent = status.avatarAnimating ? '✅ Animating' : '❌ Stopped';
+      metricAvatar.className = status.avatarAnimating ? 'metric-value' : 'metric-value inactive';
+
+      // Update session ID if available
+      // (Would need to expose this from the integration module)
+      metricSession.textContent = status.active ? 'Active Session' : 'No Session';
+    }
+
+    // Button handlers
+    btnInit.addEventListener('click', async () => {
+      log('🚀 Initializing WebRTC system...', 'info');
+      updateStatus('⏳ Initializing...');
+      btnInit.disabled = true;
+
+      try {
+        const success = await window.SandraWebRTC.initialize();
+
+        if (success) {
+          log('✅ WebRTC initialized successfully', 'success');
+          updateStatus('✅ WebRTC initialized and ready');
+
+          btnShutdown.disabled = false;
+          btnStartVAD.disabled = false;
+          btnTestBarge.disabled = false;
+          btnTestAvatar.disabled = false;
+
+        } else {
+          throw new Error('Initialization failed');
+        }
+
+      } catch (error) {
+        log(`❌ Initialization error: ${error.message}`, 'error');
+        updateStatus('❌ Initialization failed', true);
+        btnInit.disabled = false;
+      }
+
+      updateMetrics();
+    });
+
+    btnShutdown.addEventListener('click', async () => {
+      log('🔌 Shutting down WebRTC...', 'info');
+
+      await window.SandraWebRTC.shutdown();
+
+      log('✅ WebRTC shutdown complete', 'success');
+      updateStatus('🔌 System shutdown');
+
+      btnInit.disabled = false;
+      btnShutdown.disabled = true;
+      btnStartVAD.disabled = true;
+      btnStopVAD.disabled = true;
+      btnTestBarge.disabled = true;
+      btnTestAvatar.disabled = true;
+
+      updateMetrics();
+    });
+
+    btnStartVAD.addEventListener('click', () => {
+      log('🎤 Starting VAD...', 'info');
+      // Would need to expose VAD controls from integration module
+      log('⚠️ VAD auto-starts with connection', 'info');
+    });
+
+    btnStopVAD.addEventListener('click', () => {
+      log('🛑 Stopping VAD...', 'info');
+      // Would need to expose VAD controls from integration module
+    });
+
+    btnTestBarge.addEventListener('click', () => {
+      log('🛑 Testing barge-in detection...', 'info');
+      log('ℹ️ Speak into microphone to trigger barge-in', 'info');
+    });
+
+    btnTestAvatar.addEventListener('click', () => {
+      log('👄 Testing avatar animation...', 'info');
+      log('ℹ️ Avatar animates automatically with audio', 'info');
+    });
+
+    // Update metrics periodically
+    setInterval(updateMetrics, 1000);
+
+    // Initialize display
+    updateMetrics();
+    log('📦 WebRTC test interface loaded', 'success');
+    log('👉 Click "Initialize WebRTC" to start', 'info');
+  </script>
+</body>
+</html>

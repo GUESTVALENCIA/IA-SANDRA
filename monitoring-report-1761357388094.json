@@ -1,0 +1,107 @@
+{
+  "monitoring": {
+    "timestamp": "2025-10-25T01:56:28.094Z",
+    "domain": "sandra.guestsvalencia.es",
+    "version": "98.0.0"
+  },
+  "performance": {
+    "timestamp": "2025-10-25T01:56:27.783Z",
+    "healthScore": 0,
+    "results": [
+      {
+        "endpoint": "/",
+        "url": "https://sandra.guestsvalencia.es/",
+        "statusCode": 404,
+        "responseTime": 294,
+        "contentLength": 3437,
+        "success": false
+      },
+      {
+        "endpoint": "/download",
+        "url": "https://sandra.guestsvalencia.es/download",
+        "statusCode": 404,
+        "responseTime": 196,
+        "contentLength": 3437,
+        "success": false
+      },
+      {
+        "endpoint": "/galaxy",
+        "url": "https://sandra.guestsvalencia.es/galaxy",
+        "statusCode": 404,
+        "responseTime": 179,
+        "contentLength": 3437,
+        "success": false
+      },
+      {
+        "endpoint": "/app",
+        "url": "https://sandra.guestsvalencia.es/app",
+        "statusCode": 404,
+        "responseTime": 290,
+        "contentLength": 3437,
+        "success": false
+      },
+      {
+        "endpoint": "/mobile",
+        "url": "https://sandra.guestsvalencia.es/mobile",
+        "statusCode": 404,
+        "responseTime": 220,
+        "contentLength": 3437,
+        "success": false
+      },
+      {
+        "endpoint": "/manifest.json",
+        "url": "https://sandra.guestsvalencia.es/manifest.json",
+        "statusCode": 404,
+        "responseTime": 193,
+        "contentLength": 3437,
+        "success": false
+      },
+      {
+        "endpoint": "/sw.js",
+        "url": "https://sandra.guestsvalencia.es/sw.js",
+        "statusCode": 404,
+        "responseTime": 176,
+        "contentLength": 3437,
+        "success": false
+      }
+    ],
+    "summary": {
+      "total": 7,
+      "successful": 0,
+      "failed": 7
+    }
+  },
+  "security": {
+    "ssl": {
+      "valid": true,
+      "issuer": {
+        "C": "US",
+        "O": "Let's Encrypt",
+        "CN": "E8"
+      },
+      "subject": {
+        "CN": "sandra.guestsvalencia.es"
+      },
+      "validFrom": "2025-10-17T00:56:13.000Z",
+      "validTo": "2026-01-15T00:56:12.000Z",
+      "daysUntilExpiry": 81,
+      "fingerprint": "DB:1B:AE:E3:97:48:0B:AE:32:C7:82:37:E1:D7:CB:C9:E7:B8:AD:49"
+    },
+    "securityHeaders": {
+      "endpoint": "/",
+      "url": "https://sandra.guestsvalencia.es/",
+      "statusCode": 404,
+      "responseTime": 232,
+      "contentLength": 3437,
+      "success": false
+    }
+  },
+  "alerts": [
+    {
+      "type": "PERFORMANCE",
+      "severity": "WARNING",
+      "message": "Health score below threshold: 0.0%"
+    }
+  ],
+  "recommendations": []
+}

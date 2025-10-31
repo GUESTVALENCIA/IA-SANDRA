@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <!-- NATIVE APP BEHAVIOR: Prevent zoom, elastic scroll, and web gestures -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Sandra IA · Multimodal</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/sandra-mobile.css">
+
+  <!-- iOS PWA - NATIVE APP MODE -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sandra IA">
+  <link rel="apple-touch-icon" href="/img/avatar-sandra.png">
+
+  <!-- NATIVE APP: Disable phone number detection -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Theme colors -->
+  <meta name="theme-color" content="#4A90E2">
+  <meta name="msapplication-navbutton-color" content="#4A90E2">
+
+  <!-- Description -->
+  <meta name="description" content="Sandra IA 7.0 - Asistente conversacional multimodal con visión, voz y Barge-In">
+
+  <!-- HEYGEN VIDEO AVATAR STYLES -->
+  <style>
+    /* Loading screen - visible until app loads */
+    #loadingScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    #loadingScreen .logo {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    #loadingScreen h1 {
+      color: #2C3E50;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+    }
+
+    #loadingScreen p {
+      color: #546E7A;
+      font-size: 16px;
+      margin: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    /* HeyGen Video Avatar Container */
+    #videoAvatarContainer {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #videoAvatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    /* Video Toggle Button */
+    #videoToggle {
+      position: fixed;
+      top: 270px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      z-index: 101;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #videoToggle:hover {
+      transform: translateX(-50%) scale(1.1);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    #videoToggle:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+
+    /* Hide circular avatar when video mode active */
+    #avatarCircle {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading screen - Safari iOS fallback -->
+  <div id="loadingScreen">
+    <img class="logo" src="/img/avatar-sandra.png" alt="Sandra IA" onerror="this.style.display='none'">
+    <h1>Sandra IA</h1>
+    <p>Cargando interfaz...</p>
+  </div>
+
+  <!-- Avatar scripts - LOAD BEFORE sandra-mobile.js -->
+  <script src="/js/avatar-sync.js"></script>
+  <script src="/js/heygen-integration.js"></script>
+  <script src="/js/sandra-mobile.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+          .catch(err => console.error('❌ Service Worker error:', err));
+      });
+    }
+
+    // Hide loading screen after app loads
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) loader.style.display = 'none';
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

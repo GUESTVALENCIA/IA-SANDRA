@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandra IA Ultra - CEO Claytis Edition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            padding: 10px 20px;
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ff88, #00aaff, #ff00ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+        
+        .ceo-badge {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0a0a0a;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .sandra-avatar {
+            background: linear-gradient(135deg, #00ff88, #00aaff);
+            color: #000;
+            box-shadow: 0 2px 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .ceo-avatar {
+            background: linear-gradient(135deg, #ffd700, #ff6b6b);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .message-content {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 15px;
+            padding: 12px 16px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .user .message-content {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: 1px solid #3a5a9a;
+        }
+        
+        .message-content code {
+            background: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            color: #00ff88;
+        }
+        
+        .message-content pre {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .input-section {
+            background: #0f0f0f;
+            border-top: 1px solid #2a2a2a;
+            padding: 15px 20px;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 25px;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+        
+        .input-wrapper:focus-within {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+        
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            resize: none;
+            outline: none;
+            max-height: 150px;
+            line-height: 1.5;
+        }
+        
+        .input-field::placeholder {
+            color: #666;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .btn {
+            background: transparent;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #888;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .btn-mic {
+            color: #ff4444;
+        }
+        
+        .btn-mic.recording {
+            background: #ff4444;
+            color: #fff;
+            animation: recordPulse 1s infinite;
+        }
+        
+        @keyframes recordPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .btn-send {
+            background: linear-gradient(135deg, #00ff88, #00aaff);
+            color: #000;
+        }
+        
+        .btn-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+        
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #0a0a0a;
+            border-left: 1px solid #1a1a1a;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h3 {
+            color: #00ff88;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .dev-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .dev-btn {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 1px solid #3a3a3a;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            text-align: left;
+        }
+        
+        .dev-btn:hover {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border-color: #00ff88;
+            transform: translateX(5px);
+        }
+        
+        .voice-indicator {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 136, 0.9);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: none;
+            font-weight: bold;
+            animation: voicePulse 1s infinite;
+        }
+        
+        @keyframes voicePulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+        
+        .voice-indicator.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <span class="logo-text">🧠 SANDRA IA ULTRA</span>
+            <span class="ceo-badge">CEO: CLAYTIS MIGUEL</span>
+        </div>
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-dot"></div>
+                <span>Cartesia Voice</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot"></div>
+                <span>Dev Mode Active</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot"></div>
+                <span>GPT-4o Connected</span>
+            </div>
+        </div>
+    </div>

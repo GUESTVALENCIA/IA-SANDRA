@@ -1,0 +1,7 @@
+{
+  "platform": "ios",
+  "version": "98.0.0",
+  "build": "9800",
+  "base_url": "https://sandra.guestsvalencia.es",
+  "testflight": true
+}

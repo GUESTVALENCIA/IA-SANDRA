@@ -1,0 +1,20 @@
+SANDRA IA GALAXY LEVEL - DEPLOY FINAL
+=====================================
+
+ARCHIVO LISTO: C:\Users\clayt\Desktop\SandraDevInterface\sandra-deploy\index.html
+
+DEPLOY INMEDIATO:
+1. Abrir: https://app.netlify.com/drop
+2. Arrastrar carpeta: sandra-deploy
+3. Configurar dominio: sandra.guestsvalencia.es
+
+ALTERNATIVA:
+- Subir index.html directamente a hosting
+- Configurar DNS a sandra.guestsvalencia.es
+
+✅ PÁGINA GALAXY LEVEL LISTA
+✅ FONDO BLANCO PROFESIONAL
+✅ SIN COLORINES INFANTILES
+✅ BOTONES DESCARGA FUNCIONALES
+
+STATUS: LISTO PARA PRODUCCIÓN

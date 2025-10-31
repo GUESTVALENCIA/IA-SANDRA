@@ -1,0 +1,95 @@
+{
+  "name": "sandra-professional",
+  "version": "1.0.0",
+  "description": "Sandra MCP Professional - IA Multimodal con 15 Conectores",
+  "main": "electron/main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "dev": "nodemon backend/server.js",
+    "backend": "node backend/server.js",
+    "build": "electron-builder --win",
+    "build-dist": "electron-builder --win --publish=never",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "sandra",
+    "ia",
+    "desktop",
+    "guestsvalencia"
+  ],
+  "author": "Claytis Miguel Tom Zuaznabar",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
+    "@deepgram/sdk": "^4.11.2",
+    "@elevenlabs/elevenlabs-js": "^2.20.1",
+    "@neondatabase/serverless": "^1.0.2",
+    "@paypal/paypal-server-sdk": "^1.1.0",
+    "@supabase/supabase-js": "^2.76.1",
+    "airtable": "^0.12.2",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "electron-store": "^8.1.0",
+    "express": "^4.18.2",
+    "openai": "^4.20.1",
+    "twilio": "^5.10.3",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "nodemon": "^3.0.2"
+  },
+  "build": {
+    "appId": "com.guestsvalencia.sandra-mcp-professional",
+    "productName": "Sandra MCP Professional",
+    "copyright": "© 2025 GuestsValencia - CEO Claytis Miguel Tom Zuaznabar",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "electron/**/*",
+      "backend/**/*",
+      "frontend/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "publisherName": "GuestsValencia",
+      "verifyUpdateCodeSignature": false,
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Sandra MCP Professional",
+      "include": "installer.nsh",
+      "warningsAsErrors": false
+    },
+    "portable": {
+      "artifactName": "SandraMCPProfessional-${version}-portable.exe"
+    }
+  }
+}
