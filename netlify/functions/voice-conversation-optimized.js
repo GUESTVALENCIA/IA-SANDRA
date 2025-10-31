@@ -11,6 +11,15 @@ const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const CARTESIA_API_KEY = process.env.CARTESIA_API_KEY;
 
+// Validación de API keys (CRÍTICO)
+if (!DEEPGRAM_API_KEY || !OPENAI_API_KEY || !CARTESIA_API_KEY) {
+  console.error('[Voice Optimized] Missing API keys:', {
+    deepgram: !DEEPGRAM_API_KEY,
+    openai: !OPENAI_API_KEY,
+    cartesia: !CARTESIA_API_KEY
+  });
+}
+
 /**
  * STT Optimizado (Deepgram)
  * Target: <400ms (vs 800ms actual)
