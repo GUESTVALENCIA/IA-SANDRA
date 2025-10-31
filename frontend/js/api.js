@@ -11,16 +11,18 @@ class SandraAPI {
         };
 
         if (this.isElectron) {
-            // Usar electronAPI seguro (expuesto por preload.js)
+            // PRIORIDAD 1: electronAPI seguro (expuesto por preload.js)
             if (window.electronAPI) {
                 this.electronAPI = window.electronAPI;
-                console.log('Sandra API initialized (Electron IPC mode - secure)');
+                console.log('[API] Sandra API initialized (Electron IPC mode - secure via electronAPI)');
+                console.log('[API] Available methods:', Object.keys(this.electronAPI));
             } else {
+                console.warn('[API] electronAPI not available, trying legacy IPC...');
                 // Fallback legacy (no recomendado, pero necesario para compatibilidad)
                 try {
                     const { ipcRenderer } = window.require('electron');
                     this.ipcRenderer = ipcRenderer;
-                    console.warn('Using legacy IPC (insecure) - update to use electronAPI');
+                    console.warn('[API] Using legacy IPC (insecure) - update to use electronAPI');
                     console.log('Sandra API initialized (Electron IPC mode - legacy)');
                 } catch (error) {
                     console.warn('Failed to initialize IPC renderer:', error);
