@@ -1,0 +1,258 @@
+/**
+ * Estados UI Styles
+ * Loading, Error, y Offline States
+ */
+
+/* =================================================================== */
+/* CONNECTION STATUS INDICATOR */
+/* =================================================================== */
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    font-size: var(--font-xs, 12px);
+    transition: all 0.3s ease;
+}
+
+.connection-status.offline {
+    background: rgba(255, 68, 68, 0.1);
+    border-color: rgba(255, 68, 68, 0.3);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.online {
+    background: #00ff88;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+.status-dot.offline {
+    background: #ff4444;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
+}
+
+.status-text {
+    font-weight: 500;
+    color: var(--text-secondary, #aaaaaa);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+/* =================================================================== */
+/* TYPING INDICATOR (Loading State) */
+/* =================================================================== */
+
+.message.loading {
+    opacity: 0.8;
+}
+
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 8px 0;
+    align-items: center;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-accent, #00ff88);
+    display: inline-block;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+.loading-text {
+    margin-left: 12px;
+    color: var(--text-secondary, #aaaaaa);
+    font-size: var(--font-sm, 14px);
+    font-style: italic;
+}
+
+/* =================================================================== */
+/* ERROR STATE */
+/* =================================================================== */
+
+.error-message {
+    background: rgba(255, 68, 68, 0.1);
+    border-left: 4px solid #ff4444;
+    padding: 16px;
+    margin: 12px 0;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    animation: slideIn 0.3s ease;
+}
+
+.error-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.error-content {
+    flex: 1;
+}
+
+.error-content p {
+    margin: 4px 0;
+    color: var(--text-primary, #ffffff);
+}
+
+.error-content p strong {
+    color: #ff4444;
+    font-weight: 600;
+}
+
+.error-text {
+    color: var(--text-secondary, #aaaaaa) !important;
+    font-size: var(--font-sm, 14px);
+}
+
+.retry-button {
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: var(--gradient-primary, linear-gradient(135deg, #00ff88, #00aaff));
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: var(--touch-target-min, 44px);
+    transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md, 0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.retry-button:active {
+    transform: translateY(0);
+}
+
+/* =================================================================== */
+/* TOAST NOTIFICATIONS */
+/* =================================================================== */
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 12px 24px;
+    background: var(--bg-card, rgba(30, 30, 40, 0.95));
+    border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+    border-radius: 8px;
+    color: var(--text-primary, #ffffff);
+    font-size: var(--font-sm, 14px);
+    font-weight: 500;
+    z-index: var(--z-toast, 120);
+    box-shadow: var(--shadow-lg, 0 8px 16px rgba(0, 0, 0, 0.3));
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast-success {
+    border-color: rgba(0, 255, 136, 0.5);
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.toast-warning {
+    border-color: rgba(255, 193, 7, 0.5);
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.toast-error {
+    border-color: rgba(255, 68, 68, 0.5);
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.toast-info {
+    border-color: rgba(0, 170, 255, 0.5);
+    background: rgba(0, 170, 255, 0.1);
+}
+
+/* =================================================================== */
+/* ANIMATIONS */
+/* =================================================================== */
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =================================================================== */
+/* RESPONSIVE */
+/* =================================================================== */
+
+@media (max-width: 768px) {
+    .connection-status {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+
+    .error-message {
+        padding: 12px;
+    }
+
+    .toast {
+        bottom: 10px;
+        max-width: 95%;
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+}
+
