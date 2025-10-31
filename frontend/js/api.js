@@ -112,16 +112,24 @@ class SandraAPI {
     async sendToNetlifyFunction(functionName, data) {
         const url = `/.netlify/functions/${functionName}`;
         const startTime = performance.now();
+        const method = data && Object.keys(data).length > 0 ? 'POST' : 'GET';
         
         try {
-            const response = await fetch(url, {
-                method: 'POST',
+            const fetchOptions = {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-API-Key': window.SANDRA_API_KEY || '' // Si hay API key configurada
-                },
-                body: JSON.stringify(data)
-            });
+                    'X-API-Key': window.SANDRA_API_KEY || '', // Si hay API key configurada
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            };
+            
+            // Solo agregar body si hay datos y es POST
+            if (method === 'POST' && data && Object.keys(data).length > 0) {
+                fetchOptions.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(url, fetchOptions);
 
             const latency = performance.now() - startTime;
             
@@ -219,11 +227,27 @@ class SandraAPI {
             } else if (this.isElectron && this.ipcRenderer) {
                 return await this.ipcRenderer.invoke('get-service-status');
             } else {
-                return await this.fallbackGetServiceStatus();
+                // Modo web: intentar Netlify Functions primero
+                if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('netlify') || this.apiBaseUrl.includes('guestsvalencia')) {
+                    try {
+                        return await this.sendToNetlifyFunction('health', {});
+                    } catch (error) {
+                        console.warn('Netlify health check failed, using fallback:', error);
+                        return await this.fallbackGetServiceStatus();
+                    }
+                }
+                // HTTP API directa
+                try {
+                    return await this.sendToHttpApi('/api/health', {});
+                } catch (error) {
+                    console.warn('HTTP health check failed, using fallback:', error);
+                    return await this.fallbackGetServiceStatus();
+                }
             }
         } catch (error) {
             console.error('Get service status error:', error);
-            throw new Error(`Failed to get service status: ${error.message}`);
+            // Último recurso: fallback
+            return await this.fallbackGetServiceStatus();
         }
     }
 
