@@ -28,7 +28,7 @@ function validateChannel(channel) {
 }
 
 // Exponer API segura al renderer process
-contextBridge.exposeInMainWorld('electronAPI', {
+const electronAPI = {
   // Chat API
   sendMessage: async (message, options = {}) => {
     validateChannel('send-message');
@@ -120,8 +120,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeListener(channel, callback);
     }
   }
-});
+};
+
+// Exponer al renderer
+try {
+  contextBridge.exposeInMainWorld('electronAPI', electronAPI);
+  console.log('[PRELOAD] ✅ electronAPI exposed to window.electronAPI');
+  console.log('[PRELOAD] Methods exposed:', Object.keys(electronAPI));
+} catch (error) {
+  console.error('[PRELOAD] ❌ Error exposing electronAPI:', error);
+  // Fallback: exponer directamente si contextBridge falla
+  if (typeof window !== 'undefined') {
+    window.electronAPI = electronAPI;
+    console.log('[PRELOAD] ⚠️ Fallback: electronAPI exposed directly to window');
+  }
+}
 
 // Log de inicialización
+console.log('[PRELOAD] ========================================');
 console.log('[PRELOAD] Secure IPC bridge initialized');
+console.log('[PRELOAD] Available methods:', Object.keys(contextBridge.exposeInMainWorld ? { electronAPI: {} } : {}));
+console.log('[PRELOAD] electronAPI.resetServices available:', typeof electronAPI !== 'undefined' && electronAPI.resetServices !== undefined);
+console.log('[PRELOAD] ========================================');
 

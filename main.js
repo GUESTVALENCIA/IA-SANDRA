@@ -153,6 +153,25 @@ ipcMain.handle('reset-services', async () => {
 });
 
 console.log('[MAIN] ✅ reset-services handler registered');
+console.log('[MAIN] Verifying handler is actually registered...');
+console.log('[MAIN] ipcMain handlers:', ipcMain.eventNames());
+
+// Verificar que el handler está realmente registrado
+const handlersList = [
+  'send-message',
+  'get-service-status', 
+  'get-metrics',
+  'reset-services',
+  'voice-command',
+  'voice-programming-status',
+  'ai-voice-command',
+  'ai-voice-commands-status'
+];
+
+handlersList.forEach(handlerName => {
+  // Verificar si el handler está registrado
+  console.log(`[MAIN] Handler "${handlerName}": ${ipcMain.listenerCount(handlerName) > 0 ? '✅ REGISTERED' : '❌ NOT REGISTERED'}`);
+});
 
 // Handler para programación por voz
 ipcMain.handle('voice-command', async (event, audioBuffer, options = {}) => {
