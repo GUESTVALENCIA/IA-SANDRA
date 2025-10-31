@@ -11,26 +11,40 @@ class SandraAPI {
         };
 
         if (this.isElectron) {
-            // PRIORIDAD 1: electronAPI seguro (expuesto por preload.js)
-            if (window.electronAPI) {
+            // PRIORIDAD 1: electronAPI seguro (expuesto por preload.js con Context Isolation)
+            if (typeof window !== 'undefined' && window.electronAPI) {
                 this.electronAPI = window.electronAPI;
+                const methods = Object.keys(this.electronAPI);
                 console.log('[API] Sandra API initialized (Electron IPC mode - secure via electronAPI)');
-                console.log('[API] Available methods:', Object.keys(this.electronAPI));
+                console.log('[API] Available electronAPI methods:', methods);
+                console.log('[API] resetServices available:', 'resetServices' in this.electronAPI);
+                
+                // Verificar que resetServices existe
+                if (!this.electronAPI.resetServices) {
+                    console.error('[API] ERROR: electronAPI.resetServices is NOT available!');
+                    console.error('[API] Available methods:', methods);
+                }
             } else {
-                console.warn('[API] electronAPI not available, trying legacy IPC...');
-                // Fallback legacy (no recomendado, pero necesario para compatibilidad)
+                console.warn('[API] ⚠️ window.electronAPI not available!');
+                console.warn('[API] This means preload.js may not be loading correctly');
+                console.warn('[API] Checking window object:', typeof window !== 'undefined' ? 'exists' : 'undefined');
+                console.warn('[API] window.electronAPI:', typeof window !== 'undefined' ? window.electronAPI : 'window undefined');
+                
+                // Fallback legacy (solo si Context Isolation está deshabilitado)
                 try {
-                    const { ipcRenderer } = window.require('electron');
-                    this.ipcRenderer = ipcRenderer;
-                    console.warn('[API] Using legacy IPC (insecure) - update to use electronAPI');
-                    console.log('Sandra API initialized (Electron IPC mode - legacy)');
+                    if (typeof window !== 'undefined' && window.require) {
+                        const { ipcRenderer } = window.require('electron');
+                        this.ipcRenderer = ipcRenderer;
+                        console.warn('[API] Using legacy IPC (insecure) - Context Isolation may be disabled');
+                        console.warn('[API] This is NOT recommended for security');
+                    }
                 } catch (error) {
-                    console.warn('Failed to initialize IPC renderer:', error);
-                    console.log('Falling back to HTTP API');
+                    console.warn('[API] Failed to initialize IPC renderer:', error);
+                    console.warn('[API] Falling back to HTTP API');
                 }
             }
         } else {
-            console.log(`Sandra API initialized (HTTP mode - ${this.apiBaseUrl})`);
+            console.log(`[API] Sandra API initialized (HTTP mode - ${this.apiBaseUrl})`);
         }
     }
 
@@ -269,16 +283,45 @@ class SandraAPI {
     }
 
     async resetServices() {
+        console.log('[API] resetServices called');
+        console.log('[API] isElectron:', this.isElectron);
+        console.log('[API] electronAPI available:', !!this.electronAPI);
+        console.log('[API] electronAPI methods:', this.electronAPI ? Object.keys(this.electronAPI) : 'N/A');
+        console.log('[API] ipcRenderer available:', !!this.ipcRenderer);
+        
         try {
-            if (this.isElectron && this.electronAPI) {
+            // PRIORIDAD 1: electronAPI (seguro, expuesto por preload.js con Context Isolation)
+            if (this.isElectron && this.electronAPI && this.electronAPI.resetServices) {
+                console.log('[API] Using electronAPI.resetServices()');
                 return await this.electronAPI.resetServices();
-            } else if (this.isElectron && this.ipcRenderer) {
-                return await this.ipcRenderer.invoke('reset-services');
-            } else {
-                return await this.fallbackResetServices();
             }
+            
+            // PRIORIDAD 2: Verificar si window.electronAPI está disponible directamente
+            if (this.isElectron && window.electronAPI && window.electronAPI.resetServices) {
+                console.log('[API] Using window.electronAPI.resetServices() directly');
+                return await window.electronAPI.resetServices();
+            }
+            
+            // PRIORIDAD 3: ipcRenderer directo (solo si Context Isolation está deshabilitado - NO RECOMENDADO)
+            if (this.isElectron && this.ipcRenderer) {
+                console.warn('[API] Using ipcRenderer.invoke directly (Context Isolation may be disabled)');
+                return await this.ipcRenderer.invoke('reset-services');
+            }
+            
+            // PRIORIDAD 4: Fallback para modo web
+            console.warn('[API] Electron API not available, using fallback');
+            return await this.fallbackResetServices();
+            
         } catch (error) {
-            console.error('Reset services error:', error);
+            console.error('[API] Reset services error:', error);
+            console.error('[API] Error details:', {
+                message: error.message,
+                stack: error.stack,
+                isElectron: this.isElectron,
+                hasElectronAPI: !!this.electronAPI,
+                hasWindowElectronAPI: !!(typeof window !== 'undefined' && window.electronAPI),
+                hasIpcRenderer: !!this.ipcRenderer
+            });
             throw new Error(`Failed to reset services: ${error.message}`);
         }
     }
