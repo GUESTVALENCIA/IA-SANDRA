@@ -1,12 +1,14 @@
 /**
  * Netlify Function para Chat
- * Implementa rate limiting, autenticación y monitoring
+ * Implementa rate limiting, autenticación, monitoring, Sentry APM y caching
  */
 
 const { SandraNucleus } = require('../../orchestrator/sandra-nucleus-core');
 const { rateLimiter } = require('../../orchestrator/rate-limiter');
 const { chatMonitor } = require('../../orchestrator/performance-monitor');
 const { errorHandler } = require('../../orchestrator/error-handler');
+const { withSentry, captureException, startTransaction } = require('../../orchestrator/sentry-config');
+const cache = require('../../orchestrator/simple-cache');
 
 // Rate limiting por IP (usar Map en memoria, en producción usar Redis)
 const rateLimitStore = new Map();
@@ -68,8 +70,9 @@ function checkRateLimit(clientIP) {
 /**
  * Handler principal de la función
  */
-exports.handler = async (event, context) => {
+const handler = async (event, context) => {
   const startTime = Date.now();
+  const transaction = startTransaction('chat', 'netlify.function');
   
   // CORS headers (ajustar según dominio)
   const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://sandra.guestsvalencia.es';
@@ -137,25 +140,69 @@ exports.handler = async (event, context) => {
     headers['X-RateLimit-Remaining'] = rateLimit.remaining.toString();
     headers['X-RateLimit-Reset'] = new Date(rateLimit.resetTime).toISOString();
     
-    // Parsear body
-    const body = JSON.parse(event.body || '{}');
+    // Parsear body (optimizado - validación temprana)
+    let body;
+    try {
+      body = JSON.parse(event.body || '{}');
+    } catch (e) {
+      throw errorHandler.validationError('body', 'Invalid JSON');
+    }
+    
     const { message, context: userContext } = body;
     
-    // Validación
-    if (!message || typeof message !== 'string' || message.trim() === '') {
-      throw errorHandler.validationError('message', 'Message is required');
+    // Validación optimizada (temprana)
+    if (!message || typeof message !== 'string') {
+      throw errorHandler.validationError('message', 'Message must be a string');
+    }
+    
+    const trimmedMessage = message.trim();
+    if (trimmedMessage === '') {
+      throw errorHandler.validationError('message', 'Message cannot be empty');
+    }
+    
+    // CACHE CHECK: Respuestas similares (solo para mensajes cortos y comunes)
+    const cacheKey = trimmedMessage.length < 100 
+      ? `chat:${trimmedMessage.toLowerCase().substring(0, 50)}`
+      : null;
+    
+    if (cacheKey) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        if (transaction) {
+          transaction.setTag('cache', 'hit');
+          transaction.setStatus('ok');
+          transaction.finish();
+        }
+        chatMonitor.recordMetric(startTime, 'success_cached', 0, false);
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify(cached)
+        };
+      }
     }
     
     // Asegurar que Nucleus está inicializado
     await ensureNucleus();
     
     // Procesar mensaje
-    const response = await SandraNucleus.brain.processMessage(message, userContext || {});
+    const response = await SandraNucleus.brain.processMessage(trimmedMessage, userContext || {});
     
     // Estimar costo
-    const estimatedCost = estimateOpenAICost(message, response.text);
+    const estimatedCost = estimateOpenAICost(trimmedMessage, response.text);
+    
+    // Cachear respuesta (solo mensajes cortos)
+    if (cacheKey && trimmedMessage.length < 100) {
+      cache.set(cacheKey, response, 60000); // 1 minuto TTL
+    }
     
     // Registrar métrica exitosa
+    if (transaction) {
+      transaction.setTag('cache', cacheKey ? 'miss' : 'skip');
+      transaction.setStatus('ok');
+      transaction.finish();
+    }
+    
     chatMonitor.recordMetric(startTime, 'success', estimatedCost, !nucleusInitialized);
     nucleusInitialized = true; // Ya está caliente
     
@@ -166,8 +213,25 @@ exports.handler = async (event, context) => {
     };
     
   } catch (error) {
-    // Registrar error
+    // Registrar error en Sentry
+    captureException(error, {
+      function: {
+        name: 'chat',
+        event: {
+          httpMethod: event.httpMethod,
+          path: event.path,
+        },
+      },
+    });
+    
+    // Registrar métrica de error
     chatMonitor.recordMetric(startTime, 'error', 0, false);
+    
+    // Finalizar transacción con error
+    if (transaction) {
+      transaction.setStatus('internal_error');
+      transaction.finish();
+    }
     
     // Formatear error
     const errorResponse = errorHandler.formatError(error, process.env.NODE_ENV !== 'production');
@@ -179,6 +243,9 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
+// Exportar con Sentry wrapper
+exports.handler = withSentry(handler);
 
 /**
  * Estimar costo de OpenAI
