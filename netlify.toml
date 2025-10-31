@@ -101,6 +101,24 @@
   
 [functions.avatar-heygen]
   included_files = ["orchestrator/**", "package.json"]
+  
+[functions.documents]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.vision]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.voice]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.tts]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.guardian]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
+  
+[functions.metrics]
+  included_files = ["orchestrator/**", "mcp-servers/**", "package.json"]
 
 # ============================================================================
 # ENVIRONMENT CONTEXTS
