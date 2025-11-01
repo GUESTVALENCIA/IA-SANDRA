@@ -90,7 +90,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { text, voice, model, language, sampleRate, format } = req.body;
+          const { text, voice = 'sandra', model, language = 'es', sampleRate = 22050, format = 'mp3' } = req.body;
 
     if (!text || typeof text !== 'string' || text.trim() === '') {
       return res.status(400).json({ 

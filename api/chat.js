@@ -90,23 +90,25 @@ export default async function handler(req, res) {
     console.log(`[CHAT] Respuesta recibida en tiempo real: ${latency}ms`);
 
     // Formatear respuesta
-    const formattedResponse = {
-      success: true,
-      text: response.text,
-      conversationId: contextWithMessage.conversationId,
-      timestamp: new Date().toISOString(),
-      latency: latency,
-      metadata: {
-        model: response.metadata?.model || 'gpt-4o',
-        intent: response.intent,
-        role: response.role || response.metadata?.role,
-        confidence: response.confidence || 0.95
-      }
-    };
+          // Compatibilidad con sandra-coo-desktop (espera {reply: "text"})
+          const formattedResponse = {
+            success: true,
+            text: response.text,
+            reply: response.text, // Para compatibilidad con sandra-coo-desktop
+            conversationId: contextWithMessage.conversationId,
+            timestamp: new Date().toISOString(),
+            latency: latency,
+            metadata: {
+              model: response.metadata?.model || 'gpt-4o',
+              intent: response.intent,
+              role: response.role || response.metadata?.role,
+              confidence: response.confidence || 0.95
+            }
+          };
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(200).json(formattedResponse);
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Content-Type', 'application/json');
+          return res.status(200).json(formattedResponse);
 
   } catch (error) {
     console.error('[CHAT] Error en tiempo real:', error);

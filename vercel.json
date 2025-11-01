@@ -152,6 +152,10 @@
       "destination": "/api/twilio-voice-followup.js"
     },
     {
+      "source": "/api/barge-in",
+      "destination": "/api/barge-in.js"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/:path.js"
     }
