@@ -114,3 +114,7 @@ backup/
 # Netlify token (si se guarda localmente)
 .netlify-token
 
+# Vercel tokens
+.vercel-tokens.env
+.vercel/
+
