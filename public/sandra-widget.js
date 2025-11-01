@@ -29,7 +29,10 @@
     isListening: false,
     recognition: null,
     messages: [],
-    history: []
+    history: [],
+    conversationId: null,
+    userId: `user-${Date.now()}`,
+    voiceEnabled: false
   };
 
   // UI CREATION
@@ -71,7 +74,7 @@
           </div>
 
           <div class="sandra-widget-controls">
-            <button class="sandra-widget-voice-btn" id="sandra-widget-voice" aria-label="Hablar">🎤</button>
+            <button class="sandra-widget-voice-btn" id="sandra-widget-voice" aria-label="Activar Voz Cartesia" title="Activar/Desactivar voz de Cartesia">🎙️</button>
             <button class="sandra-widget-connect-btn" id="sandra-widget-connect" aria-label="Conectar">Conectar</button>
           </div>
 
@@ -170,20 +173,29 @@
     voiceBtn.addEventListener('click', () => toggleVoice(container));
   }
 
-  // CONEXIÓN
+  // CONEXIÓN - VERIFICAR TIEMPO REAL
   async function connect(container) {
     try {
-      const health = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/health`);
+      // Usar endpoint de Vercel (producción)
+      const baseUrl = CONFIG.NETLIFY_BASE.includes('vercel') || CONFIG.NETLIFY_BASE.includes('guestsvalencia') 
+        ? CONFIG.NETLIFY_BASE 
+        : 'https://sandra.guestsvalencia.es';
+      
+      const health = await fetch(`${baseUrl}/api/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
       if (health.ok) {
         state.isConnected = true;
-        updateStatus(container, '✅ Conectado');
+        updateStatus(container, '✅ Conectado en tiempo real');
       } else {
         throw new Error('Health check failed');
       }
     } catch (e) {
       console.error('Conexión fallida:', e);
       state.isConnected = false;
-      updateStatus(container, '❌ Error de conexión');
+      updateStatus(container, '❌ Error de conexión en tiempo real');
     }
   }
 
@@ -222,26 +234,48 @@
     messages.scrollTop = messages.scrollHeight;
 
     try {
-      const resp = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/chat`, {
+      // Usar endpoint de Vercel en tiempo real
+      const baseUrl = CONFIG.NETLIFY_BASE.includes('vercel') || CONFIG.NETLIFY_BASE.includes('guestsvalencia') 
+        ? CONFIG.NETLIFY_BASE 
+        : 'https://sandra.guestsvalencia.es';
+      
+      const resp = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-Sandra-Role': CONFIG.ROLE
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          messages: state.history.slice(-20),
-          locale: CONFIG.LOCALE,
-          mode: 'dev',
-          role: CONFIG.ROLE
+          message: text,
+          conversationId: state.conversationId || `conv-${Date.now()}`,
+          context: {
+            platform: 'widget',
+            role: CONFIG.ROLE,
+            language: CONFIG.LOCALE.split('-')[0] || 'es',
+            userId: state.userId || 'anonymous'
+          }
         })
       });
 
       if (typingNode) typingNode.remove();
 
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
+        throw new Error(errorData.error || `HTTP ${resp.status}`);
+      }
+      
       const data = await resp.json();
 
+      // Validar que sea respuesta real de OpenAI (no fallback)
+      if (!data.success || !data.text || data.text.trim() === '') {
+        throw new Error('Respuesta vacía o inválida. Se requiere conexión en tiempo real.');
+      }
+
       state.history.push({ role: 'assistant', content: data.text });
+      
+      // Actualizar conversation ID si viene en la respuesta
+      if (data.conversationId) {
+        state.conversationId = data.conversationId;
+      }
 
       const assistantMsg = document.createElement('div');
       assistantMsg.className = 'sandra-widget-message assistant';
@@ -257,35 +291,107 @@
 
       if (!state.isConnected) {
         state.isConnected = true;
-        updateStatus(container, '✅ Conectado');
+        updateStatus(container, '✅ Conectado en tiempo real');
       }
 
-      status.textContent = `Proveedor: ${data.provider || 'GROQ/Claude'}`;
+      status.textContent = `Modelo: ${data.metadata?.model || 'gpt-4o'} | Latencia: ${data.latency || 'N/A'}ms`;
+
+      // Generar audio con Cartesia TTS si está habilitado
+      if (state.voiceEnabled && data.text) {
+        generateSpeech(data.text, container);
+      }
     } catch (e) {
       if (typingNode) typingNode.remove();
+      
+      // NO usar mensajes predeterminados - mostrar error real
       const errorMsg = document.createElement('div');
       errorMsg.className = 'sandra-widget-message assistant';
+      
+      let errorText = 'Error de conexión en tiempo real.';
+      if (e.message.includes('tiempo real') || e.message.includes('conexión')) {
+        errorText = `⚠️ ${e.message}`;
+      } else {
+        errorText = `⚠️ Error: ${e.message}. Sin respuestas automáticas.`;
+      }
+      
       errorMsg.innerHTML = `
         <div class="sandra-widget-message-avatar">⚠️</div>
         <div class="sandra-widget-message-content">
-          <p>Error de conexión. Reinténtalo.</p>
+          <p>${escapeHtml(errorText)}</p>
           <span class="sandra-widget-message-time">Ahora</span>
         </div>
       `;
       messages.appendChild(errorMsg);
       messages.scrollTop = messages.scrollHeight;
       state.isConnected = false;
-      updateStatus(container, '❌ Desconectado');
+      updateStatus(container, '❌ Desconectado - Sin respuestas automáticas');
     } finally {
       input.value = '';
     }
   }
 
-  // VOZ
+  // GENERAR VOZ CON CARTESIA TTS
+  async function generateSpeech(text, container) {
+    try {
+      const baseUrl = CONFIG.NETLIFY_BASE.includes('vercel') || CONFIG.NETLIFY_BASE.includes('guestsvalencia') 
+        ? CONFIG.NETLIFY_BASE 
+        : 'https://sandra.guestsvalencia.es';
+      
+      const response = await fetch(`${baseUrl}/api/cartesia-tts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: text,
+          voice: 'sandra',
+          format: 'mp3'
+        })
+      });
+
+      if (!response.ok) {
+        console.warn('[WIDGET] Cartesia TTS error:', response.status);
+        return;
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      audio.play().catch(err => {
+        console.warn('[WIDGET] Error reproduciendo audio:', err);
+      });
+      
+      // Limpiar URL después de reproducir
+      audio.addEventListener('ended', () => {
+        URL.revokeObjectURL(audioUrl);
+      });
+      
+    } catch (error) {
+      console.warn('[WIDGET] Error generando voz con Cartesia:', error);
+      // NO fallback - solo loguear el error
+    }
+  }
+
+  // VOZ - HABILITAR/DESHABILITAR VOZ DE CARTESIA
   function toggleVoice(container) {
     const voiceBtn = container.querySelector('#sandra-widget-voice');
     const transcription = container.querySelector('#sandra-widget-transcription');
 
+    // Toggle de voz de Cartesia (TTS) - NO STT del navegador
+    state.voiceEnabled = !state.voiceEnabled;
+    
+    if (state.voiceEnabled) {
+      voiceBtn.classList.add('active');
+      updateStatus(container, '🎙️ Voz Cartesia activada');
+    } else {
+      voiceBtn.classList.remove('active');
+      updateStatus(container, state.isConnected ? '✅ Conectado' : 'Desconectado');
+    }
+    
+    return; // NO usar reconocimiento de voz del navegador, solo TTS de Cartesia
+    
+    /* CÓDIGO ANTERIOR DE STT DESHABILITADO
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       updateStatus(container, '⚠️ Voz no disponible');
       return;
@@ -338,6 +444,7 @@
         updateStatus(container, '⚠️ Error iniciando voz');
       }
     }
+    */ // FIN DE CÓDIGO DESHABILITADO
   }
 
   // UTILIDADES
