@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "api/**/*.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
     },
     {
       "src": "*.html",
@@ -18,16 +21,7 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
+  "routes": [],
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10,
@@ -130,8 +124,36 @@
   ],
   "rewrites": [
     {
+      "source": "/api/health",
+      "destination": "/api/health.js"
+    },
+    {
+      "source": "/api/chat",
+      "destination": "/api/chat.js"
+    },
+    {
+      "source": "/api/cartesia-tts",
+      "destination": "/api/cartesia-tts.js"
+    },
+    {
+      "source": "/api/twilio-whatsapp",
+      "destination": "/api/twilio-whatsapp.js"
+    },
+    {
+      "source": "/api/twilio-voice",
+      "destination": "/api/twilio-voice.js"
+    },
+    {
+      "source": "/api/twilio-voice/process",
+      "destination": "/api/twilio-voice-process.js"
+    },
+    {
+      "source": "/api/twilio-voice/followup",
+      "destination": "/api/twilio-voice-followup.js"
+    },
+    {
       "source": "/api/:path*",
-      "destination": "/api/:path"
+      "destination": "/api/:path.js"
     }
   ],
   "redirects": [
