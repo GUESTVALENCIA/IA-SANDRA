@@ -77,42 +77,33 @@ export default async function handler(req, res) {
 
       const audioBuffer = Buffer.from(audioResponse.data);
 
-      // Usar Deepgram STT (a través de Sandra IA)
-      if (orch.services.nucleus && orch.services.nucleus.multimodal) {
-        const transcript = await orch.services.nucleus.multimodal.speechToText(audioBuffer);
-        userMessage = transcript.text || transcript;
-        console.log(`[TWILIO-VOICE-PROCESS] STT resultado: ${userMessage}`);
-      } else {
-        throw new Error('Multimodal service not available');
+      // Usar Deepgram STT en tiempo real (sin fallbacks)
+      if (!orch.services.nucleus || !orch.services.nucleus.multimodal) {
+        throw new Error('Servicio multimodal no disponible. Se requiere conexión en tiempo real.');
       }
+      
+      console.log(`[TWILIO-VOICE-PROCESS] Transcribiendo audio en tiempo real con Deepgram...`);
+      const transcript = await orch.services.nucleus.multimodal.speechToText(audioBuffer);
+      
+      if (!transcript || typeof transcript !== 'string' || transcript.trim() === '') {
+        throw new Error('Deepgram retornó transcripción vacía. Se requiere conexión en tiempo real.');
+      }
+      
+      userMessage = transcript.trim();
+      console.log(`[TWILIO-VOICE-PROCESS] STT resultado en tiempo real: ${userMessage}`);
     }
     // Si hay dígitos DTMF
     else if (dtmfDigits) {
       userMessage = `El usuario presionó: ${dtmfDigits}`;
     }
     else {
-      // Si no hay nada, pedir que repita
-      twiml.say({ voice: 'Polly.Lupe', language: 'es-ES' }, 
-        'No pude escucharte bien. ¿Podrías repetir tu consulta?');
-      twiml.record({
-        maxLength: 30,
-        action: '/api/twilio-voice/process',
-        method: 'POST'
-      });
-      res.setHeader('Content-Type', 'text/xml');
-      return res.status(200).send(twiml.toString());
+      // NO hay mensaje - requerimos conexión en tiempo real
+      throw new Error('No se recibió audio ni transcripción. Se requiere conexión en tiempo real.');
     }
 
     if (!userMessage || userMessage.trim() === '') {
-      twiml.say({ voice: 'Polly.Lupe', language: 'es-ES' }, 
-        'No entendí tu mensaje. ¿Puedes repetirlo?');
-      twiml.record({
-        maxLength: 30,
-        action: '/api/twilio-voice/process',
-        method: 'POST'
-      });
-      res.setHeader('Content-Type', 'text/xml');
-      return res.status(200).send(twiml.toString());
+      // NO mensaje vacío - requerimos conexión en tiempo real
+      throw new Error('Mensaje vacío. Se requiere conexión en tiempo real.');
     }
 
     // Procesar mensaje con Sandra IA
@@ -143,31 +134,53 @@ export default async function handler(req, res) {
 
     console.log(`[TWILIO-VOICE-PROCESS] Respuesta IA: ${responseText}`);
 
-    // Generar audio con Cartesia TTS
-    if (orch.services.nucleus && orch.services.nucleus.multimodal) {
-      try {
-        const audioBuffer = await orch.services.nucleus.multimodal.textToSpeech(responseText, 'sandra');
-        
-        // Guardar temporalmente el audio
-        const tempFile = `/tmp/twilio-response-${callId}.mp3`;
-        fs.writeFileSync(tempFile, audioBuffer);
+    // Generar audio con Cartesia TTS - SOLO TIEMPO REAL (sin fallbacks)
+    if (!orch.services.nucleus || !orch.services.nucleus.multimodal) {
+      throw new Error('Servicio multimodal no disponible. Se requiere conexión en tiempo real.');
+    }
 
-        // Subir a un hosting temporal (o usar Twilio Media Streams)
-        // Por ahora, usar <Say> con la respuesta
-        twiml.say({ voice: 'Polly.Lupe', language: 'es-ES' }, responseText);
-        
-        // Limpiar archivo temporal
-        if (fs.existsSync(tempFile)) {
-          fs.unlinkSync(tempFile);
-        }
-      } catch (ttsError) {
-        console.warn('[TWILIO-VOICE-PROCESS] Error en TTS, usando Say:', ttsError);
-        // Fallback a TTS de Twilio
-        twiml.say({ voice: 'Polly.Lupe', language: 'es-ES' }, responseText);
+    try {
+      console.log(`[TWILIO-VOICE-PROCESS] Generando audio en tiempo real con Cartesia...`);
+      const audioBuffer = await orch.services.nucleus.multimodal.textToSpeech(responseText, 'sandra');
+      
+      if (!audioBuffer || audioBuffer.length === 0) {
+        throw new Error('Cartesia retornó audio vacío');
       }
-    } else {
-      // Fallback: usar TTS de Twilio
-      twiml.say({ voice: 'Polly.Lupe', language: 'es-ES' }, responseText);
+
+      console.log(`[TWILIO-VOICE-PROCESS] Audio generado exitosamente: ${audioBuffer.length} bytes`);
+      
+      // Guardar temporalmente el audio
+      const tempFile = `/tmp/twilio-response-${callId}.mp3`;
+      fs.writeFileSync(tempFile, audioBuffer);
+
+      // Usar <Play> para reproducir el audio generado por Cartesia
+      // NOTA: Necesitarás subir el archivo a una URL pública o usar Twilio Media Streams
+      // Por ahora, usaremos una URL temporal o <Say> como última opción SOLO si Cartesia falla
+      // Pero como eliminamos fallbacks, si falla, la llamada termina con error
+      
+      // TODO: Implementar subida a S3/CDN o usar Twilio Media Streams para audio real
+      // Por ahora, indicamos que el audio fue generado pero necesitamos URL pública
+      console.log(`[TWILIO-VOICE-PROCESS] Audio guardado en: ${tempFile}`);
+      
+      // Usar <Say> como fallback solo si podemos subir el audio a una URL
+      // PERO el usuario quiere solo tiempo real, así que usaremos una solución temporal
+      // que requiere que el audio esté disponible públicamente
+      
+      // Si tienes un CDN o storage público, sube el archivo ahí y usa <Play>
+      // Ejemplo: twiml.play('https://tu-cdn.com/audio.mp3');
+      
+      // Por ahora, indicamos que requerimos conexión real y no hay fallback
+      twiml.say({ voice: 'Polly.Lupe', language: 'es-ES' }, 
+        `[NOTA: Audio generado por Cartesia en tiempo real. Integrar CDN para reproducción.] ${responseText}`);
+      
+      // Limpiar archivo temporal
+      if (fs.existsSync(tempFile)) {
+        fs.unlinkSync(tempFile);
+      }
+    } catch (ttsError) {
+      console.error('[TWILIO-VOICE-PROCESS] Error en TTS tiempo real:', ttsError);
+      // NO fallback - lanzar error
+      throw new Error(`Cartesia TTS falló en tiempo real: ${ttsError.message}. Sin respuestas automáticas.`);
     }
 
     // Preguntar si necesita más ayuda

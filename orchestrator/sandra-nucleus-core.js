@@ -478,25 +478,55 @@ const SandraNucleus = {
       }
     },
     
-    // Speech to Text con Deepgram
+    // Speech to Text con Deepgram - SOLO TIEMPO REAL (sin fallbacks)
     async speechToText(audioBuffer) {
-      if (!SandraNucleus.config.api.deepgram) {
-        return this.mockSTT();
+      if (!SandraNucleus.config.api.deepgram || !SandraNucleus.config.api.deepgram.trim()) {
+        throw new Error('DEEPGRAM_API_KEY no configurada. Se requiere conexión en tiempo real.');
       }
       
+      const axios = require('axios');
+      
+      // Verificar conexión en tiempo real
+      const startTime = Date.now();
+      
       try {
-        const axios = require('axios');
-        const response = await axios.post('https://api.deepgram.com/v1/listen', audioBuffer, {
-          headers: {
-            'Authorization': `Token ${SandraNucleus.config.api.deepgram}`,
-            'Content-Type': 'audio/wav'
-          },
-          timeout: 30000
+        const response = await axios.post(
+          'https://api.deepgram.com/v1/listen',
+          audioBuffer,
+          {
+            headers: {
+              'Authorization': `Token ${SandraNucleus.config.api.deepgram}`,
+              'Content-Type': 'audio/wav'
+            },
+            timeout: 25000 // 25 segundos - tiempo real
+          }
+        );
+        
+        const endTime = Date.now();
+        const latency = endTime - startTime;
+        
+        const transcript = response.data?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
+        
+        if (!transcript || transcript.trim() === '') {
+          throw new Error('Deepgram retornó transcripción vacía');
+        }
+        
+        logger.info(`[STT] Deepgram respuesta en tiempo real: ${latency}ms`);
+        
+        return transcript;
+      } catch (error) {
+        const endTime = Date.now();
+        const latency = endTime - startTime;
+        
+        logger.error(`[STT] Error en tiempo real con Deepgram (latency: ${latency}ms):`, {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data
         });
         
-        return response.data.results?.channels[0]?.alternatives[0]?.transcript || '';
-      } catch (error) {
-        console.error('[STT] Error:', error);
+        // NO fallback - lanzar error
+        throw new Error(`Conexión Deepgram falló en tiempo real: ${error.message}. Sin respuestas automáticas.`);
+      }
         return this.mockSTT();
       }
     },
