@@ -466,31 +466,60 @@ const SandraNucleus = {
   // MOTOR DE VOZ Y MULTIMODAL
   // ============================================================================
   multimodal: {
-    // Text to Speech con Cartesia (prioritario)
+    // Text to Speech con Cartesia - SOLO TIEMPO REAL (sin fallbacks)
     async textToSpeech(text, voice = 'sandra') {
-      if (!SandraNucleus.config.api.cartesia) {
-        return this.mockTTS(text);
+      if (!SandraNucleus.config.api.cartesia || !SandraNucleus.config.api.cartesia.trim()) {
+        throw new Error('CARTESIA_API_KEY no configurada. Se requiere conexión en tiempo real.');
       }
       
+      const axios = require('axios');
+      
+      // Verificar conexión en tiempo real
+      const startTime = Date.now();
+      
       try {
-        const axios = require('axios');
-        const response = await axios.post('https://api.cartesia.ai/v1/audio/speech', {
-          model: 'sonic-english',
-          text: text,
-          voice_id: process.env.CARTESIA_VOICE_ID || 'default'
-        }, {
-          headers: {
-            'Authorization': `Bearer ${SandraNucleus.config.api.cartesia}`,
-            'Content-Type': 'application/json'
+        const response = await axios.post(
+          'https://api.cartesia.com/tts/v1/generate',
+          {
+            text: text,
+            model_id: 'sonic-english',
+            voice_id: 'sonic-english',
+            output_format: 'mp3',
+            sample_rate: 22050
           },
-          responseType: 'arraybuffer',
-          timeout: 30000
-        });
+          {
+            headers: {
+              'Authorization': `Bearer ${SandraNucleus.config.api.cartesia}`,
+              'Content-Type': 'application/json'
+            },
+            responseType: 'arraybuffer',
+            timeout: 25000 // 25 segundos - tiempo real
+          }
+        );
+        
+        const endTime = Date.now();
+        const latency = endTime - startTime;
+        
+        // Validar que la respuesta sea real
+        if (!response.data || response.data.byteLength === 0) {
+          throw new Error('Cartesia retornó respuesta vacía');
+        }
+        
+        logger.info(`[TTS] Cartesia respuesta en tiempo real: ${latency}ms, tamaño: ${response.data.byteLength} bytes`);
         
         return Buffer.from(response.data);
       } catch (error) {
-        console.error('[TTS] Error:', error);
-        return this.mockTTS(text);
+        const endTime = Date.now();
+        const latency = endTime - startTime;
+        
+        logger.error(`[TTS] Error en tiempo real con Cartesia (latency: ${latency}ms):`, {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data
+        });
+        
+        // NO fallback - lanzar error
+        throw new Error(`Conexión Cartesia falló en tiempo real: ${error.message}. Sin respuestas automáticas.`);
       }
     },
     
