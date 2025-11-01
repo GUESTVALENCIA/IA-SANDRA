@@ -795,22 +795,30 @@
 `  const MODE = (window.SANDRA_MODE || null);
 `  async function chatLLM(text){
 `    const langConfig = getCurrentLanguageConfig();
-`    const body = {
-`      messages: messages.slice(-12).concat([{ role:'user', content: text }]),
-`      locale: langConfig.code,
-`      language: currentLanguage, // NEW: Send current language
-`      mode: MODE || null
+`    
+`    // Formato correcto para /api/chat (Vercel - tiempo real)
+`    const chatBody = {
+`      message: text, // Mensaje actual
+`      conversationId: `conv-${Date.now()}`,
+`      context: {
+`        platform: 'mobile',
+`        role: 'guests-valencia',
+`        language: langConfig.code || currentLanguage,
+`        locale: langConfig.code,
+`        mode: MODE || null,
+`        messages: messages.slice(-12).concat([{ role:'user', content: text }]) // Historial
+`      }
 `    };
 `
-`    // ENTERPRISE: Timeout controller (15s)
+`    // ENTERPRISE: Timeout controller (30s para OpenAI en tiempo real)
 `    const controller = new AbortController();
-`    const timeoutId = setTimeout(() => controller.abort(), 15000);
+`    const timeoutId = setTimeout(() => controller.abort(), 30000);
 `
 `    try {
 `      const r = await fetch('/api/chat', {
 `        method:'POST',
 `        headers:{'Content-Type':'application/json'},
-`        body: JSON.stringify(body),
+`        body: JSON.stringify(chatBody),
 `        signal: controller.signal
 `      });
 `
@@ -818,19 +826,27 @@
 `
 `      if (!r.ok) {
 `        const errorData = await r.json().catch(() => ({}));
-`        throw new Error(`Chat error ${r.status}: ${errorData.error || 'API error'}`);
+`        // NO fallback - lanzar error real
+`        throw new Error(errorData.error || `Conexión falló en tiempo real: HTTP ${r.status}. Sin respuestas automáticas.`);
 `      }
 `
 `      const data = await r.json();
-`      return { text: data.text || 'Sin respuesta' };
+`      
+`      // Validar que sea respuesta real de OpenAI (no fallback)
+`      if (!data.success || !data.text || data.text.trim() === '') {
+`        throw new Error('Respuesta vacía o inválida. Se requiere conexión en tiempo real.');
+`      }
+`      
+`      return { text: data.text };
 `    } catch (error) {
 `      clearTimeout(timeoutId);
 `      if (error.name === 'AbortError') {
 `        metrics.errors.chat++;
-`        throw new Error('Timeout: La consulta tardó demasiado (>15s)');
+`        throw new Error('Timeout: La conexión con OpenAI tardó demasiado (>30s). Se requiere conexión en tiempo real.');
 `      }
 `      metrics.errors.chat++;
 `      log.error('chatLLM error:', error);
+`      // NO fallback - propagar error real
 `      throw error;
 `    }
 `  }
@@ -851,21 +867,23 @@
 `      }
 `    }
 `
-`    // REGULAR TTS (ElevenLabs/Cartesia)
+`    // CARTESIA TTS - SOLO TIEMPO REAL (sin fallbacks)
 `    const langConfig = getCurrentLanguageConfig();
 `
-`    // ENTERPRISE: Timeout controller (10s)
+`    // ENTERPRISE: Timeout controller (30s para Cartesia en tiempo real)
 `    const controller = new AbortController();
-`    const timeoutId = setTimeout(() => controller.abort(), 10000);
+`    const timeoutId = setTimeout(() => controller.abort(), 30000);
 `
 `    try {
-`      const r = await fetch('/api/tts', {
+`      // Usar Cartesia TTS en tiempo real
+`      const r = await fetch('/api/cartesia-tts', {
 `        method:'POST',
 `        headers:{'Content-Type':'application/json'},
 `        body: JSON.stringify({
 `          text,
-`          locale: langConfig.ttsLocale, // NEW: Send language-specific locale
-`          language: currentLanguage // NEW: Send current language
+`          voice: 'sandra',
+`          format: 'mp3',
+`          language: langConfig.code || 'es'
 `        }),
 `        signal: controller.signal
 `      });
@@ -874,24 +892,33 @@
 `
 `      if (!r.ok) {
 `        const errorData = await r.json().catch(() => ({}));
-`        throw new Error(`TTS error ${r.status}: ${errorData.error || 'TTS failed'}`);
+`        // NO fallback - lanzar error real
+`        throw new Error(`Cartesia TTS falló en tiempo real: ${errorData.error || `HTTP ${r.status}`}. Sin respuestas automáticas.`);
 `      }
 `
-`      const data = await r.json();
-`      const { mime, audioBase64 } = data;
+`      // Cartesia devuelve audio binario (blob), no JSON
+`      const audioBlob = await r.blob();
+`      
+`      if (!audioBlob || audioBlob.size === 0) {
+`        throw new Error('Cartesia retornó audio vacío. Se requiere conexión en tiempo real.');
+`      }
 `
-`      if (!audioBase64) throw new Error('No audio data received from TTS');
+`      // Convertir blob a base64 para usar con playBase64
+`      const audioArrayBuffer = await audioBlob.arrayBuffer();
+`      const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(audioArrayBuffer)));
+`      const mime = 'audio/mpeg'; // MP3 de Cartesia
 `
 `      await audioCtx.resume();
-`      await playBase64(mime || 'audio/mpeg', audioBase64);
+`      await playBase64(mime, audioBase64);
 `    } catch (error) {
 `      clearTimeout(timeoutId);
 `      if (error.name === 'AbortError') {
 `        metrics.errors.tts++;
-`        throw new Error('Timeout: TTS tardó demasiado (>10s)');
+`        throw new Error('Timeout: Cartesia TTS tardó demasiado (>30s). Se requiere conexión en tiempo real.');
 `      }
 `      metrics.errors.tts++;
 `      log.error('ttsSpeak error:', error);
+`      // NO fallback - propagar error real
 `      throw error;
 `    }
 `  }
