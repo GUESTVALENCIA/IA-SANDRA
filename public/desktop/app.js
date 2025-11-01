@@ -377,7 +377,7 @@ async function checkBackendConnection() {
         if (response.ok) {
             AppState.isConnected = true;
             updateStatusIndicator('connected');
-            updateConnectionStatus('✅ Conectado a Netlify Functions');
+            updateConnectionStatus('✅ Conectado a Vercel API');
         }
     } catch (error) {
         console.warn('⚠️ Backend no disponible:', error);

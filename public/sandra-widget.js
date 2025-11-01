@@ -333,7 +333,7 @@
   // GENERAR VOZ CON CARTESIA TTS
   async function generateSpeech(text, container) {
     try {
-      const baseUrl = CONFIG.NETLIFY_BASE.includes('vercel') || CONFIG.NETLIFY_BASE.includes('guestsvalencia') 
+      const baseUrl = CONFIG.API_BASE.includes('vercel') || CONFIG.API_BASE.includes('guestsvalencia') 
         ? CONFIG.NETLIFY_BASE 
         : 'https://sandra.guestsvalencia.es';
       

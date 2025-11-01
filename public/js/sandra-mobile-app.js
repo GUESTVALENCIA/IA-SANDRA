@@ -770,7 +770,7 @@ async function sendToBackend(message) {
         const startTime = performance.now();
         showTypingIndicator();
         
-        // Usar Netlify Function para chat
+        // Usar Vercel API para chat
         const response = await fetch(`${CONFIG.API_BASE}/api/chat`, {
             method: 'POST',
             headers: {
