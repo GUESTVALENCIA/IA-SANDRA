@@ -112,13 +112,9 @@ class SandraAPI {
         } catch (error) {
             console.error('Send message error:', error);
             
-            // Fallback solo si todo falla
-            if (error.message.includes('Network') || error.message.includes('fetch')) {
-                console.warn('Network error, using local fallback');
-                return await this.fallbackSendMessage(request);
-            }
-            
-            throw new Error(`Failed to send message: ${error.message}`);
+            // NO fallback - solo tiempo real
+            // Si hay error de red o conexión, lanzar error explícito
+            throw new Error(`Conexión falló en tiempo real: ${error.message}. Sin respuestas automáticas.`);
         }
     }
 

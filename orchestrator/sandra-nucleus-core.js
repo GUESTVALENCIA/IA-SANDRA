@@ -196,7 +196,11 @@ const SandraNucleus = {
           throw new Error('OPENAI_API_KEY no configurada. Por favor configura tu API key en el archivo .env');
         }
         
-        console.log('[NUCLEUS] Generando respuesta con OpenAI API...');
+        // Verificar conexión en tiempo real
+        const startTime = Date.now();
+        
+        logger.info('[NUCLEUS] Generando respuesta en tiempo real con OpenAI API...');
+        
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
           model: model,
           messages: [
@@ -210,7 +214,7 @@ const SandraNucleus = {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           },
-          timeout: 30000
+          timeout: 25000 // 25 segundos - tiempo real
         });
 
         const data = response.data;
@@ -227,20 +231,32 @@ const SandraNucleus = {
           }
         };
       } catch (error) {
-        console.error('[NUCLEUS] Error generating response:', error.message);
-        console.error('[NUCLEUS] Error details:', {
+        const endTime = Date.now();
+        const latency = endTime - startTime;
+        
+        logger.error(`[NUCLEUS] Error en tiempo real con OpenAI (latency: ${latency}ms):`, {
+          message: error.message,
           status: error.response?.status,
           statusText: error.response?.statusText,
           code: error.code,
-          message: error.message
+          data: error.response?.data
         });
         
-        // Retornar error más descriptivo si es problema de API key
+        // NO fallback - lanzar error explícito
         if (error.message.includes('OPENAI_API_KEY') || error.response?.status === 401) {
-          throw new Error('API_KEY_REQUIRED');
+          throw new Error('OPENAI_API_KEY no configurada o inválida. Se requiere conexión en tiempo real.');
         }
         
-        throw error;
+        if (error.response?.status === 429) {
+          throw new Error('Rate limit de OpenAI alcanzado. Se requiere conexión en tiempo real.');
+        }
+        
+        if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+          throw new Error('Timeout en conexión con OpenAI. Se requiere conexión en tiempo real.');
+        }
+        
+        // Cualquier otro error - NO fallback
+        throw new Error(`Conexión OpenAI falló en tiempo real: ${error.message}. Sin respuestas automáticas.`);
       }
     },
 
