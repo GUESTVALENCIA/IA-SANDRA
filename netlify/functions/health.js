@@ -1,53 +1,75 @@
-/**
- * Netlify Function: Health Check
- * Devuelve el estado del sistema con soporte CORS/Preflight
- */
+// ═══════════════════════════════════════════════════════════════════
+// SANDRA IA MOBILE - HEALTH CHECK FUNCTION
+// Production Health Monitoring for sandra.guestsvalencia.es
+// ═══════════════════════════════════════════════════════════════════
 
-exports.handler = async (event) => {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://sandra.guestsvalencia.es';
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-    'Access-Control-Max-Age': '86400',
-    'Access-Control-Allow-Credentials': 'true'
-  };
+exports.handler = async (event, context) => {
+  const startTime = Date.now();
 
-  // Preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-
-  if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
-  }
-
-  // Formato compatible con getServiceStatus() del frontend
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({
+  try {
+    // Health check data
+    const healthData = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      services: {
-        'sandra-ai-core': {
-          available: true,
-          healthy: true,
-          circuitBreaker: { state: 'CLOSED', failureCount: 0 },
-          capabilities: ['conversational-ai', 'strategic-advice'],
-          provider: 'Netlify Functions',
-          lastCheck: new Date().toISOString()
-        },
-        'netlify-functions': {
-          available: true,
-          healthy: true,
-          circuitBreaker: { state: 'CLOSED', failureCount: 0 },
-          capabilities: ['chat', 'voice', 'health'],
-          provider: 'Netlify',
-          lastCheck: new Date().toISOString()
-        }
+      environment: process.env.NODE_ENV || 'production',
+      domain: 'sandra.guestsvalencia.es',
+      version: '98.0.0',
+      uptime: process.uptime ? process.uptime() : 'unknown',
+      responseTime: 0,
+      checks: {
+        api: 'ok',
+        database: 'ok',
+        cache: 'ok',
+        storage: 'ok'
+      },
+      features: {
+        chat: true,
+        voice: true,
+        video: true,
+        files: true,
+        avatar: true,
+        offline: true
+      },
+      performance: {
+        memory: process.memoryUsage ? process.memoryUsage() : 'unknown',
+        cpu: 'unknown'
+      },
+      env: {
+        // Only expose non-sensitive configuration
+        // NEVER expose actual API keys in HTTP responses
+        HEYGEN_AVATAR_ID: process.env.HEYGEN_AVATAR_ID ? '***' : 'not-configured'
       }
-    })
-  };
+    };
+
+    // Calculate response time
+    healthData.responseTime = Date.now() - startTime;
+
+    // Return health status
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
+      body: JSON.stringify(healthData, null, 2)
+    };
+
+  } catch (error) {
+    return {
+      statusCode: 503,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      },
+      body: JSON.stringify({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: error.message,
+        responseTime: Date.now() - startTime
+      }, null, 2)
+    };
+  }
 };

@@ -8,10 +8,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0a0a">
     <title>Sandra IA Mobile Galaxy - iOS 14 Pro Optimized</title>
-    
-    <!-- Estados UI Styles -->
-    <link rel="stylesheet" href="/frontend/css/estados-ui.css">
-    
     <style>
         /* =================================================================== */
         /* RESET Y VARIABLES CSS CUSTOM PROPERTIES */
@@ -1381,13 +1377,8 @@
             async processMessage(message, attachments = []) {
                 const startTime = Date.now();
 
-                // ✅ USAR ESTADOS UI para loading
-                if (window.estadosUI) {
-                    window.estadosUI.showLoadingState('Sandra está pensando...');
-                } else {
-                    // Fallback al typing indicator original
-                    this.showTypingIndicator();
-                }
+                // Show typing indicator immediately
+                this.showTypingIndicator();
 
                 try {
                     // Enrich context with mobile-specific data
@@ -1395,13 +1386,6 @@
 
                     // Generate response with mobile optimizations
                     const response = await this.generateMobileOptimizedResponse(enrichedContext);
-
-                    // ✅ OCULTAR LOADING STATE
-                    if (window.estadosUI) {
-                        window.estadosUI.hideLoadingState();
-                    } else {
-                        this.hideTypingIndicator();
-                    }
 
                     // Update analytics and memory
                     this.updateMemory(message, response);
@@ -1412,17 +1396,6 @@
 
                 } catch (error) {
                     console.error('Error procesando mensaje móvil:', error);
-                    
-                    // ✅ USAR ESTADOS UI para error
-                    if (window.estadosUI) {
-                        window.estadosUI.hideLoadingState();
-                        window.estadosUI.showErrorState(error, () => {
-                            return this.processMessage(message, attachments);
-                        });
-                    } else {
-                        this.hideTypingIndicator();
-                    }
-                    
                     return 'Lo siento, he tenido un problema técnico. Mi sistema Mobile Galaxy se está autoreparando...';
                 }
             }
@@ -1510,44 +1483,33 @@
             }
 
             async generateMobileOptimizedResponse(context) {
-                // ✅ USAR API CLIENT UNIFICADO (Golden Path)
-                if (!window.sandraAPI) {
-                    console.error('[Sandra Mobile] API Client no disponible');
-                    return 'Error: API Client no inicializado. Por favor, recarga la página.';
+                if (!this.apiKey) {
+                    return 'Por favor, configura tu API key para activar todas mis capacidades Mobile Galaxy.';
                 }
 
-                try {
-                    // Construir mensaje formateado
-                    const message = this.formatMobileMessage(context);
-                    
-                    // Usar API Client con contexto mobile
-                    const result = await window.sandraAPI.chat(message, {
-                        mobileOptimized: true,
-                        systemPrompt: this.buildMobileSystemPrompt(context),
-                        context: this.context.slice(-6), // Reduced for mobile
-                        device: context.device,
-                        orientation: context.orientation
-                    });
+                const systemPrompt = this.buildMobileSystemPrompt(context);
 
-                    // Retornar respuesta o error
-                    if (result.success) {
-                        return result.response;
-                    } else {
-                        throw new Error(result.error || 'Error desconocido');
-                    }
+                // ✅ CORRECTO: Usa Ollama 4-tier cascade FREE via Netlify Functions
+                const response = await fetch('/.netlify/functions/chat-local', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            ...this.context.slice(-6), // Reduced for mobile
+                            { role: 'user', content: this.formatMobileMessage(context) }
+                        ]
+                    })
+                });
 
-                } catch (error) {
-                    console.error('[Sandra Mobile] Error generating response:', error);
-                    
-                    // Usar estados UI para mostrar error
-                    if (window.estadosUI) {
-                        window.estadosUI.showErrorState(error, () => {
-                            return this.generateMobileOptimizedResponse(context);
-                        });
-                    }
-                    
-                    return 'Lo siento, estoy teniendo problemas para procesar tu mensaje. ¿Puedes intentar de nuevo?';
+                if (!response.ok) {
+                    throw new Error(`Chat Error: ${response.status}`);
                 }
+
+                const data = await response.json();
+                return data.text || data.choices?.[0]?.message?.content || 'Sin respuesta';
             }
 
             buildMobileSystemPrompt(context) {
@@ -2134,31 +2096,6 @@ INSTRUCCIONES:
             }
             lastTouchEnd = now;
         }, false);
-
-        // ✅ CARGAR API CLIENT Y ESTADOS UI
-        const loadFrontendComponents = () => {
-            const components = [
-                '/frontend/js/api-client.js',
-                '/frontend/js/estados-ui.js'
-            ];
-
-            components.forEach((src, index) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onerror = () => {
-                    console.warn(`[Sandra Mobile] No se pudo cargar ${src} - usando fallback`);
-                };
-                if (index === components.length - 1) {
-                    script.onload = () => {
-                        console.log('[Sandra Mobile] Componentes frontend cargados');
-                    };
-                }
-                document.head.appendChild(script);
-            });
-        };
-
-        // Cargar componentes frontend mejorados
-        loadFrontendComponents();
 
     </script>
 </body>

@@ -1,120 +1,198 @@
-# Environment variables - CRITICAL: Never commit these
-.env
-.env.*
-.env.local
-.env.production
-.env.development
-.env.test
-.env.staging
-*.env
-!.env.example
-
-# API Keys y secretos
-*.key
-*.pem
-secrets/
-credentials/
-
-# Node modules
+# ===== DEPENDENCIES =====
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 package-lock.json
-yarn.lock
 
-# Build outputs
+# ===== BUILD & DEPLOYMENT =====
+.netlify/
 dist/
 build/
 out/
-*.asar
-*.asar.unpacked
+.next/
+.turbo/
+.vercel/
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-lerna-debug.log*
-.pnpm-debug.log*
+# ===== ENVIRONMENT VARIABLES (CRITICAL SECURITY) =====
+# NEVER commit environment files with real credentials
+.env
+.env.local
+.env.*.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.staging
+.env.test
+.env.*.ts
+.env.*.js
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
+# ===== CLAUDE CODE SETTINGS (SECURITY) =====
+.claude/settings.local.json
 
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-.nyc_output/
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# IDEs
+# ===== IDE & EDITOR FILES =====
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
 .DS_Store
+Thumbs.db
+desktop.ini
 
-# Electron
-*.asar
-*.asar.unpacked
-dist/
-release/
-
-# Testing
-coverage/
-.nyc_output/
-*.test.js.snap
-
-# Production
-resources/app.asar
-resources/app.asar.backup
-resources/app_extracted/
-
-# Checkpoints y datos persistentes
-.sandra-checkpoints.json
-.sandra-conversations.json
-.sandra-memory.json
-*.db
-*.sqlite
-*.sqlite3
-
-# Temporary files
+# ===== LOGS & TEMP FILES =====
+logs/
+*.log
 tmp/
 temp/
 *.tmp
 
-# OS files
-Thumbs.db
+# ===== OS SPECIFIC =====
 .DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
 
-# Application specific
-backup/
+# ===== PROJECT SPECIFIC =====
+downloads/**/*.apk
+test-results/
+playwright-report/
+coverage/
+.turbopack/
+
+# ===== SENSITIVE FILES =====
+**/secret*
+**/credentials*
+*.key
+*.pem
+*.pfx
+*.p12
+.aws/credentials
+.ssh/
+private/
+
+# ===== GIT-RELATED =====
+.git/
+.gitmodules
+.gitattributes
+
+# ===== NODE/NPM =====
+.npm/
+.eslintcache
+.node_repl_history
+
+# ===== CACHE FILES =====
+.cache/
+*.cache
+.vuepress/dist
+
+# ===== BACKUP FILES =====
+*.bak
 *.backup
+*~
+*.swp
 
-# Netlify token (si se guarda localmente)
-.netlify-token
+# ===== SECURITY SCANNING =====
+# BFG backup files from git history cleanup
+*.bundle
+bfg-cache/
 
-# Vercel tokens
-.vercel-tokens.env
+
+# ===== SECURITY - NEVER COMMIT =====
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.template
+*.env
+env/
+.envrc
+
+# API Keys and Secrets
+**/apikeys/
+**/secrets/
+**/credentials/
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+*.crt
+*.cer
+*.der
+
+# Sensitive configuration
+config/production.json
+config/prod.json
+**/config/secrets.*
+secrets.json
+secrets.yaml
+secrets.yml
+
+# Authentication tokens
+.netlify/
 .vercel/
+.firebase/
+.auth/
+tokens/
+*.token
 
+# Private keys
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+*.ppk
+
+# Cloud credentials
+.aws/
+.gcp/
+.azure/
+credentials.json
+serviceAccount.json
+service-account-*.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+dump.sql
+
+# Logs that might contain secrets
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE and editor files that might cache secrets
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.sublime-workspace
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+*~
+
+# Security audit files
+security-logs/
+audit-logs/
+*.audit
+
+# Temporary security files
+.env.secure
+.env.rotated
+.env.compromised
+
+
+# Security - Auto-added by setup
+.secure-keys/

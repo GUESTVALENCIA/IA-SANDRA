@@ -29,7 +29,18 @@ export default async function handler(req, res) {
   try {
     // Validar firma de Twilio (seguridad)
     const twilioSignature = req.headers['x-twilio-signature'];
-    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || process.env.TWILIO_AUTH_TOKEN;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    
+    // Verificar que las variables estén configuradas
+    if (!twilioAuthToken || !twilioAccountSid) {
+      console.error('[TWILIO-WHATSAPP] Variables Twilio no configuradas');
+      const twiml = new twilio.twiml.MessagingResponse();
+      twiml.message('Disculpa, el servicio está temporalmente no disponible. Por favor intenta más tarde.');
+      res.setHeader('Content-Type', 'text/xml');
+      return res.status(200).send(twiml.toString());
+    }
+    
     const url = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}${req.url}`;
     
     // Si hay token, validar firma (recomendado en producción)

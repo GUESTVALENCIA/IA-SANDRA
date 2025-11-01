@@ -1,8 +1,0 @@
-# Placeholder para imágenes
-
-Este directorio contendrá:
-- sandra-avatar.png (avatar de Sandra)
-- user-avatar.png (avatar del usuario)
-- icon.ico (icono de la aplicación)
-
-Para desarrollo, se usarán avatares por defecto con iniciales.

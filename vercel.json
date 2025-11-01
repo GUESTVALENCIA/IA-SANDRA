@@ -1,15 +1,39 @@
 {
   "version": 2,
-  "buildCommand": "npm run build:prod",
-  "outputDirectory": "frontend",
-  "installCommand": "npm install",
-  "framework": null,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.js",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
   "functions": {
     "api/**/*.js": {
-      "runtime": "nodejs18.x",
-      "memory": 1024,
-      "maxDuration": 26
+      "maxDuration": 10,
+      "runtime": "nodejs18.x"
     }
+<<<<<<< HEAD
   },
   "headers": [
     {
@@ -120,6 +144,7 @@
   ],
   "env": {
     "NODE_ENV": "production"
+=======
+>>>>>>> 9ee611055f391342ca61ca99f8d4fe4b5c719413
   }
 }
-
