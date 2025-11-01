@@ -9,12 +9,12 @@ class ResilientAIClient {
     this.providers = {
       primary: {
         name: 'netlify-functions',
-        endpoint: '/.netlify/functions/chat',
+        endpoint: '/api/chat',
         circuitBreaker: new CircuitBreaker({ threshold: 5, timeout: 60000 })
       },
       fallback1: {
         name: 'netlify-functions-resilient',
-        endpoint: '/.netlify/functions/chat-resilient',
+        endpoint: '/api/chat-resilient',
         circuitBreaker: new CircuitBreaker({ threshold: 3, timeout: 30000 })
       },
       fallback2: {

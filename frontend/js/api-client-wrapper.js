@@ -49,13 +49,13 @@ class SandraAPIClient {
       };
     }
 
-    // Prioridad 2: Netlify Functions (producción web)
-    if (window.location.hostname.includes('netlify.app') || 
+    // Vercel API (producción web)
+    if (window.location.hostname.includes('vercel.app') || hostname.includes('guestsvalencia.es') || 
         window.location.hostname.includes('guestsvalencia.es')) {
       return {
         mode: 'netlify-functions',
         baseUrl: '',
-        apiEndpoint: '/.netlify/functions'
+        apiEndpoint: '/api'
       };
     }
 
@@ -97,7 +97,7 @@ class SandraAPIClient {
       if (this.config.mode === 'electron-ipc') {
         response = await this.requestElectron(endpoint, options);
       }
-      // Prioridad 2: Netlify Functions
+      // Vercel API
       else if (this.config.mode === 'netlify-functions') {
         response = await this.requestNetlify(endpoint, options);
       }
@@ -148,10 +148,10 @@ class SandraAPIClient {
     // Extraer nombre de función del endpoint
     const functionName = endpoint
       .replace('/api/', '')
-      .replace('/.netlify/functions/', '')
+      .replace('/api/', '')
       .split('/')[0] || 'chat';
 
-    const url = `/.netlify/functions/${functionName}`;
+    const url = `/api/${functionName}`;
     
     const fetchOptions = {
       method,

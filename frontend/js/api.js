@@ -53,10 +53,10 @@ class SandraAPI {
      * Prioridad: Netlify Functions > Configurada > Localhost
      */
     detectApiBaseUrl() {
-        // Si estamos en Netlify, usar Netlify Functions
-        if (window.location.hostname.includes('netlify.app') || 
+        // Vercel API
+        if (window.location.hostname.includes('vercel.app') || hostname.includes('guestsvalencia.es') || 
             window.location.hostname.includes('guestsvalencia.es')) {
-            return ''; // Relativo para Netlify Functions
+            return ''; // Vercel API
         }
         
         // Usar variable de entorno o configuración
@@ -101,8 +101,8 @@ class SandraAPI {
                 return await this.ipcRenderer.invoke('send-message', request);
             }
             
-            // Prioridad 2: Netlify Functions (si estamos en producción web)
-            if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('netlify') || this.apiBaseUrl.includes('guestsvalencia')) {
+            // Vercel API (si estamos en producción web)
+            if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || includes('guestsvalencia') || this.apiBaseUrl.includes('guestsvalencia')) {
                 return await this.sendToNetlifyFunction('chat', request);
             }
             
@@ -126,7 +126,7 @@ class SandraAPI {
      * Enviar a Netlify Function
      */
     async sendToNetlifyFunction(functionName, data) {
-        const url = `/.netlify/functions/${functionName}`;
+        const url = `/api/${functionName}`;
         const startTime = performance.now();
         const method = data && Object.keys(data).length > 0 ? 'POST' : 'GET';
         
@@ -243,8 +243,8 @@ class SandraAPI {
             } else if (this.isElectron && this.ipcRenderer) {
                 return await this.ipcRenderer.invoke('get-service-status');
             } else {
-                // Modo web: intentar Netlify Functions primero
-                if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('netlify') || this.apiBaseUrl.includes('guestsvalencia')) {
+                // Vercel API primero
+                if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || includes('guestsvalencia') || this.apiBaseUrl.includes('guestsvalencia')) {
                     try {
                         return await this.sendToNetlifyFunction('health', {});
                     } catch (error) {

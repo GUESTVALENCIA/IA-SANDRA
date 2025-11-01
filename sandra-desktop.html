@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sandra Desktop - Galaxy 7.0</title>
+    <title>Sandra Desktop - Galaxy 7.0 - 18 ROLES ACTIVOS</title>
+    <script src="sandra-config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -331,9 +332,14 @@
             }
         }
         
-        // Mensaje de bienvenida
+        // Mensaje de bienvenida con 18 ROLES
         setTimeout(() => {
-            addMessage('Sandra', '✨ Desktop App iniciada correctamente. Sin servidores, sin problemas!', true);
+            if (window.SANDRA_CONFIG) {
+                addMessage('Sandra', '🚀 Sandra IA con 18 ROLES ACTIVOS: Admin, Developer, Doctor, Lawyer, Teacher, Chef, Psychologist, Fitness, Financial, Marketing, Artist, Writer, Musician, Engineer, Scientist, Designer, Consultant, CEO', true);
+                addMessage('Sandra', 'Escribe "cambiar rol [nombre]" para cambiar de rol. ¿En qué puedo ayudarte?', true);
+            } else {
+                addMessage('Sandra', '✨ Desktop App iniciada. Configurando 18 roles...', true);
+            }
         }, 1000);
     </script>
 </body>

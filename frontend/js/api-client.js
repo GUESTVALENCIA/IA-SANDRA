@@ -7,7 +7,7 @@
 class SandraAPIClient {
     constructor() {
         this.baseURL = window.location.origin;
-        this.netlifyFunctionsPath = '/.netlify/functions';
+        this.netlifyFunctionsPath = '/api';
         this.defaultTimeout = 15000; // 15s default timeout
         this.metrics = {
             totalRequests: 0,
