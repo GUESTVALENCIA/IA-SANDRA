@@ -4,10 +4,16 @@
  * DETECCIÓN AUTOMÁTICA DE ENTORNO - SIN LOCALHOST HARDCODEADO
  */
 
+// DESHABILITAR SI ESTÁ EN ELECTRON (file:// protocol)
+if (self.location.protocol === 'file:') {
+  console.log('[SW] Service Worker disabled - Electron detected (file:// protocol)');
+  // No hacer nada, el SW no funcionará en Electron
+}
+
 // Detección automática de entorno
 const ENV = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1' ? 'development' : 'production';
-const DOMAIN = self.location.host;
-const BASE_URL = self.location.origin;
+const DOMAIN = self.location.host || 'electron';
+const BASE_URL = self.location.origin || 'file://';
 const API_BASE = `${BASE_URL}/api`;
 
 const CACHE_NAME = 'sandra-devconsole-v1';
@@ -36,15 +42,29 @@ const PRECACHE_URLS = [
 
 // Función para verificar que un archivo existe antes de cachearlo
 async function verifyFileExists(url) {
+  // En Electron (file://), no hacer fetch
+  if (self.location.protocol === 'file:') {
+    return false;
+  }
+  
   try {
     const response = await fetch(url, { method: 'HEAD' });
     return response.ok;
   } catch (error) {
+    // Ignorar errores en Electron
+    if (self.location.protocol === 'file:') {
+      return false;
+    }
     console.warn(`[SW] File not found: ${url}`, error);
     return false;
   }
 }
 
+// Desactivar completamente en Electron
+if (self.location.protocol === 'file:') {
+  // No hacer nada, no instalar
+  console.log('[SW] Completely disabled - Electron file:// protocol detected');
+} else {
 // Instalación del Service Worker
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing Service Worker...');
@@ -198,5 +218,10 @@ self.addEventListener('message', (event) => {
   }
 });
 
-console.log('[SW] Service Worker loaded');
+// Si estamos en Electron, no hacer nada
+if (self.location.protocol !== 'file:') {
+  console.log('[SW] Service Worker loaded');
+} else {
+  console.log('[SW] Disabled in Electron - no actions');
+}
 

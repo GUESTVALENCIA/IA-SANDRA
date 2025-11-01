@@ -54,7 +54,7 @@ class SandraAPI {
      */
     detectApiBaseUrl() {
         // Vercel API
-        if (window.location.hostname.includes('vercel.app') || hostname.includes('guestsvalencia.es') || 
+        if (window.location.hostname.includes('vercel.app') || 
             window.location.hostname.includes('guestsvalencia.es')) {
             return ''; // Vercel API
         }
@@ -102,7 +102,7 @@ class SandraAPI {
             }
             
             // Vercel API (si estamos en producción web)
-            if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || includes('guestsvalencia') || this.apiBaseUrl.includes('guestsvalencia')) {
+            if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || this.apiBaseUrl.includes('guestsvalencia')) {
                 return await this.sendToNetlifyFunction('chat', request);
             }
             
@@ -239,12 +239,29 @@ class SandraAPI {
     async getServiceStatus() {
         try {
             if (this.isElectron && this.electronAPI) {
-                return await this.electronAPI.getServiceStatus();
+                // Timeout de 3 segundos para no bloquear
+                return await Promise.race([
+                    this.electronAPI.getServiceStatus(),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Timeout')), 3000)
+                    )
+                ]).catch(() => {
+                    // Si falla o timeout, retornar estado offline
+                    return { connected: false, services: {} };
+                });
             } else if (this.isElectron && this.ipcRenderer) {
-                return await this.ipcRenderer.invoke('get-service-status');
+                // Timeout de 3 segundos
+                return await Promise.race([
+                    this.ipcRenderer.invoke('get-service-status'),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Timeout')), 3000)
+                    )
+                ]).catch(() => {
+                    return { connected: false, services: {} };
+                });
             } else {
                 // Vercel API primero
-                if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || includes('guestsvalencia') || this.apiBaseUrl.includes('guestsvalencia')) {
+                if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || this.apiBaseUrl.includes('guestsvalencia')) {
                     try {
                         return await this.sendToNetlifyFunction('health', {});
                     } catch (error) {

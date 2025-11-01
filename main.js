@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const electron = require('electron');
+const { app, BrowserWindow, ipcMain } = electron;
 const path = require('path');
 const { SandraOrchestrator } = require('./orchestrator/sandra-orchestrator');
 const ipcSecurity = require('./main-ipc-security');
@@ -20,15 +21,49 @@ function createWindow() {
       // Preload script para bridge seguro
       preload: path.join(__dirname, 'preload.js'),
       // Sandbox deshabilitado (necesario para algunas APIs)
-      sandbox: false
+      sandbox: false,
+      // DESHABILITAR SERVICE WORKER en Electron
+      nodeIntegrationInSubFrames: false
     },
     title: 'Sandra DevConsole',
     show: false
   });
 
+  // DESHABILITAR SERVICE WORKER ANTES DE CARGAR
+  mainWindow.webContents.session.clearStorageData({
+    storages: ['serviceworkers', 'cachestorage']
+  }).then(() => {
+    console.log('[MAIN] Service Workers and cache cleared');
+  });
+
   mainWindow.loadFile('frontend/index.html');
 
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.error('[MAIN] Failed to load:', errorCode, errorDescription, validatedURL);
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('[MAIN] Page loaded successfully');
+    // Desregistrar SW después de cargar
+    mainWindow.webContents.executeJavaScript(`
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(reg => reg.unregister());
+          console.log('[SW] All service workers unregistered');
+        });
+      }
+    `);
+  });
+
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    // Filtrar mensajes del SW
+    if (!message.includes('sw.js') && !message.includes('Service Worker')) {
+      console.log(`[RENDERER] [${level}] ${message} (${sourceId}:${line})`);
+    }
+  });
+
   mainWindow.once('ready-to-show', () => {
+    console.log('[MAIN] Window ready to show');
     mainWindow.show();
     initializeOrchestrator();
   });
@@ -69,10 +104,12 @@ async function initializeOrchestrator() {
   }
 }
 
-// IPC Handlers - Registrados al inicio
-console.log('[MAIN] Registering IPC handlers...');
-
-ipcMain.handle('send-message', async (event, message, options = {}) => {
+// App Events
+app.whenReady().then(() => {
+  console.log('[MAIN] App ready, registering IPC handlers...');
+  
+  // IPC Handlers - Registrados después de que Electron esté listo
+  ipcMain.handle('send-message', async (event, message, options = {}) => {
   // SEGURIDAD: Validar canal
   ipcSecurity.validateChannel('send-message');
   
@@ -293,23 +330,21 @@ ipcMain.handle('ai-voice-commands-status', async () => {
     listening: orchestrator.services.nucleus.voiceCommandsForAI.isListening || false,
     commandHistory: orchestrator.services.nucleus.voiceCommandsForAI.commandHistory?.length || 0
   };
-});
+  });
 
-// Verificar que todos los handlers están registrados
-console.log('[MAIN] IPC Handlers registered:', [
-  'send-message',
-  'get-service-status',
-  'get-metrics',
-  'reset-services',
-  'voice-command',
-  'voice-programming-status',
-  'ai-voice-command',
-  'ai-voice-commands-status'
-].join(', '));
+  // Verificar que todos los handlers están registrados
+  console.log('[MAIN] IPC Handlers registered:', [
+    'send-message',
+    'get-service-status',
+    'get-metrics',
+    'reset-services',
+    'voice-command',
+    'voice-programming-status',
+    'ai-voice-command',
+    'ai-voice-commands-status'
+  ].join(', '));
 
-// App Events
-app.whenReady().then(() => {
-  console.log('[MAIN] App ready, creating window...');
+  console.log('[MAIN] IPC handlers registered. Creating window...');
   createWindow();
 });
 

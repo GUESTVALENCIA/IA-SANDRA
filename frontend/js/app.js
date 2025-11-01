@@ -34,19 +34,23 @@ class SandraApp {
             // Load user settings
             this.loadSettings();
 
-            // Connect to orchestrator
-            await this.connectToOrchestrator();
-
-            // Setup UI
+            // Setup UI PRIMERO (antes de conectar)
             this.initializeUI();
 
+            // Connect to orchestrator (NO BLOQUEAR)
+            this.connectToOrchestrator().catch(err => {
+                console.warn('Orchestrator connection failed, continuing anyway:', err);
+            });
+
             this.isInitialized = true;
-            this.hideLoadingOverlay();
-
-            // Welcome message
-            this.showWelcomeMessage();
-
-            console.log('Sandra DevConsole ready!');
+            
+            // Ocultar loading DESPUÉS de un delay mínimo para que se vea la UI
+            setTimeout(() => {
+                this.hideLoadingOverlay();
+                // Welcome message
+                this.showWelcomeMessage();
+                console.log('Sandra DevConsole ready!');
+            }, 500);
 
         } catch (error) {
             console.error('Failed to initialize Sandra DevConsole:', error);
@@ -70,9 +74,9 @@ class SandraApp {
     async connectToOrchestrator() {
         this.updateLoadingStatus('Conectando con Sandra...');
 
-        // Retry logic with timeout
-        const maxRetries = 3;
-        const timeout = 10000; // 10 seconds
+        // Retry logic with timeout - pero NO bloquear si falla
+        const maxRetries = 2;
+        const timeout = 5000; // 5 seconds max
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
@@ -85,19 +89,21 @@ class SandraApp {
 
                 this.updateServiceStatus(response);
                 this.updateConnectionStatus('online');
+                console.log('Connected to orchestrator');
                 return; // Success
 
             } catch (error) {
                 console.warn(`Orchestrator connection attempt ${attempt}/${maxRetries} failed:`, error);
                 
                 if (attempt === maxRetries) {
+                    // NO lanzar error - continuar de todas formas
                     this.updateConnectionStatus('offline');
-                    this.showError('Error de Conexión', 'No se pudo conectar con Sandra. Revisa que el orquestador esté funcionando.');
-                    throw new Error('No se pudo conectar con Sandra después de varios intentos');
+                    console.warn('Continuing without orchestrator connection');
+                    return; // Continuar sin conexión
                 }
 
                 // Wait before retry
-                await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
     }
@@ -693,16 +699,20 @@ class SandraApp {
 
     showLoadingOverlay(message) {
         const overlay = document.getElementById('loadingOverlay');
-        overlay.classList.remove('hidden');
-
-        if (message) {
-            this.updateLoadingStatus(message);
+        if (overlay) {
+            overlay.style.display = 'flex';
+            if (message) {
+                this.updateLoadingStatus(message);
+            }
         }
     }
 
     hideLoadingOverlay() {
         const overlay = document.getElementById('loadingOverlay');
-        overlay.classList.add('hidden');
+        if (overlay) {
+            overlay.style.display = 'none';
+            console.log('[APP] Loading overlay hidden');
+        }
     }
 
     updateLoadingStatus(status) {
