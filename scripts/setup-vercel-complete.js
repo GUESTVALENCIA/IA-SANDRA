@@ -32,18 +32,34 @@ async function setupVercel() {
     
     if (fs.existsSync(tokenPath)) {
       const content = fs.readFileSync(tokenPath, 'utf8').trim();
-      // Buscar token en el formato: VERCEL_TOKEN=xxx o solo el token
-      const match = content.match(/VERCEL_TOKEN=([^\s\n]+)|^([a-zA-Z0-9_]+)$/m);
-      if (match) {
-        vercelToken = match[1] || match[2];
-        log(`✅ Token encontrado en .vercel-tokens.env`, 'green');
+      // Buscar token en varios formatos posibles
+      const patterns = [
+        /VERCEL_API_TOKEN=([^\s\n]+)/,
+        /VERCEL_ACCESS_TOKEN=([^\s\n]+)/,
+        /VERCEL_TOKEN=([^\s\n]+)/,
+        /^([a-zA-Z0-9_]+)$/m
+      ];
+      
+      for (const pattern of patterns) {
+        const match = content.match(pattern);
+        if (match) {
+          vercelToken = match[1] || match[0];
+          if (vercelToken && vercelToken.length > 10) {
+            log(`✅ Token encontrado en .vercel-tokens.env`, 'green');
+            break;
+          }
+        }
       }
     }
 
-    // También verificar variable de entorno
-    if (!vercelToken && process.env.VERCEL_TOKEN) {
-      vercelToken = process.env.VERCEL_TOKEN;
-      log('✅ Token encontrado en variable de entorno', 'green');
+    // También verificar variables de entorno
+    if (!vercelToken) {
+      vercelToken = process.env.VERCEL_API_TOKEN || 
+                   process.env.VERCEL_ACCESS_TOKEN || 
+                   process.env.VERCEL_TOKEN;
+      if (vercelToken) {
+        log('✅ Token encontrado en variable de entorno', 'green');
+      }
     }
 
     if (!vercelToken) {
