@@ -3,7 +3,7 @@
 // Galaxy Level Pro Enterprise
 
 const CONFIG = {
-    NETLIFY_BASE: window.location.origin,
+    API_BASE: window.location.origin,
     BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:7788',
     CURRENT_ROLE: 'guests-valencia',
     CURRENT_MODEL: 'groq',
@@ -123,7 +123,7 @@ async function sendToBackend(text) {
         AppState.isConnected = true;
         updateConnectionStatus('Enviando...');
         
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/chat`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -303,7 +303,7 @@ async function handleGuardianSOS() {
     addSystemMessage('🛡️ Guardian Protocol: Creando snapshot...');
     
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/guardian`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/guardian`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -333,7 +333,7 @@ async function handleGuardianRestore() {
     addSystemMessage('🔄 Guardian Protocol: Restaurando estado...');
     
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/guardian`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/guardian`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -373,7 +373,7 @@ async function handleGuardianRestore() {
 
 async function checkBackendConnection() {
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/health`);
+        const response = await fetch(`${CONFIG.API_BASE}/api/health`);
         if (response.ok) {
             AppState.isConnected = true;
             updateStatusIndicator('connected');

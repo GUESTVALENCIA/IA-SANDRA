@@ -50,7 +50,7 @@ class SandraAPI {
 
     /**
      * Detectar URL base de la API
-     * Prioridad: Netlify Functions > Configurada > Localhost
+     * Prioridad: Vercel API > Configurada > Localhost
      */
     detectApiBaseUrl() {
         // Vercel API
@@ -103,7 +103,7 @@ class SandraAPI {
             
             // Vercel API (si estamos en producción web)
             if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || this.apiBaseUrl.includes('guestsvalencia')) {
-                return await this.sendToNetlifyFunction('chat', request);
+                return await this.sendToVercelAPI('chat', request);
             }
             
             // Prioridad 3: HTTP API directa (desarrollo o servidor propio)
@@ -119,9 +119,9 @@ class SandraAPI {
     }
 
     /**
-     * Enviar a Netlify Function
+     * Enviar a Vercel API
      */
-    async sendToNetlifyFunction(functionName, data) {
+    async sendToVercelAPI(functionName, data) {
         const url = `/api/${functionName}`;
         const startTime = performance.now();
         const method = data && Object.keys(data).length > 0 ? 'POST' : 'GET';
@@ -259,9 +259,9 @@ class SandraAPI {
                 // Vercel API primero
                 if (this.apiBaseUrl === '' || this.apiBaseUrl.includes('vercel') || this.apiBaseUrl.includes('guestsvalencia')) {
                     try {
-                        return await this.sendToNetlifyFunction('health', {});
+                        return await this.sendToVercelAPI('health', {});
                     } catch (error) {
-                        console.warn('Netlify health check failed, using fallback:', error);
+                        console.warn('Vercel health check failed, using fallback:', error);
                         return await this.fallbackGetServiceStatus();
                     }
                 }

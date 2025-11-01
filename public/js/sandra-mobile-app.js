@@ -23,7 +23,7 @@ let CONFIG = {
             ? 'https://sandra.guestsvalencia.es'
             : window.location.origin),
     // Servicios propios - configuración desde variables de entorno
-    NETLIFY_BASE: window.location.origin,
+    API_BASE: window.location.origin,
     
     // Wake Word
     WAKE_WORD: 'Hola Sandra',
@@ -341,7 +341,7 @@ function hardenMobileGestures() {
 // Verificar conexión con backend (rápido)
 async function checkBackendConnection() {
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/health`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/health`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -546,7 +546,7 @@ async function handleSystemMetrics(commandText) {
     addSystemMessage('📈 Obteniendo métricas...');
     
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/health`);
+        const response = await fetch(`${CONFIG.API_BASE}/api/health`);
         const metrics = await response.json();
         
         let metricsMessage = '📊 **Métricas del Sistema:**\n\n';
@@ -565,7 +565,7 @@ async function handleDevMode(commandText) {
     addSystemMessage('💻 Activando modo desarrollo...');
     
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/dev/execute`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/dev/execute`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -682,7 +682,7 @@ async function handleSOS(commandText) {
     addSystemMessage('🛡️ Guardian Protocol: Creando snapshot...');
     
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/guardian`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/guardian`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -711,7 +711,7 @@ async function handleRestore(commandText) {
     addSystemMessage('🛡️ Guardian Protocol: Restaurando estado...');
     
     try {
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/guardian`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/guardian`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -771,7 +771,7 @@ async function sendToBackend(message) {
         showTypingIndicator();
         
         // Usar Netlify Function para chat
-        const response = await fetch(`${CONFIG.NETLIFY_BASE}/.netlify/functions/chat`, {
+        const response = await fetch(`${CONFIG.API_BASE}/api/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
