@@ -14,7 +14,7 @@
 
   // CONFIGURACIÓN DEL WIDGET
   const CONFIG = {
-    NETLIFY_BASE: (window.SANDRA_CONFIG && window.SANDRA_CONFIG.nettylifyBase) || window.location.origin,
+    API_BASE: (window.SANDRA_CONFIG && window.SANDRA_CONFIG.apiBase) || window.location.origin,
     ROLE: (window.SANDRA_CONFIG && window.SANDRA_CONFIG.role) || 'guests-valencia',
     LOCALE: (window.SANDRA_CONFIG && window.SANDRA_CONFIG.locale) || 'es-ES',
     POSITION: (window.SANDRA_CONFIG && window.SANDRA_CONFIG.position) || 'bottom-right',
@@ -177,8 +177,8 @@
   async function connect(container) {
     try {
       // Usar endpoint de Vercel (producción)
-      const baseUrl = CONFIG.NETLIFY_BASE.includes('vercel') || CONFIG.NETLIFY_BASE.includes('guestsvalencia') 
-        ? CONFIG.NETLIFY_BASE 
+      const baseUrl = CONFIG.API_BASE.includes('vercel') || CONFIG.API_BASE.includes('guestsvalencia') 
+        ? CONFIG.API_BASE 
         : 'https://sandra.guestsvalencia.es';
       
       const health = await fetch(`${baseUrl}/api/health`, {
@@ -235,8 +235,8 @@
 
     try {
       // Usar endpoint de Vercel en tiempo real
-      const baseUrl = CONFIG.NETLIFY_BASE.includes('vercel') || CONFIG.NETLIFY_BASE.includes('guestsvalencia') 
-        ? CONFIG.NETLIFY_BASE 
+      const baseUrl = CONFIG.API_BASE.includes('vercel') || CONFIG.API_BASE.includes('guestsvalencia') 
+        ? CONFIG.API_BASE 
         : 'https://sandra.guestsvalencia.es';
       
       const resp = await fetch(`${baseUrl}/api/chat`, {
