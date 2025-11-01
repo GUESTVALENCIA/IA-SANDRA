@@ -33,7 +33,6 @@
       "maxDuration": 10,
       "runtime": "nodejs18.x"
     }
-<<<<<<< HEAD
   },
   "headers": [
     {
@@ -144,7 +143,5 @@
   ],
   "env": {
     "NODE_ENV": "production"
-=======
->>>>>>> 9ee611055f391342ca61ca99f8d4fe4b5c719413
   }
 }
