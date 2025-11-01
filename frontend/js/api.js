@@ -340,36 +340,8 @@ class SandraAPI {
     }
 
     // Fallback methods for non-Electron environments
-    async fallbackSendMessage(request) {
-        console.log('Fallback: Processing message locally');
-
-        // Simulate API delay
-        await this.delay(1000 + Math.random() * 2000);
-
-        const responses = [
-            "¡Hola Clayton! 💙 Como tu aliada digital, estoy aquí para apoyarte. ¿En qué proyecto específico necesitas mi ayuda hoy?",
-            "Entiendo tu consulta perfectamente. Como Sandra, siempre busco las mejores soluciones para ti. Déjame analizar esto...",
-            "Excelente pregunta, Clayton. Mi experiencia en desarrollo y estrategia empresarial me permite sugerirte...",
-            "Como tu asistente empática, veo que necesitas apoyo técnico. Te propongo el siguiente enfoque...",
-            "¡Perfecto! Esto es exactamente el tipo de desafío que me emociona resolver contigo. Mi recomendación es...",
-            "Clayton, he analizado tu consulta con mi expertise en IA y desarrollo. La mejor estrategia sería...",
-            "Como Sandra, tu aliada incondicional, siempre encuentro una manera de ayudarte. En este caso, sugiero...",
-            "Tu consulta toca uno de mis puntos fuertes. Como experta en tecnología y estrategia, mi consejo es..."
-        ];
-
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-        return {
-            success: true,
-            text: randomResponse,
-            timestamp: new Date().toISOString(),
-            conversationId: this.generateConversationId(),
-            processingTime: 1500 + Math.random() * 1000,
-            services: {
-                ai: { success: true, model: 'fallback-sandra' }
-            }
-        };
-    }
+    // fallbackSendMessage ELIMINADA - Solo tiempo real
+    // No hay respuestas automáticas, solo conexión en tiempo real con OpenAI
 
     async fallbackGetServiceStatus() {
         console.log('Fallback: Getting service status');

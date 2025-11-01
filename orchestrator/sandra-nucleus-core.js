@@ -543,8 +543,6 @@ const SandraNucleus = {
         // NO fallback - lanzar error
         throw new Error(`Conexión Deepgram falló en tiempo real: ${error.message}. Sin respuestas automáticas.`);
       }
-        return this.mockSTT();
-      }
     },
     
     // Avatar con HeyGen
@@ -565,14 +563,8 @@ const SandraNucleus = {
       };
     },
     
-    // Mocks para desarrollo
-    mockTTS(text) {
-      return Buffer.from(text);
-    },
-    
-    mockSTT() {
-      return 'Mensaje de prueba reconocido por voz';
-    }
+    // Mocks ELIMINADOS - Solo tiempo real
+    // No hay fallbacks automáticos, solo conexión en tiempo real
   },
 
   // ============================================================================
