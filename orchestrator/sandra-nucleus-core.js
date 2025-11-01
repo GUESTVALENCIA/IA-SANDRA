@@ -10,6 +10,9 @@
 const path = require('path');
 const fs = require('fs');
 
+// IMPORTAR LOGGER PRIMERO (antes de usarlo)
+const { logger } = require('./logger');
+
 // Cargar .env con múltiples estrategias
 const envPaths = [
   path.join(__dirname, '../../.env'),
@@ -29,10 +32,11 @@ for (const envPath of envPaths) {
       require('dotenv').config({ path: envPath, override: false });
       envLoaded = true;
       loadedEnvPath = envPath;
-      logger.info(`Environment loaded from: ${envPath}`);
+      if (logger) logger.info(`Environment loaded from: ${envPath}`);
       break;
     } catch (error) {
-      logger.warn(`Failed to load env from ${envPath}`, { error: error.message });
+      if (logger) logger.warn(`Failed to load env from ${envPath}`, { error: error.message });
+      else console.warn(`Failed to load env from ${envPath}:`, error.message);
     }
   }
 }
@@ -50,15 +54,18 @@ if (!envLoaded) {
 
 // Verificar que OPENAI_API_KEY esté disponible
 if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.trim() === '') {
-  logger.warn('OPENAI_API_KEY not found in environment variables', {
-    searchedPaths: envPaths,
-    lastLoadedPath: loadedEnvPath
-  });
+  if (logger) {
+    logger.warn('OPENAI_API_KEY not found in environment variables', {
+      searchedPaths: envPaths,
+      lastLoadedPath: loadedEnvPath
+    });
+  } else {
+    console.warn('OPENAI_API_KEY not found in environment variables');
+  }
 }
 
 // Importar Guardian Protocol
 const { guardianProtocol } = require('./guardian-protocol');
-const { logger } = require('./logger');
 
 const SandraNucleus = {
   version: "100.0",
@@ -74,7 +81,11 @@ const SandraNucleus = {
       openai: process.env.OPENAI_API_KEY || '',
       cartesia: process.env.CARTESIA_API_KEY,
       deepgram: process.env.DEEPGRAM_API_KEY,
-      heygen: process.env.HEYGEN_API_KEY
+      heygen: process.env.HEYGEN_API_KEY,
+      twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+      twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+      twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER,
+      twilioWhatsAppNumber: process.env.TWILIO_WHATSAPP_NUMBER
     },
     
     database: {
