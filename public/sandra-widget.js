@@ -334,7 +334,7 @@
   async function generateSpeech(text, container) {
     try {
       const baseUrl = CONFIG.API_BASE.includes('vercel') || CONFIG.API_BASE.includes('guestsvalencia') 
-        ? CONFIG.NETLIFY_BASE 
+        ? CONFIG.API_BASE 
         : 'https://sandra.guestsvalencia.es';
       
       const response = await fetch(`${baseUrl}/api/cartesia-tts`, {
