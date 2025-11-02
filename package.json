@@ -112,37 +112,28 @@
     "aws-sdk": "^2.1542.0",
     "axios": "^1.6.2",
     "cors": "^2.8.5",
-<<<<<<< HEAD
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "electron": "^39.0.0",
     "express": "^4.21.1",
-    "helmet": "^8.1.0",
-=======
-    "dotenv": "^16.6.1",
-    "express": "^4.18.2",
     "form-data": "^4.0.4",
+    "helmet": "^8.1.0",
     "jszip": "^3.10.1",
     "livekit-client": "^2.15.14",
->>>>>>> 9ee611055f391342ca61ca99f8d4fe4b5c719413
     "marked": "^16.4.1",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
+    "openai": "^4.58.1",
     "pdf-parse": "^2.4.5",
     "pino": "^10.1.0",
     "pino-pretty": "^13.1.2",
     "redis": "^5.9.0",
     "sharp": "^0.34.4",
-<<<<<<< HEAD
-    "twilio": "^5.10.4",
-    "uuid": "^11.0.3",
-    "ws": "^8.18.0"
-=======
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "socket.io-redis": "^6.1.1",
+    "twilio": "^5.10.4",
     "uuid": "^13.0.0",
-    "ws": "^8.14.2"
->>>>>>> 9ee611055f391342ca61ca99f8d4fe4b5c719413
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.5",
