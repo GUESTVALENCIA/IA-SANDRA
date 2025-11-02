@@ -128,13 +128,6 @@ for line in "${ENV_LINES[@]}"; do
   key="${key#${key%%[![:space:]]*}}"
   key="${key%${key##*[![:space:]]}}"
   key="${key//$'\r'/}"
-
-  # Allow dotenv files that use the "export KEY=VALUE" syntax.
-  if [[ $key =~ ^[Ee][Xx][Pp][Oo][Rr][Tt][[:space:]]+(.+) ]]; then
-    key="${BASH_REMATCH[1]}"
-    key="${key#${key%%[![:space:]]*}}"
-    key="${key%${key##*[![:space:]]}}"
-  fi
   value="${value//$'\r'/}"
   value="$(sanitize_value "$value")"
 

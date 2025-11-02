@@ -37,17 +37,3 @@ la subida de variables de entorno a Vercel a partir de un archivo `.env` o
 Esto permite integrar el script con automatizaciones más grandes (por ejemplo,
 un orquestador que prepare la app de escritorio y despliegues de Vercel sin
 intervención manual).
-
-## Integración con el orquestador de escritorio
-
-Si utilizas el flujo `sandra_ia_desktop_full` (el ejecutable que suele
-descargarse en `~/Downloads`), incluye este script en el paso de orquestación
-antes de realizar el despliegue en Vercel. El comando típico quedaría:
-
-```bash
-./sync_env_to_vercel.sh ./sandra.env.local all
-```
-
-De este modo te aseguras de que las variables de `sandra.env.local` estén ya en
-los entornos `production`, `preview` y `development` cuando el orquestador
-configure dominios, cron jobs y el despliegue principal.
