@@ -65,128 +65,23 @@ if [[ -n ${VERCEL_TOKEN:-} ]]; then
   TOKEN_FLAG=(--token "${VERCEL_TOKEN}")
 fi
 
-PROJECT_FLAG=()
-if [[ -n ${VERCEL_PROJECT_ID:-} ]]; then
-  PROJECT_FLAG=(--project "${VERCEL_PROJECT_ID}")
-elif [[ -n ${VERCEL_PROJECT_NAME:-} ]]; then
-  PROJECT_FLAG=(--project "${VERCEL_PROJECT_NAME}")
-fi
-
-trim_whitespace() {
-  local str="$1"
-  str="${str#${str%%[![:space:]]*}}"
-  str="${str%${str##*[![:space:]]}}"
-  printf '%s' "$str"
-}
-
-strip_inline_comment() {
-  local input="$1"
-  local result=""
-  local char quote="" escaped=0
-
-  for ((i = 0; i < ${#input}; i++)); do
-    char="${input:i:1}"
-
-    if ((escaped)); then
-      result+="$char"
-      escaped=0
-      continue
-    fi
-
-    if [[ $char == "\\" ]]; then
-      escaped=1
-      result+="$char"
-      continue
-    fi
-
-    if [[ $char == '"' || $char == "'" ]]; then
-      if [[ -z $quote ]]; then
-        quote="$char"
-      elif [[ $quote == $char ]]; then
-        quote=""
-      fi
-      result+="$char"
-      continue
-    fi
-
-    if [[ $char == "#" && -z $quote ]]; then
-      break
-    fi
-
-    result+="$char"
-  done
-
-  printf '%s' "$result"
-}
-
-sanitize_value() {
-  local value="$1"
-  value="$(trim_whitespace "$value")"
-
-  if [[ ${#value} -ge 2 ]]; then
-    local first_char="${value:0:1}"
-    local last_char="${value: -1}"
-
-    if [[ ( $first_char == '"' && $last_char == '"' ) || ( $first_char == "'" && $last_char == "'" ) ]]; then
-      value="${value:1:${#value}-2}"
-    fi
-  fi
-
-  printf '%s' "$value"
-}
-
-declare -a ENV_KEYS=()
-declare -a ENV_VALUES=()
-
-while IFS= read -r raw_line || [[ -n $raw_line ]]; do
-  local_line="${raw_line//$'\r'/}"
-  local_line="$(trim_whitespace "$local_line")"
-
-  if [[ -z $local_line || $local_line == '#'* ]]; then
-    continue
-  fi
-
-  local_line="$(strip_inline_comment "$local_line")"
-  local_line="$(trim_whitespace "$local_line")"
-
-  if [[ -z $local_line ]]; then
-    continue
-  fi
-
-  if [[ $local_line =~ ^[Dd][Ee][Cc][Ll][Aa][Rr][Ee][[:space:]]+-[Xx][[:space:]]+(.*)$ ]]; then
-    local_line="${BASH_REMATCH[1]}"
-    local_line="$(trim_whitespace "$local_line")"
-  fi
-
-  if [[ $local_line =~ ^[Ee][Xx][Pp][Oo][Rr][Tt][[:space:]]+(.*)$ ]]; then
-    local_line="${BASH_REMATCH[1]}"
-    local_line="$(trim_whitespace "$local_line")"
-  fi
-
-  if [[ $local_line != *=* ]]; then
-    printf '⚠️  Skipping malformed line: %s\n' "$raw_line" >&2
-    continue
-  fi
-
-  key="${local_line%%=*}"
-  value="${local_line#*=}"
-
-  key="$(trim_whitespace "$key")"
-  value="$(sanitize_value "$value")"
-
-  if [[ -z $key ]]; then
-    printf '⚠️  Skipping line with empty key: %s\n' "$raw_line" >&2
-    continue
-  fi
-
-  ENV_KEYS+=("${key//$'\r'/}")
-  ENV_VALUES+=("${value//$'\r'/}")
-done < "$ENV_FILE"
-
-if [[ ${#ENV_KEYS[@]} -eq 0 ]]; then
+mapfile -t ENV_LINES < <(grep -vE '^(#|\s*$)' "$ENV_FILE")
+if [[ ${#ENV_LINES[@]} -eq 0 ]]; then
   echo "⚠️  No variables detected in '$ENV_FILE'" >&2
   exit 0
 fi
+
+sanitize_value() {
+  local value="$1"
+  # Trim leading and trailing whitespace
+  value="${value#${value%%[![:space:]]*}}"
+  value="${value%${value##*[![:space:]]}}"
+  # Remove surrounding quotes
+  if [[ ("$value" == "\""*"\"") || ("$value" == "'"*"'") ]]; then
+    value="${value:1:${#value}-2}"
+  fi
+  echo -n "$value"
+}
 
 sync_var() {
   local key="$1"
@@ -204,7 +99,7 @@ sync_var() {
 
     printf '   → %s (%s)\n' "$key" "$env"
     # Remove the variable first to avoid interactive prompt when updating.
-    if vercel env rm "$key" "$env" --yes "${TOKEN_FLAG[@]}" "${PROJECT_FLAG[@]}" >/dev/null 2>&1; then
+    if vercel env rm "$key" "$env" --yes "${TOKEN_FLAG[@]}" >/dev/null 2>&1; then
       printf '      (existing value removed)\n'
     fi
 
@@ -213,7 +108,7 @@ sync_var() {
       continue
     fi
 
-    if ! printf '%s\n' "$value" | vercel env add "$key" "$env" "${TOKEN_FLAG[@]}" "${PROJECT_FLAG[@]}" >/dev/null; then
+    if ! printf '%s\n' "$value" | vercel env add "$key" "$env" "${TOKEN_FLAG[@]}" >/dev/null; then
       printf '      ❌ Failed to set %s for %s\n' "$key" "$env"
       return 1
     fi
@@ -222,15 +117,25 @@ sync_var() {
   return 0
 }
 
-printf '\n🌐 Syncing %d variables from %s\n' "${#ENV_KEYS[@]}" "$ENV_FILE"
+printf '\n🌐 Syncing %d variables from %s\n' "${#ENV_LINES[@]}" "$ENV_FILE"
 
 SUCCESS_COUNT=0
 ERROR_COUNT=0
 
-for idx in "${!ENV_KEYS[@]}"; do
-  key="${ENV_KEYS[$idx]}"
-  value="${ENV_VALUES[$idx]}"
+for line in "${ENV_LINES[@]}"; do
+  key="${line%%=*}"
+  value="${line#*=}"
+  key="${key#${key%%[![:space:]]*}}"
+  key="${key%${key##*[![:space:]]}}"
+  key="${key//$'\r'/}"
+  value="${value//$'\r'/}"
+  value="$(sanitize_value "$value")"
 
+  if [[ -z "$key" ]]; then
+    continue
+  fi
+
+  # Avoid leaking full secret values in logs.
   preview="${value:0:4}"
   if [[ ${#value} -gt 4 ]]; then
     preview+="***"
