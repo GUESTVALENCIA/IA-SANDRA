@@ -1,0 +1,49 @@
+# ==========================================
+# SANDRA IA 8.0 PRO - CONFIGURACIÓN
+# ==========================================
+
+# Ambiente
+NODE_ENV=development
+SANDRA_VERSION=8.0.0
+
+# APIs Principales
+GROQ_API_KEY=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
+DEEPSEEK_API_KEY=sk-proj-deepseek-api-key
+OPENAI_API_KEY=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
+
+# DeepGram (STT)
+DEEPGRAM_API_KEY=30e9dbaec29dcde1b23a8bd9de31438c74f23522
+
+# HeyGen (Avatar)
+HEYGEN_API_KEY=M2IzYzcyOGY1ZmFhNGI5YmE5NzBlZTFiNDhmOTc3MDMtMTc1MzU4MDA1OA==
+HEYGEN_AVATAR_ID=a7a7e63f00a74ff984d4b43f984c438c
+
+# Base de Datos Neon
+DATABASE_URL=postgresql://sandra_user:password@ep-cool-snowflake-123456.us-east-1.aws.neon.tech/sandra_db?sslmode=require
+
+# GitHub
+GITHUB_TOKEN=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
+GITHUB_REPO=GUESTVALENCIA/IA-SANDRA
+
+# MCP (Modular Control Panel)
+MCP_SECRET_KEY=sandra_mcp_ultra_secure_2025
+MCP_PORT=3001
+
+# Vercel
+VERCEL_TOKEN=rTbbeIXzN70ZvXbG6L9Avj5d
+VERCEL_PROJECT_ID=prj_j0oMCNvOgiMauVLQrYIkaHFymn8o
+
+# Bright Data (Web Scraping)
+BRIGHT_DATA_AUTH=brd-customer-hl_c4b3455e-zone-mcp_booking_airbnb:rsxgwjh411m4
+BRIGHT_DATA_HOST=brd.superproxy.io:9515
+
+# Twilio (Llamadas)
+TWILIO_ACCOUNT_SID=AC38300ea2b028ab4a55d6487f6451f69b
+TWILIO_AUTH_TOKEN=5502a7df0779ba9124318c4e0543d695
+TWILIO_PHONE_NUMBER=+34914123456
+
+# PayPal
+PAYPAL_CLIENT_ID=AYs9dULgQ12igjVhbMCFnXtBVcrmrJ25PWV949ZOFMFyEQTAS1eE7Bdm7iybUqnA0GSGZRl5q9Ar-wT8
+PAYPAL_CLIENT_SECRET=EEjIKqOQpLodh6VEpwt0z3YOE_xkk1sQ1J1DzSKXjfpKKGZ6WqjidWus3hcrIwpl3jyo6JpI2jHsg7mA
+PAYPAL_MODE=sandbox
+

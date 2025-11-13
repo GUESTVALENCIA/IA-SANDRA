@@ -1,0 +1,234 @@
+================================================================================
+             SANDRA IA 8.0 PRO - GUÍA DE INICIO RÁPIDO
+================================================================================
+
+🚀 INICIO INMEDIATO (3 FORMAS)
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ OPCIÓN 1: DESDE EL ESCRITORIO (RECOMENDADO)                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ ✓ Haz doble clic en "Sandra_IA_8.0_Pro.lnk" en tu escritorio             │
+│ ✓ Se abrirá el menú interactivo                                           │
+│ ✓ Selecciona la opción que desees                                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ OPCIÓN 2: DESDE POWERSHELL (RECOMENDADO PARA DESARROLLO)                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ 1. Abre PowerShell                                                         │
+│ 2. Ejecuta:                                                                │
+│    cd C:\Sandra-IA-8.0-Pro                                                │
+│    .\Quick_Start.bat                                                       │
+│                                                                             │
+│ 3. Selecciona opción 3 para iniciar ambos servicios                       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ OPCIÓN 3: DESPLIEGUE AUTOMÁTICO COMPLETO                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ 1. Clic derecho en "Deploy_Master.bat"                                   │
+│ 2. Selecciona "Ejecutar como administrador"                               │
+│ 3. El sistema hará todo automáticamente                                   │
+│                                                                             │
+│ Este script:                                                               │
+│ ✓ Limpia archivos duplicados y obsoletos                                 │
+│ ✓ Verifica salud del sistema                                             │
+│ ✓ Crea puntos de restauración                                            │
+│ ✓ Inicia todos los servicios                                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+📊 ACCESO A SERVICIOS
+================================================================================
+
+Una vez que la aplicación esté en ejecución, accede a:
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ INTERFAZ PRINCIPAL (Electron)                                             │
+│ ➜ Se abre automáticamente al iniciar                                     │
+│ ➜ Puerto: 9080                                                            │
+│ ➜ Ubicación: http://localhost:9080                                        │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ SERVIDOR MCP (Control Panel)                                              │
+│ ➜ Puerto: 3000                                                            │
+│ ➜ Ubicación: http://localhost:3000                                        │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ WEBSOCKET (Comunicación en tiempo real)                                   │
+│ ➜ Puerto: 8765                                                            │
+│ ➜ Protocolo: ws://localhost:8765                                         │
+└────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+🛠️ CARACTERÍSTICAS PRINCIPALES
+================================================================================
+
+✅ 18 ROLES ESPECIALIZADOS
+   - Desarrollador, Youtuber, Community Manager, etc.
+   - Cada rol optimizado para tareas específicas
+   - Validación de ejecución práctica
+
+✅ SISTEMA DE NEGOCIACIÓN AUTOMÁTICA
+   - Airbnb y Booking.com
+   - Integración Twilio para llamadas
+   - Procesamiento de pagos PayPal
+
+✅ MOTOR DE EJECUCIÓN PRÁCTICA (PEF)
+   - Tareas ejecutables, no teóricas
+   - Validación en tiempo real
+   - Aprendizaje continuo
+
+✅ SISTEMA DE PUNTOS DE RESTAURACIÓN
+   - Backups automáticos comprimidos
+   - Eliminación inteligente de duplicados
+   - Restauración rápida
+
+✅ PANEL DE VALIDACIÓN
+   - Prueba todos los roles
+   - Validación para producción turística
+   - Estadísticas de completación
+
+================================================================================
+⚙️ OPCIONES DEL MENÚ RÁPIDO
+================================================================================
+
+1. INICIAR APLICACIÓN (Electron)
+   → Lanza la interfaz gráfica principal de Sandra IA
+
+2. INICIAR SERVIDOR MCP
+   → Inicia el servidor de control modular
+
+3. INICIAR AMBOS SERVICIOS
+   → Opción recomendada para uso completo
+
+4. INSTALAR DEPENDENCIAS
+   → Ejecuta 'npm install' para completar la instalación
+
+5. VER ESTADO DEL SISTEMA
+   → Verifica qué servicios están activos
+
+6. LIMPIAR ARCHIVOS TEMPORALES
+   → Elimina archivos .log, .tmp, .bak
+
+7. CREAR PUNTO DE RESTAURACIÓN
+   → Genera backup comprimido del sistema
+
+8. RESTAURAR DESDE BACKUP
+   → Abre el sistema de restauración
+
+9. VALIDAR INSTALACIÓN
+   → Verifica que todo esté correctamente instalado
+
+0. SALIR
+   → Cierra el menú
+
+================================================================================
+🔧 SOLUCIÓN DE PROBLEMAS
+================================================================================
+
+❌ "Node.js no está instalado"
+   ✓ Descarga desde https://nodejs.org/
+   ✓ Ejecuta el instalador
+   ✓ Reinicia PowerShell y vuelve a intentar
+
+❌ "Puerto 9080/3000/8765 en uso"
+   ✓ Ejecuta: netstat -ano | findstr ":9080"
+   ✓ Busca el PID y ejecuta: taskkill /PID <PID> /F
+   ✓ Vuelve a iniciar
+
+❌ "No se encuentra el directorio"
+   ✓ Verifica que estés en: C:\Sandra-IA-8.0-Pro
+   ✓ Si no existe, clona desde GitHub
+
+❌ "Las dependencias faltan"
+   ✓ Selecciona opción 4 en el menú
+   ✓ O ejecuta: npm install
+
+❌ "Acceso denegado"
+   ✓ Ejecuta PowerShell como administrador
+   ✓ Para Deploy_Master.bat: clic derecho > "Ejecutar como administrador"
+
+================================================================================
+📁 ESTRUCTURA DE ARCHIVOS
+================================================================================
+
+C:\Sandra-IA-8.0-Pro\
+├── desktop-app\              # Aplicación Electron (interfaz)
+├── core\                     # Frameworks de ejecución
+├── services\                 # Servicios de negociación, datos, etc.
+├── llm-orchestrator\         # Gestión de LLMs
+├── neon-db-adapter\          # Conexión a base de datos
+├── testing\                  # Validadores y tests
+├── Quick_Start.bat           # Menú interactivo (USAR ESTO)
+├── Deploy_Master.bat         # Despliegue automático completo
+├── Restore_System.bat        # Sistema de restauración
+└── .env.pro                  # Configuración de variables de entorno
+
+================================================================================
+🚀 PRÓXIMOS PASOS
+================================================================================
+
+1. Inicia la aplicación usando Quick_Start.bat
+2. Ve a la opción 9 para validar la instalación
+3. Accede al panel en http://localhost:9080
+4. Valida los 18 roles usando el panel de validación
+5. Confirma que está listo para producción turística
+
+================================================================================
+📞 ACCIONES DISPONIBLES EN LA INTERFAZ
+================================================================================
+
+Una vez que la aplicación esté abierta:
+
+🔍 BÚSQUEDA DE ALOJAMIENTOS
+   - Ingresa URLs de Airbnb o Booking.com
+   - Sandra extrae precios y disponibilidad automáticamente
+
+💬 NEGOCIACIÓN AUTOMÁTICA
+   - Selecciona un alojamiento
+   - Sandra inicia negociación de precios
+   - Opción de llamada telefónica con Twilio
+
+🎯 VALIDACIÓN DE ROLES
+   - Panel dedicado para probar los 18 roles
+   - Verifica completación de tareas
+   - Métricas de ejecución práctica
+
+📊 MONITOREO EN TIEMPO REAL
+   - Estado de servicios
+   - Estadísticas de ejecución
+   - Logs de actividad
+
+================================================================================
+💡 CONSEJOS Y MEJORES PRÁCTICAS
+================================================================================
+
+✓ Mantén al menos 500MB de espacio libre para puntos de restauración
+✓ Crea puntos de restauración antes de cambios importantes
+✓ Valida regularmente los roles desde el panel de validación
+✓ Verifica el estado del sistema usando la opción 5 del menú
+✓ Ejecuta Deploy_Master.bat periódicamente para limpieza profunda
+✓ Consulta los logs en caso de errores para diagnóstico
+
+================================================================================
+🎉 ¡BIENVENIDO A SANDRA IA 8.0 PRO!
+================================================================================
+
+¡La aplicación está lista para usar! Haz doble clic en el acceso directo del
+escritorio o ejecuta Quick_Start.bat para comenzar.
+
+Si encuentras problemas, revisa la sección "SOLUCIÓN DE PROBLEMAS" arriba.
+
+¡Disfruta Sandra IA 8.0 Pro! 🚀
+
+================================================================================
+
