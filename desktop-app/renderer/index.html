@@ -18,7 +18,7 @@
     .app-container {
       display: grid;
       grid-template-columns: 280px 1fr 350px;
-      grid-template-rows: 60px 1fr 80px;
+      grid-template-rows: 60px calc(100vh - 140px) 80px;
       height: 100vh;
       gap: 0;
       overflow: hidden;
@@ -246,16 +246,18 @@
     /* MULTIMODAL INPUT BAR */
     .input-bar {
       grid-column: 1 / -1;
+      grid-row: 3;
       background: #16213e;
       border-top: 1px solid rgba(255,255,255,0.1);
       padding: 15px 30px;
-      display: flex;
+      display: flex !important;
       gap: 15px;
       align-items: center;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
       position: relative;
-      z-index: 50;
+      z-index: 100;
       min-height: 80px;
+      height: 80px;
       max-height: 80px;
     }
 
