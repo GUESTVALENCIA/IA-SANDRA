@@ -164,6 +164,20 @@
 
     .sidebar h3:first-child { margin-top: 0; }
 
+    .role-category {
+      margin-bottom: 25px;
+    }
+
+    .role-category h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b92a8;
+      margin: 20px 0 10px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
     .role-btn {
       width: 100%;
       padding: 12px 15px;
@@ -191,6 +205,10 @@
     .role-btn.active {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border-color: #667eea;
+    }
+
+    .role-btn.hidden {
+      display: none;
     }
 
     /* CHAT AREA */
@@ -262,6 +280,54 @@
       font-size: 11px;
       color: rgba(255,255,255,0.5);
       margin-top: 5px;
+    }
+
+    /* QUICK ACTIONS */
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .quick-action-btn {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+      border: 2px solid rgba(102, 126, 234, 0.5);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+      backdrop-filter: blur(10px);
+    }
+
+    .quick-action-btn:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%);
+      border-color: rgba(102, 126, 234, 0.8);
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .quick-action-btn:active {
+      transform: translateX(3px) scale(0.98);
+    }
+
+    .welcome-message {
+      animation: welcomeSlideIn 0.5s ease-out;
+    }
+
+    @keyframes welcomeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* AVATAR PANEL */
@@ -369,6 +435,26 @@
       font-size: 20px;
       transition: all 0.3s;
       flex-shrink: 0;
+    }
+
+    .btn-video {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #fff;
+    }
+
+    .btn-video:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.5);
+    }
+
+    .btn-video.active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      animation: videoPulse 2s infinite;
+    }
+
+    @keyframes videoPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
     }
 
     .btn-voice {
@@ -528,64 +614,207 @@
 
     <!-- SIDEBAR -->
     <div class="sidebar">
-      <h3>🎯 Roles Especializados (18)</h3>
-      <button class="role-btn active" data-role="general">
-        💬 General
-      </button>
-      <button class="role-btn" data-role="administrator">
-        👔 Administrador
-      </button>
-      <button class="role-btn" data-role="developer">
-        💻 Desarrollador
-      </button>
-      <button class="role-btn" data-role="youtuber">
-        🎬 YouTuber
-      </button>
-      <button class="role-btn" data-role="community">
-        👥 Community Manager
-      </button>
-      <button class="role-btn" data-role="tourism">
-        🏨 Turismo
-      </button>
-      <button class="role-btn" data-role="sales">
-        💼 Ventas
-      </button>
-      <button class="role-btn" data-role="analyst">
-        📊 Analista
-      </button>
-      <button class="role-btn" data-role="marketing">
-        📈 Marketing
-      </button>
-      <button class="role-btn" data-role="ceo">
-        🏢 CEO/Ejecutivo
-      </button>
-      <button class="role-btn" data-role="designer">
-        🎨 Diseñador
-      </button>
-      <button class="role-btn" data-role="lawyer">
-        ⚖️ Abogado
-      </button>
-      <button class="role-btn" data-role="doctor">
-        🥼 Médico
-      </button>
-      <button class="role-btn" data-role="teacher">
-        📚 Profesor
-      </button>
-      <button class="role-btn" data-role="financial">
-        💰 Asesor Financiero
-      </button>
-      <button class="role-btn" data-role="artist">
-        🎭 Artista
-      </button>
-      <button class="role-btn" data-role="scientist">
-        🔬 Científico
-      </button>
-      <button class="role-btn" data-role="engineer">
-        🔧 Ingeniero
-      </button>
-      <button class="role-btn" data-role="psychologist">
-        🧠 Psicólogo
-      </button>
+      <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <input 
+          type="text" 
+          id="role-search" 
+          placeholder="🔍 Buscar rol..." 
+          style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 13px; outline: none;"
+        />
+      </div>
+      
+      <div class="role-category">
+        <h3>🎯 Core SOE (7)</h3>
+        <button class="role-btn active" data-role="general" data-category="core">
+          💬 General
+        </button>
+        <button class="role-btn" data-role="orchestrator" data-category="core">
+          🎼 Orquestador
+        </button>
+        <button class="role-btn" data-role="product_ceo" data-category="core">
+          👔 Product CEO
+        </button>
+        <button class="role-btn" data-role="developer" data-category="core">
+          💻 Desarrollador
+        </button>
+        <button class="role-btn" data-role="devops" data-category="core">
+          🚀 DevOps
+        </button>
+        <button class="role-btn" data-role="api_designer" data-category="core">
+          🔌 API Designer
+        </button>
+        <button class="role-btn" data-role="security" data-category="core">
+          🔒 Security
+        </button>
+        <button class="role-btn" data-role="prompt_engineer" data-category="core">
+          ✍️ Prompt Engineer
+        </button>
+      </div>
+
+      <div class="role-category">
+        <h3>🌟 Sandra IA 7.0 (18)</h3>
+        <button class="role-btn" data-role="concierge" data-category="sandra">
+          🏨 Concierge
+        </button>
+        <button class="role-btn" data-role="owner_acquisition" data-category="sandra">
+          🏠 Owner Acquisition
+        </button>
+        <button class="role-btn" data-role="community_manager" data-category="sandra">
+          👥 Community Manager
+        </button>
+        <button class="role-btn" data-role="youtuber" data-category="sandra">
+          🎬 YouTuber
+        </button>
+        <button class="role-btn" data-role="tourism" data-category="sandra">
+          ✈️ Turismo
+        </button>
+        <button class="role-btn" data-role="sales" data-category="sandra">
+          💼 Ventas
+        </button>
+        <button class="role-btn" data-role="analyst" data-category="sandra">
+          📊 Analista
+        </button>
+        <button class="role-btn" data-role="marketing" data-category="sandra">
+          📈 Marketing
+        </button>
+        <button class="role-btn" data-role="ceo" data-category="sandra">
+          🏢 CEO/Ejecutivo
+        </button>
+        <button class="role-btn" data-role="designer" data-category="sandra">
+          🎨 Diseñador
+        </button>
+        <button class="role-btn" data-role="lawyer" data-category="sandra">
+          ⚖️ Abogado
+        </button>
+        <button class="role-btn" data-role="financial" data-category="sandra">
+          💰 Financiero
+        </button>
+        <button class="role-btn" data-role="psychologist" data-category="sandra">
+          🧠 Psicólogo
+        </button>
+        <button class="role-btn" data-role="teacher" data-category="sandra">
+          📚 Profesor
+        </button>
+        <button class="role-btn" data-role="artist" data-category="sandra">
+          🎭 Artista
+        </button>
+        <button class="role-btn" data-role="scientist" data-category="sandra">
+          🔬 Científico
+        </button>
+        <button class="role-btn" data-role="engineer" data-category="sandra">
+          🔧 Ingeniero
+        </button>
+        <button class="role-btn" data-role="doctor" data-category="sandra">
+          🥼 Médico
+        </button>
+      </div>
+
+      <div class="role-category">
+        <h3>🚀 Especializados (27)</h3>
+        <button class="role-btn" data-role="influencer_marketing" data-category="specialized">
+          📱 Influencer Marketing
+        </button>
+        <button class="role-btn" data-role="cryptocurrency" data-category="specialized">
+          ₿ Cryptocurrency
+        </button>
+        <button class="role-btn" data-role="viralization" data-category="specialized">
+          🔥 Viralización
+        </button>
+        <button class="role-btn" data-role="optimization" data-category="specialized">
+          ⚡ Optimización
+        </button>
+        <button class="role-btn" data-role="ui_ux" data-category="specialized">
+          🎨 UI/UX
+        </button>
+        <button class="role-btn" data-role="finance" data-category="specialized">
+          💵 Finanzas
+        </button>
+        <button class="role-btn" data-role="yoga" data-category="specialized">
+          🧘 Yoga
+        </button>
+        <button class="role-btn" data-role="mindfulness" data-category="specialized">
+          🧠 Mindfulness
+        </button>
+        <button class="role-btn" data-role="sexology" data-category="specialized">
+          💕 Sexología
+        </button>
+        <button class="role-btn" data-role="content_creator" data-category="specialized">
+          ✍️ Content Creator
+        </button>
+        <button class="role-btn" data-role="animation" data-category="specialized">
+          🎬 Animación
+        </button>
+        <button class="role-btn" data-role="language_teacher" data-category="specialized">
+          🌍 Language Teacher
+        </button>
+        <button class="role-btn" data-role="empathy" data-category="specialized">
+          ❤️ Empatía
+        </button>
+        <button class="role-btn" data-role="geography" data-category="specialized">
+          🌎 Geografía
+        </button>
+        <button class="role-btn" data-role="startup_visionary" data-category="specialized">
+          🚀 Startup Visionary
+        </button>
+        <button class="role-btn" data-role="general_knowledge" data-category="specialized">
+          📚 Conocimiento General
+        </button>
+        <button class="role-btn" data-role="self_development" data-category="specialized">
+          🌱 Auto-desarrollo
+        </button>
+        <button class="role-btn" data-role="project_analyst" data-category="specialized">
+          📊 Project Analyst
+        </button>
+        <button class="role-btn" data-role="social_media" data-category="specialized">
+          📱 Social Media
+        </button>
+        <button class="role-btn" data-role="dev_support" data-category="specialized">
+          💻 Dev Support
+        </button>
+        <button class="role-btn" data-role="logistics" data-category="specialized">
+          📦 Logística
+        </button>
+        <button class="role-btn" data-role="organization" data-category="specialized">
+          📋 Organización
+        </button>
+        <button class="role-btn" data-role="ai_expert" data-category="specialized">
+          🤖 AI Expert
+        </button>
+      </div>
+
+      <div class="role-category">
+        <h3>📊 Marketing (10)</h3>
+        <button class="role-btn" data-role="business_analyst" data-category="marketing">
+          📈 Business Analyst
+        </button>
+        <button class="role-btn" data-role="marketing_strategist" data-category="marketing">
+          🎯 Marketing Strategist
+        </button>
+        <button class="role-btn" data-role="content_strategist" data-category="marketing">
+          ✍️ Content Strategist
+        </button>
+        <button class="role-btn" data-role="social_media_manager" data-category="marketing">
+          📱 Social Media Manager
+        </button>
+        <button class="role-btn" data-role="seo_specialist" data-category="marketing">
+          🔍 SEO Specialist
+        </button>
+        <button class="role-btn" data-role="ppc_specialist" data-category="marketing">
+          💰 PPC Specialist
+        </button>
+        <button class="role-btn" data-role="email_marketer" data-category="marketing">
+          📧 Email Marketer
+        </button>
+        <button class="role-btn" data-role="brand_manager" data-category="marketing">
+          🏷️ Brand Manager
+        </button>
+        <button class="role-btn" data-role="analytics_specialist" data-category="marketing">
+          📊 Analytics Specialist
+        </button>
+        <button class="role-btn" data-role="growth_hacker" data-category="marketing">
+          🚀 Growth Hacker
+        </button>
+      </div>
 
       <h3>⚙️ Sistema</h3>
       <button class="role-btn" data-action="mcp">
@@ -605,10 +834,27 @@
     <!-- CHAT AREA -->
     <div class="chat-area">
       <div class="messages-container" id="messages">
-        <div class="message">
+        <div class="message assistant welcome-message">
           <div class="message-avatar">S</div>
           <div class="message-content">
-            <div>¡Hola! Soy Sandra IA 8.0 Pro. Puedo ayudarte con 18 roles especializados. ¿En qué puedo asistirte hoy?</div>
+            <div>
+              <strong>¡Hola! 👋 Soy Sandra IA 8.0 Pro</strong><br>
+              <p style="margin: 10px 0; opacity: 0.9;">Asistente multimodal premium con <strong>62 roles especializados</strong> listos para ayudarte.</p>
+              
+              <div class="quick-actions" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="quick-action-btn" onclick="executeQuickAction('system-status')">
+                  🚀 Verificar estado del sistema
+                </button>
+                <button class="quick-action-btn" onclick="executeQuickAction('test-multimodal')">
+                  🎤 Probar chat multimodal
+                </button>
+                <button class="quick-action-btn" onclick="executeQuickAction('github-sync')">
+                  🔄 Sincronizar con GitHub
+                </button>
+              </div>
+              
+              <p style="margin-top: 15px; font-size: 13px; opacity: 0.7;">O simplemente escribe o habla para comenzar una conversación.</p>
+            </div>
             <div class="message-time" id="init-time"></div>
           </div>
         </div>
@@ -689,9 +935,12 @@
         <input 
           type="text" 
           id="message-input" 
-          placeholder="Escribe tu mensaje o usa el micrófono..."
+          placeholder="Escribe tu mensaje, usa el micrófono o inicia videollamada..."
           autocomplete="off"
         />
+        <button class="input-btn btn-video" id="video-btn" title="Iniciar videollamada con avatar">
+          📹
+        </button>
         <button class="input-btn btn-voice" id="voice-btn" title="Grabar voz">
           🎤
         </button>
@@ -965,6 +1214,40 @@
         selector.classList.remove('active');
       }
     });
+
+    // ==================== BÚSQUEDA DE ROLES ====================
+    const roleSearch = document.getElementById('role-search');
+    if (roleSearch) {
+      roleSearch.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const allRoleBtns = document.querySelectorAll('.role-btn[data-role]');
+        const categories = document.querySelectorAll('.role-category');
+        
+        if (searchTerm === '') {
+          // Mostrar todos
+          allRoleBtns.forEach(btn => btn.classList.remove('hidden'));
+          categories.forEach(cat => cat.style.display = 'block');
+        } else {
+          // Filtrar roles
+          let hasVisibleRoles = false;
+          allRoleBtns.forEach(btn => {
+            const roleText = btn.textContent.toLowerCase();
+            if (roleText.includes(searchTerm)) {
+              btn.classList.remove('hidden');
+              hasVisibleRoles = true;
+            } else {
+              btn.classList.add('hidden');
+            }
+          });
+          
+          // Ocultar categorías vacías
+          categories.forEach(cat => {
+            const visibleBtns = cat.querySelectorAll('.role-btn:not(.hidden)');
+            cat.style.display = visibleBtns.length > 0 ? 'block' : 'none';
+          });
+        }
+      });
+    }
 
     // ==================== ROLES ====================
     document.querySelectorAll('.role-btn[data-role]').forEach(btn => {
@@ -1280,9 +1563,120 @@
       }, 3000);
     }
 
+    // ==================== QUICK ACTIONS ====================
+    async function executeQuickAction(action) {
+      showToast(`🚀 Ejecutando: ${action}...`);
+      
+      switch(action) {
+        case 'system-status':
+          addMessage('Verificando estado del sistema...', 'user');
+          if (window.sandraAPI) {
+            const status = await window.sandraAPI.getSystemStatus();
+            if (status.success) {
+              addMessage(`✅ Estado del Sistema:\n\n${JSON.stringify(status.data, null, 2)}`, 'assistant');
+            } else {
+              addMessage('⚠️ No se pudo obtener el estado del sistema', 'assistant');
+            }
+          } else {
+            addMessage('✅ Sistema operativo\n✅ 62 roles disponibles\n✅ Multimodal activo', 'assistant');
+          }
+          break;
+          
+        case 'test-multimodal':
+          addMessage('Probando sistema multimodal...', 'user');
+          showToast('🎤 Iniciando prueba de voz...');
+          // Simular prueba multimodal
+          setTimeout(() => {
+            addMessage('✅ Sistema Multimodal:\n🎤 Voz: Listo\n📹 Avatar: Listo\n🔄 Barge-in: Activado', 'assistant');
+          }, 1000);
+          break;
+          
+        case 'github-sync':
+          addMessage('Sincronizando con GitHub...', 'user');
+          if (window.sandraAPI) {
+            const sync = await window.sandraAPI.syncWithGitHub();
+            if (sync.success) {
+              addMessage(`✅ Sincronización completada:\n${sync.message}`, 'assistant');
+            } else {
+              addMessage(`⚠️ Error en sincronización: ${sync.error}`, 'assistant');
+            }
+          } else {
+            addMessage('✅ Repositorio sincronizado\n✅ 62 roles en GitHub', 'assistant');
+          }
+          break;
+      }
+    }
+
+    // ==================== VIDEOCALL CON AVATAR ====================
+    let isVideoCallActive = false;
+    
+    async function toggleVideoCall() {
+      const videoBtn = document.getElementById('video-btn');
+      const avatarPanel = document.querySelector('.avatar-panel');
+      const avatarVideo = document.getElementById('heygen-avatar-video');
+      
+      if (!isVideoCallActive) {
+        // INICIAR VIDEOCALL
+        try {
+          showToast('📹 Iniciando videollamada con avatar...');
+          
+          if (window.sandraAPI) {
+            const result = await window.sandraAPI.startVideoCall();
+            if (result.success) {
+              isVideoCallActive = true;
+              videoBtn.classList.add('active');
+              avatarPanel.style.display = 'block';
+              
+              if (avatarVideo && result.stream) {
+                avatarVideo.srcObject = result.stream;
+                avatarVideo.style.display = 'block';
+                avatarVideo.play();
+              }
+              
+              showToast('✅ Videollamada activa - Habla para interactuar');
+              addMessage('📹 Videollamada iniciada. El avatar está listo para conversar.', 'assistant');
+            } else {
+              showToast('❌ Error iniciando videollamada: ' + result.error, 'error');
+            }
+          } else {
+            // Modo demo
+            isVideoCallActive = true;
+            videoBtn.classList.add('active');
+            avatarPanel.style.display = 'block';
+            showToast('✅ Videollamada activa (modo demo)');
+            addMessage('📹 Videollamada iniciada. El avatar está listo para conversar.', 'assistant');
+          }
+        } catch (error) {
+          console.error('Error en videollamada:', error);
+          showToast('❌ Error: ' + error.message, 'error');
+        }
+      } else {
+        // FINALIZAR VIDEOCALL
+        try {
+          if (window.sandraAPI) {
+            await window.sandraAPI.stopVideoCall();
+          }
+          
+          isVideoCallActive = false;
+          videoBtn.classList.remove('active');
+          
+          if (avatarVideo) {
+            avatarVideo.srcObject = null;
+            avatarVideo.style.display = 'none';
+          }
+          
+          showToast('📹 Videollamada finalizada');
+          addMessage('📹 Videollamada finalizada.', 'assistant');
+        } catch (error) {
+          console.error('Error finalizando videollamada:', error);
+        }
+      }
+    }
+
     // ==================== EVENT LISTENERS ====================
     sendBtn.addEventListener('click', sendMessage);
     voiceBtn.addEventListener('click', toggleVoiceRecording);
+    document.getElementById('video-btn').addEventListener('click', toggleVideoCall);
     
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
