@@ -7,6 +7,7 @@
     "start": "electron desktop-app/main.js",
     "dev": "set NODE_ENV=development && electron desktop-app/main.js",
     "start:mcp": "node mcp-server/server.js",
+    "start:sonnet-mcp": "node mcp-server/mcp-sonnet-full-access.js",
     "build": "electron-builder --win --x64",
     "test": "echo \"No tests specified\""
   },

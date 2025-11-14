@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "sandra-full-access": {
+      "command": "node",
+      "args": [
+        "C:\\Sandra-IA-8.0-Pro\\mcp-server\\mcp-sonnet-full-access.js"
+      ],
+      "env": {
+        "MCP_PORT": "3001",
+        "MCP_SECRET_KEY": "sandra_mcp_ultra_secure_2025"
+      }
+    }
+  }
+}
+
