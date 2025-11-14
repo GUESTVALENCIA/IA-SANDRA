@@ -905,10 +905,17 @@
       providers.forEach(provider => {
         const option = document.createElement('div');
         option.className = `provider-option ${provider.id === currentProvider ? 'active' : ''} ${!provider.hasApiKey ? 'disabled' : ''}`;
+        
+        let statusText = provider.hasApiKey ? '✅ Configurado' : '⚠️ Sin API Key';
+        if (provider.note) {
+          statusText = `${provider.hasApiKey ? '✅' : '⚠️'} ${provider.note}`;
+        }
+        
         option.innerHTML = `
           <div>
-            <div style="font-weight: 600;">${provider.name}</div>
-            <div class="provider-status">${provider.hasApiKey ? '✅ Configurado' : '⚠️ Sin API Key'}</div>
+            <div style="font-weight: 600;">${provider.name} ${provider.id === currentProvider ? '(Activo)' : ''}</div>
+            <div class="provider-status">${statusText}</div>
+            ${provider.defaultModel ? `<div class="provider-status" style="opacity: 0.5; font-size: 11px;">Modelo: ${provider.defaultModel}</div>` : ''}
           </div>
         `;
         

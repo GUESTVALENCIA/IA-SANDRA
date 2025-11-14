@@ -6,11 +6,24 @@ const execAsync = promisify(exec);
 class AIOrchestrator {
   constructor() {
     this.providers = {
+      openai: {
+        url: 'https://api.openai.com/v1/chat/completions',
+        apiKey: process.env.OPENAI_API_KEY,
+        models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+        defaultModel: 'gpt-4o-mini'
+      },
+      claude: {
+        url: 'https://api.anthropic.com/v1/messages',
+        apiKey: process.env.CLAUDE_API_KEY,
+        models: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-haiku-20240307'],
+        defaultModel: 'claude-3-5-sonnet-20241022'
+      },
       groq: {
         url: 'https://api.groq.com/openai/v1/chat/completions',
         apiKey: process.env.GROQ_API_KEY,
-        models: ['mixtral-8x7b-32768', 'llama2-70b-4096'],
-        defaultModel: 'mixtral-8x7b-32768'
+        models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'],
+        defaultModel: 'llama-3.3-70b-versatile',
+        note: 'Versión ligera - límites bajos'
       },
       deepseek: {
         url: 'https://api.deepseek.com/v1/chat/completions',
@@ -18,24 +31,20 @@ class AIOrchestrator {
         models: ['deepseek-chat', 'deepseek-coder'],
         defaultModel: 'deepseek-chat'
       },
-      claude: {
-        url: 'https://api.anthropic.com/v1/messages',
-        apiKey: process.env.CLAUDE_API_KEY,
-        models: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
-        defaultModel: 'claude-3-5-sonnet-20241022'
-      },
       ollama: {
         url: 'http://localhost:11434/api/generate',
         local: true,
         models: ['mistral', 'codellama', 'llama2'],
-        defaultModel: 'mistral'
+        defaultModel: 'mistral',
+        note: 'Local - requiere Ollama instalado'
       }
     };
 
     this.subagents = new Map();
-    this.defaultProvider = 'groq';
+    this.defaultProvider = 'openai'; // CAMBIO: OpenAI como proveedor principal
     
     console.log('✅ AI Orchestrator inicializado');
+    console.log(`🎯 Proveedor principal: OpenAI (GPT-4o-mini)`);
   }
 
   // ==================== GENERACIÓN DE RESPUESTAS ====================
@@ -187,7 +196,9 @@ class AIOrchestrator {
       name: key.charAt(0).toUpperCase() + key.slice(1),
       models: this.providers[key].models || [],
       isLocal: this.providers[key].local || false,
-      hasApiKey: !!(this.providers[key].apiKey || this.providers[key].local)
+      hasApiKey: !!(this.providers[key].apiKey || this.providers[key].local),
+      note: this.providers[key].note || '',
+      defaultModel: this.providers[key].defaultModel
     }));
   }
 
