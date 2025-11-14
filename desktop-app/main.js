@@ -1,6 +1,17 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.pro') });
+
+// Cargar variables de entorno
+const envPath = path.join(__dirname, '..', '.env.pro');
+console.log('📁 Cargando .env.pro desde:', envPath);
+require('dotenv').config({ path: envPath });
+
+// Verificar que las API keys críticas se cargaron
+console.log('🔑 Verificando API keys:');
+console.log('   GROQ_API_KEY:', process.env.GROQ_API_KEY ? `✅ Configurada (${process.env.GROQ_API_KEY.substring(0, 10)}...)` : '❌ NO CONFIGURADA');
+console.log('   DEEPGRAM_API_KEY:', process.env.DEEPGRAM_API_KEY ? '✅ Configurada' : '⚠️  No configurada');
+console.log('   HEYGEN_API_KEY:', process.env.HEYGEN_API_KEY ? '✅ Configurada' : '⚠️  No configurada');
+console.log('   DATABASE_URL:', process.env.DATABASE_URL ? '✅ Configurada' : '⚠️  No configurada');
 
 // Importar gestores profesionales
 const ConfigValidator = require('../core/config-validator');
