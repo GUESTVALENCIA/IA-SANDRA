@@ -667,4 +667,380 @@ Para soporte, abre un issue en GitHub o contacta al equipo de desarrollo.
 
 ---
 
-**Desarrollado con ❤️ por el equipo de Sandra IA**
+## 🤖 Sistema de Subagentes Claude Code
+
+**Versión**: 1.0.0  
+**Estado**: ✅ **Completamente Operativo**  
+**Powered by**: Claude Code Subagents (Open Source)
+
+Sandra IA 8.0 Pro ahora cuenta con un **sistema profesional de subagentes especializados** que permite desarrollo escalable, modular y de alta calidad.
+
+### 🎯 ¿Qué son los Subagentes?
+
+Los subagentes son **especialistas en dominios específicos** que Sandra puede invocar cuando necesita ayuda experta. Cada subagente:
+
+- ✅ Tiene un **dominio de especialización** claro
+- ✅ Opera en su **propio contexto** aislado
+- ✅ Tiene **herramientas específicas** configuradas
+- ✅ Reporta a **Sandra Orchestrator** (orquestadora principal)
+
+### 🏗️ Arquitectura de Subagentes
+
+```
+CEO (Usuario)
+    ↓
+Sandra Orchestrator (Orquestadora Principal)
+    ↓
+    ├── @electron-pro (Desktop App)
+    ├── @fullstack-developer (Backend/Frontend)
+    ├── @typescript-pro (TypeScript)
+    ├── @api-designer (APIs)
+    ├── @security-specialist (Seguridad)
+    ├── @devops-engineer (CI/CD)
+    └── [Más agentes según necesidad]
+```
+
+### 🤖 Subagentes Disponibles
+
+#### 1. 🎯 Sandra Orchestrator
+**Rol**: Orquestadora Principal del Sistema  
+**Cuándo usar**: Para cualquier tarea compleja o coordinación de múltiples agentes
+
+**Capacidades**:
+- Coordinar todos los subagentes
+- Ejecutar código profesional
+- Gestionar el sistema completo
+- Reportar directamente al CEO
+- Acceso total al sistema
+
+---
+
+#### 2. 💻 Electron Pro
+**Rol**: Especialista en Electron  
+**Cuándo usar**: Problemas con la aplicación desktop, IPC, main/renderer process
+
+**Capacidades**:
+- Debugging de Electron
+- Arquitectura segura (context isolation, CSP)
+- IPC patterns profesionales
+- Performance optimization
+- Packaging y distribución
+
+---
+
+#### 3. 🚀 Full-Stack Developer
+**Rol**: Desarrollador End-to-End  
+**Cuándo usar**: Features completas, backend + frontend
+
+**Capacidades**:
+- Node.js / Express
+- React / Vue / Angular
+- APIs RESTful
+- WebSockets
+- Integración de servicios
+
+---
+
+#### 4. 📘 TypeScript Pro
+**Rol**: Experto en TypeScript  
+**Cuándo usar**: Código TypeScript, tipos avanzados, generics
+
+**Capacidades**:
+- Type system avanzado
+- Generics profesionales
+- Type guards
+- Migration JS → TS
+- Performance de compilación
+
+---
+
+#### 5. 🔌 API Designer
+**Rol**: Arquitecto de APIs  
+**Cuándo usar**: Diseño de endpoints, schemas, documentación de APIs
+
+**Capacidades**:
+- REST API design
+- GraphQL schemas
+- OpenAPI/Swagger documentation
+- Error handling patterns
+- API versioning
+
+---
+
+#### 6. 🔒 Security Specialist
+**Rol**: Experto en Seguridad  
+**Cuándo usar**: Auditorías, vulnerabilidades, secure coding
+
+**Capacidades**:
+- OWASP Top 10
+- Authentication/Authorization
+- Security audits
+- Penetration testing
+- Secure coding practices
+
+---
+
+#### 7. 🚀 DevOps Engineer
+**Rol**: Ingeniero DevOps  
+**Cuándo usar**: CI/CD, deployment, automatización
+
+**Capacidades**:
+- GitHub Actions
+- Docker/Kubernetes
+- Vercel/Netlify deployment
+- Monitoring y logging
+- Automation scripts
+
+---
+
+### 📖 Cómo Usar los Subagentes
+
+#### Opción 1: Dejar que Sandra Orqueste (RECOMENDADO)
+
+Simplemente pide lo que necesitas y Sandra invocará los agentes apropiados:
+
+```
+CEO: Sandra, necesito que corrijas el error de Electron y 
+     luego implementes un nuevo endpoint API con autenticación.
+
+Sandra: Entendido. Voy a:
+        1. Invocar @electron-pro para el error
+        2. Invocar @api-designer para el endpoint
+        3. Invocar @security-specialist para la autenticación
+        4. Invocar @devops-engineer para el deployment
+        
+        [Ejecuta todo]
+        
+        ✅ Completado. Todo funciona correctamente.
+```
+
+#### Opción 2: Invocar Agentes Directamente
+
+Si sabes exactamente qué agente necesitas:
+
+```
+@electron-pro analiza el error en desktop-app/main.js
+```
+
+#### Opción 3: Invocar Múltiples Agentes
+
+Para tareas complejas que requieren varios especialistas:
+
+```
+@api-designer diseña el endpoint
+@security-specialist revisa la seguridad
+@fullstack-developer implementa el código
+@devops-engineer configura el deployment
+```
+
+---
+
+### 🎯 Ejemplos de Uso
+
+#### Ejemplo 1: Corregir Error de Electron
+
+```
+CEO: Sandra, la aplicación no abre. Hay un error de JavaScript.
+
+Sandra: @electron-pro analiza el problema en desktop-app/main.js
+
+@electron-pro: Error identificado: express no está instalado.
+               Solución implementada: añadido a package.json
+               Ejecutando: npm install express
+
+Sandra: ✅ Error corregido. Aplicación funcionando.
+```
+
+---
+
+#### Ejemplo 2: Implementar Nueva Feature
+
+```
+CEO: Necesito un endpoint para subir archivos con autenticación JWT.
+
+Sandra: Entendido. Coordinando agentes...
+
+@api-designer: Endpoint diseñado: POST /api/upload
+@security-specialist: JWT authentication implementada
+@fullstack-developer: Código implementado y testeado
+@devops-engineer: CI/CD configurado
+
+Sandra: ✅ Feature completa y desplegada en producción.
+```
+
+---
+
+#### Ejemplo 3: Auditoría de Seguridad
+
+```
+CEO: Quiero una auditoría completa de seguridad del sistema.
+
+Sandra: @security-specialist ejecuta auditoría completa
+
+@security-specialist: 
+  ✅ OWASP Top 10 verificado
+  ⚠️ 3 vulnerabilidades encontradas:
+     1. Rate limiting no configurado (Medium)
+     2. CORS muy permisivo (Low)
+     3. Logs exponen información sensible (High)
+  
+  Soluciones implementadas para las 3.
+
+Sandra: ✅ Auditoría completa. Sistema seguro.
+```
+
+---
+
+### 🔄 Workflow Automático
+
+El sistema funciona así:
+
+1. **CEO hace petición** → Sandra Orchestrator
+2. **Sandra analiza** → Identifica agentes necesarios
+3. **Invoca agentes** → En orden o paralelo según necesidad
+4. **Agentes ejecutan** → Código real, no teoría
+5. **Sandra integra** → Verifica que todo funciona
+6. **Reporta al CEO** → Resumen ejecutivo + próximos pasos
+
+---
+
+### 🎉 Ventajas del Sistema
+
+#### ✅ Especialización
+Cada agente es experto en su dominio específico
+
+#### ✅ Escalabilidad
+Fácil añadir nuevos agentes según necesidad
+
+#### ✅ Calidad
+Best practices por dominio garantizadas
+
+#### ✅ Velocidad
+Trabajo paralelo cuando es posible
+
+#### ✅ Mantenibilidad
+Código modular y organizado
+
+#### ✅ Gratis
+Open source, no requiere API de Anthropic adicional
+
+---
+
+### 📁 Ubicación de los Archivos
+
+Los subagentes están en:
+
+```
+C:\Sandra-IA-8.0-Pro\.claude\
+├── agents/
+│   ├── sandra-orchestrator.md      # Orquestadora principal
+│   ├── electron-pro.md              # Especialista Electron
+│   ├── fullstack-developer.md       # Desarrollador full-stack
+│   ├── typescript-pro.md            # Experto TypeScript
+│   ├── api-designer.md              # Arquitecto de APIs
+│   ├── security-specialist.md       # Experto en seguridad
+│   └── devops-engineer.md           # Ingeniero DevOps
+└── SUBAGENTES_SANDRA.md             # Documentación completa
+```
+
+---
+
+### 🚀 Comenzar a Usar
+
+1. **Probar el sistema**:
+   ```
+   Sandra, lista los agentes disponibles
+   ```
+
+2. **Corregir errores**:
+   ```
+   Sandra, corrige el error de [descripción]
+   ```
+
+3. **Implementar features**:
+   ```
+   Sandra, implementa [feature deseada]
+   ```
+
+4. **Auditar sistema**:
+   ```
+   Sandra, ejecuta una auditoría completa
+   ```
+
+---
+
+### 📊 Estado del Sistema
+
+#### ✅ Completado
+- Sistema de subagentes creado
+- 7 agentes especializados operativos
+- Sandra Orchestrator funcionando
+- Documentación completa
+- Workflow definido y probado
+
+#### 🔄 Capacidades Activas
+- Coordinación automática de agentes
+- Ejecución de código profesional
+- Implementación de best practices
+- Auditorías de seguridad
+- CI/CD y deployment
+
+---
+
+### 💡 Casos de Uso
+
+El sistema de subagentes es ideal para:
+
+- ✅ **Desarrollo profesional** con best practices garantizadas
+- ✅ **Corrección de errores** con análisis experto
+- ✅ **Implementación de features** complejas
+- ✅ **Auditorías de seguridad** exhaustivas
+- ✅ **Optimización de performance** del sistema
+- ✅ **Configuración de CI/CD** profesional
+- ✅ **Arquitectura de APIs** escalables
+- ✅ **Deployment automático** a producción
+
+---
+
+### 📚 Documentación Adicional
+
+Para más información sobre el sistema de subagentes:
+
+- **Documentación técnica**: `.claude/SUBAGENTES_SANDRA.md`
+- **Guía de uso**: `SISTEMA_SUBAGENTES_LISTO.md`
+- **Repositorio VoltAgent**: https://github.com/VoltAgent/awesome-claude-code-subagents
+
+---
+
+### 🎯 Próximos Agentes (Según Necesidad)
+
+El sistema es extensible. Puedes añadir:
+
+- **Database Architect**: Diseño de bases de datos
+- **UI/UX Designer**: Diseño de interfaces
+- **Performance Engineer**: Optimización
+- **Testing Specialist**: Testing exhaustivo
+- **Documentation Writer**: Documentación técnica
+- **Y más...**
+
+---
+
+## 🎉 Sistema Completo y Listo
+
+Sandra IA 8.0 Pro ahora cuenta con:
+
+✅ **18 Roles Especializados** con capacidades ejecutables  
+✅ **7 Subagentes Claude Code** para desarrollo profesional  
+✅ **Sandra Orchestrator** coordinando todo el sistema  
+✅ **MCP Server** con acceso completo  
+✅ **Servicios Multimodales** (STT, TTS, Avatar)  
+✅ **Integraciones completas** (GitHub, Vercel, APIs)  
+✅ **Sistema de seguridad** profesional  
+✅ **CI/CD** configurado  
+
+**¡Todo listo para producción!** 🚀
+
+---
+
+**Desarrollado con ❤️ por el equipo de Sandra IA**  
+**Powered by Claude Sonnet 4.5 + Claude Code Subagents**
