@@ -227,7 +227,7 @@ class AIOrchestrator {
     return agent;
   }
 
-  async executeWithSubagent(agentId, task) {
+  async executeWithSubagent(agentId, task, options = {}) {
     const agent = this.subagents.get(agentId);
     
     if (!agent) {
@@ -238,7 +238,17 @@ class AIOrchestrator {
     const taskString = typeof task === 'string' ? task : JSON.stringify(task);
     const taskPreview = taskString.length > 50 ? taskString.substring(0, 50) + '...' : taskString;
     
-    console.log(`🔧 ${agent.role} ejecutando: ${taskPreview}`);
+    console.log(`🔧 ${agent.role} ejecutando: ${taskPreview} (modo: ${options.mode || 'text'})`);
+
+    // Determinar modelo según modo
+    let useModel = agent.model;
+    if (options.mode === 'voice' || options.mode === 'video') {
+      useModel = 'gpt-4o'; // Modelo completo para voz/video
+    } else if (options.mode === 'text') {
+      useModel = 'gpt-4o-mini'; // Modelo rápido para texto
+    } else if (options.model) {
+      useModel = options.model; // Modelo especificado en opciones
+    }
 
     // Construir prompt con contexto del agente
     const fullPrompt = `${agent.systemPrompt}
@@ -249,9 +259,12 @@ Ejecuta esta tarea de forma PRÁCTICA y REAL. No teoría, solo ejecución.`;
 
     const response = await this.generateResponse(
       fullPrompt,
-      agent.provider,
-      agent.model,
-      { systemPrompt: agent.systemPrompt }
+      agent.provider || this.defaultProvider,
+      useModel,
+      { 
+        systemPrompt: agent.systemPrompt,
+        mode: options.mode || 'text'
+      }
     );
 
     // Guardar en memoria del agente

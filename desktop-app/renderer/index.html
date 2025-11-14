@@ -1008,7 +1008,7 @@
     });
 
     // ==================== ENVIAR MENSAJE ====================
-    async function sendMessage() {
+    async function sendMessage(mode = 'text') {
       const message = messageInput.value.trim();
       if (!message) return;
 
@@ -1023,7 +1023,8 @@
 
       try {
         if (window.sandraAPI) {
-          const result = await window.sandraAPI.sendMessage(message, currentRole);
+          // Pasar el modo (text/voice/video) al backend
+          const result = await window.sandraAPI.sendMessage(message, currentRole, mode);
           
           if (result.success) {
             addMessage(result.response, 'assistant');
@@ -1223,9 +1224,9 @@
           messageInput.value = result.transcript;
           showToast(`✅ Transcrito (${Math.round(result.confidence * 100)}% confianza)`);
           
-          // Auto-enviar si hay texto
+          // Auto-enviar si hay texto (modo voz)
           if (result.transcript && result.transcript.trim().length > 0) {
-            setTimeout(() => sendMessage(), 500);
+            setTimeout(() => sendMessage('voice'), 500);
           }
         } else {
           showToast('❌ Error en transcripción: ' + result.error, 'error');

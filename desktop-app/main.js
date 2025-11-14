@@ -261,7 +261,7 @@ async function initializeServices() {
 
 // ==================== IPC HANDLERS - CHAT Y MENSAJES ====================
 
-ipcMain.handle('send-message', async (event, { message, role }) => {
+ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) => {
   try {
     const rolesSystem = serviceManager?.get('roles-system');
     const optimizer = serviceManager?.get('optimizer');
@@ -278,8 +278,8 @@ ipcMain.handle('send-message', async (event, { message, role }) => {
       ? optimizer.optimizePromptForRole(message, role)
       : message;
     
-    // Ejecutar con el rol específico
-    const result = await rolesSystem.executeWithRole(role, optimizedPrompt);
+    // Ejecutar con el rol específico y modo (text/voice/video)
+    const result = await rolesSystem.executeWithRole(role || 'general', optimizedPrompt, { mode });
     
     // Guardar en base de datos (si disponible)
     if (db?.logMessage) {

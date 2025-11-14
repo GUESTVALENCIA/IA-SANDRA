@@ -427,7 +427,32 @@ class RolesSystem {
     return agent;
   }
 
-  async executeWithRole(roleName, task) {
+  async executeWithRole(roleName, task, options = {}) {
+    // Detectar si es un saludo simple
+    const taskString = typeof task === 'string' ? task.toLowerCase().trim() : String(task).toLowerCase().trim();
+    const isGreeting = /^(hola|hi|hello|buenos días|buenas tardes|buenas noches|hey|saludos)$/i.test(taskString);
+    
+    // Si es saludo y es el rol general, usar prompt especial
+    if (isGreeting && (roleName === 'general' || !roleName)) {
+      const greetingResponse = `¡Hola! 👋 Soy Sandra IA 8.0 Pro. ¿En qué puedo ayudarte hoy?
+
+Puedo asistirte con:
+1. 🚀 Verificar estado del sistema y servicios
+2. 💻 Generar código o revisar implementaciones
+3. 📊 Analizar datos o crear visualizaciones
+4. 🎬 Crear contenido para YouTube/TikTok/Instagram
+5. 💼 Analizar proyectos y estrategias de monetización
+6. 🏨 Buscar y negociar alojamientos
+
+¿Cuál prefieres? O dime directamente qué necesitas.`;
+      
+      return {
+        response: greetingResponse,
+        role: 'General',
+        icon: '💬'
+      };
+    }
+    
     let activeRole = this.activeRoles.get(roleName);
     
     // Si el rol no está activo, activarlo
@@ -436,7 +461,16 @@ class RolesSystem {
       activeRole = this.activeRoles.get(roleName);
     }
 
-    const result = await this.ai.executeWithSubagent(activeRole.agent.id, task);
+    // Determinar modo (voz/texto) y modelo apropiado
+    const mode = options.mode || 'text'; // 'text', 'voice', 'video'
+    const useModel = mode === 'voice' || mode === 'video' ? 'gpt-4o' : 'gpt-4o-mini';
+    
+    // Ejecutar con el modelo apropiado
+    const result = await this.ai.executeWithSubagent(activeRole.agent.id, task, {
+      ...options,
+      model: useModel,
+      mode
+    });
 
     return {
       ...result,
