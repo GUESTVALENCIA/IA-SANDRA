@@ -72,24 +72,45 @@ class AIOrchestrator {
   async generateWithOpenAIFormat(prompt, provider, model, options) {
     const config = this.providers[provider];
     
-    const response = await axios.post(config.url, {
-      model,
-      messages: [
-        { role: 'system', content: options.systemPrompt || 'Eres Sandra IA, una asistente profesional.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: options.temperature || 0.7,
-      max_tokens: options.maxTokens || 4000,
-      stream: false
-    }, {
-      headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      timeout: options.timeout || 60000
-    });
+    // Validar API key
+    if (!config.apiKey || config.apiKey === 'undefined' || config.apiKey.trim() === '') {
+      throw new Error(`API key para ${provider} no configurada o inválida`);
+    }
+    
+    console.log(`🔄 Llamando a ${provider} con modelo ${model}...`);
+    
+    try {
+      const response = await axios.post(config.url, {
+        model,
+        messages: [
+          { role: 'system', content: options.systemPrompt || 'Eres Sandra IA, una asistente profesional.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: options.temperature || 0.7,
+        max_tokens: options.maxTokens || 4000,
+        stream: false
+      }, {
+        headers: {
+          'Authorization': `Bearer ${config.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: options.timeout || 60000
+      });
 
-    return response.data.choices[0].message.content;
+      console.log(`✅ ${provider} respondió correctamente`);
+      return response.data.choices[0].message.content;
+    } catch (error) {
+      if (error.response) {
+        console.error(`❌ ${provider} error HTTP ${error.response.status}:`, error.response.data);
+        throw new Error(`${provider} error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error(`❌ ${provider} sin respuesta (timeout o red):`, error.message);
+        throw new Error(`${provider} sin respuesta: ${error.message}`);
+      } else {
+        console.error(`❌ ${provider} error de configuración:`, error.message);
+        throw new Error(`${provider} error: ${error.message}`);
+      }
+    }
   }
 
   async generateWithClaude(prompt, model, options) {
