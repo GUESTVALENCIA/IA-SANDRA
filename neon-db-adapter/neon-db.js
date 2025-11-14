@@ -12,6 +12,12 @@ class NeonDB {
     console.log('✅ Neon DB Adapter inicializado (Modo offline)');
   }
 
+  async initializeDatabase() {
+    // Método para compatibilidad - en modo offline no hace nada
+    console.log('✅ Base de datos inicializada (modo offline)');
+    return { success: true };
+  }
+
   async logMessage(sessionId, message, sender = 'user') {
     this.conversations.push({
       sessionId,
@@ -52,6 +58,15 @@ class NeonDB {
   async setConfig(key, value) {
     this.config[key] = value;
     return { success: true };
+  }
+
+  async getStats() {
+    return {
+      conversations: this.conversations.length,
+      deployments: this.deployments.length,
+      updates: this.updates.length,
+      configKeys: Object.keys(this.config).length
+    };
   }
 }
 
