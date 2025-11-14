@@ -299,6 +299,47 @@ ipcMain.handle('send-message', async (event, { message, role }) => {
   }
 });
 
+// ==================== IPC HANDLERS - LLM PROVIDER ====================
+
+ipcMain.handle('get-current-provider', async (event) => {
+  try {
+    const aiOrchestrator = serviceManager?.get('ai-orchestrator');
+    if (!aiOrchestrator) {
+      return { success: false, error: 'AI Orchestrator no disponible' };
+    }
+    const provider = aiOrchestrator.getCurrentProvider();
+    return { success: true, provider };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-available-providers', async (event) => {
+  try {
+    const aiOrchestrator = serviceManager?.get('ai-orchestrator');
+    if (!aiOrchestrator) {
+      return { success: false, error: 'AI Orchestrator no disponible' };
+    }
+    const providers = aiOrchestrator.getAvailableProviders();
+    return { success: true, providers };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('set-provider', async (event, { provider }) => {
+  try {
+    const aiOrchestrator = serviceManager?.get('ai-orchestrator');
+    if (!aiOrchestrator) {
+      return { success: false, error: 'AI Orchestrator no disponible' };
+    }
+    aiOrchestrator.setDefaultProvider(provider);
+    return { success: true, provider };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 // ==================== IPC HANDLERS - ROLES ====================
 
 ipcMain.handle('get-all-roles', async (event) => {

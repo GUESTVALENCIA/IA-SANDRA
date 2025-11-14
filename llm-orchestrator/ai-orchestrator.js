@@ -45,7 +45,7 @@ class AIOrchestrator {
     const config = this.providers[selectedProvider];
     
     if (!config) {
-      throw new Error(`Proveedor ${selectedProvider} no configurado`);
+      return `⚠️ Error: el proveedor ${selectedProvider} no está configurado en Sandra IA.`;
     }
 
     try {
@@ -54,18 +54,19 @@ class AIOrchestrator {
       } else if (selectedProvider === 'claude') {
         return await this.generateWithClaude(prompt, model || config.defaultModel, options);
       } else {
-        return await this.generateWithOpenAIFormat(prompt, selectedProvider, model || config.defaultModel, options);
+        // Por defecto: Groq (y DeepSeek) con formato OpenAI
+        return await this.generateWithOpenAIFormat(
+          prompt,
+          selectedProvider,
+          model || config.defaultModel,
+          options
+        );
       }
     } catch (error) {
-      console.error(`Error con ${selectedProvider}:`, error.message);
+      console.error(`❌ Error con ${selectedProvider}:`, error.message);
       
-      // Fallback automático
-      if (options.fallback !== false) {
-        console.log('🔄 Intentando con proveedor de respaldo...');
-        return await this.multiProviderFallback(prompt, selectedProvider, options);
-      }
-      
-      throw error;
+      // En vez de lanzar excepción, devolvemos un mensaje legible
+      return `⚠️ Error al usar ${selectedProvider}: ${error.message}\n\n💡 Sugerencia: Cambia de proveedor LLM usando el selector en la parte superior.`;
     }
   }
 
@@ -158,20 +159,10 @@ class AIOrchestrator {
   }
 
   async multiProviderFallback(prompt, failedProvider, options) {
-    const fallbackOrder = ['groq', 'deepseek', 'ollama'];
-    
-    for (const provider of fallbackOrder) {
-      if (provider === failedProvider) continue;
-      
-      try {
-        console.log(`🔄 Intentando con ${provider}...`);
-        return await this.generateResponse(prompt, provider, null, { ...options, fallback: false });
-      } catch (error) {
-        console.error(`❌ ${provider} también falló:`, error.message);
-      }
-    }
-    
-    throw new Error('Todos los proveedores fallaron');
+    // FALLBACK AUTOMÁTICO DESACTIVADO
+    // El usuario cambiará manualmente de proveedor si es necesario
+    console.warn(`⚠️ multiProviderFallback desactivado. Usa el selector manual de proveedor.`);
+    return `⚠️ El proveedor ${failedProvider} falló. Por favor, cambia manualmente de proveedor LLM usando el selector en la parte superior.`;
   }
 
   setDefaultProvider(provider) {
@@ -181,6 +172,23 @@ class AIOrchestrator {
     
     this.defaultProvider = provider;
     console.log(`✅ Proveedor por defecto cambiado a: ${provider}`);
+  }
+
+  getCurrentProvider() {
+    return {
+      name: this.defaultProvider,
+      config: this.providers[this.defaultProvider]
+    };
+  }
+
+  getAvailableProviders() {
+    return Object.keys(this.providers).map(key => ({
+      id: key,
+      name: key.charAt(0).toUpperCase() + key.slice(1),
+      models: this.providers[key].models || [],
+      isLocal: this.providers[key].local || false,
+      hasApiKey: !!(this.providers[key].apiKey || this.providers[key].local)
+    }));
   }
 
   // ==================== SISTEMA DE SUBAGENTES ====================

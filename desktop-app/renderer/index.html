@@ -81,6 +81,65 @@
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ai-provider:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    .provider-selector {
+      position: absolute;
+      top: 65px;
+      right: 30px;
+      background: #16213e;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 12px;
+      min-width: 220px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      z-index: 1000;
+      display: none;
+    }
+
+    .provider-selector.active {
+      display: block;
+    }
+
+    .provider-option {
+      padding: 12px 16px;
+      margin: 4px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    .provider-option:hover {
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .provider-option.active {
+      background: rgba(102, 126, 234, 0.4);
+      border: 1px solid rgba(102, 126, 234, 0.6);
+    }
+
+    .provider-option.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .provider-status {
+      font-size: 12px;
+      opacity: 0.7;
     }
 
     /* SIDEBAR */
@@ -453,7 +512,17 @@
         🚀 Sandra IA 8.0 Pro
       </h1>
       <div class="header-controls">
-        <div class="ai-provider" id="ai-provider">Groq (Mixtral)</div>
+        <div class="ai-provider" id="ai-provider" onclick="toggleProviderSelector()">
+          <span id="provider-name">Groq</span>
+          <span>▼</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SELECTOR DE PROVEEDOR LLM -->
+    <div class="provider-selector" id="provider-selector">
+      <div id="provider-options">
+        <!-- Se llenará dinámicamente -->
       </div>
     </div>
 
@@ -803,7 +872,92 @@
         showToast('❌ Error: ' + data.error, 'error');
         avatarStatus.textContent = 'Error';
       });
+
+      // Cargar proveedores LLM disponibles
+      loadAvailableProviders();
     }
+
+    // ==================== SELECTOR DE PROVEEDOR LLM ====================
+    let currentProvider = 'groq';
+
+    async function loadAvailableProviders() {
+      try {
+        const result = await window.sandraAPI.getAvailableProviders();
+        if (result.success) {
+          renderProviderOptions(result.providers);
+          
+          // Obtener proveedor actual
+          const currentResult = await window.sandraAPI.getCurrentProvider();
+          if (currentResult.success) {
+            currentProvider = currentResult.provider.name;
+            updateProviderDisplay(currentProvider);
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando proveedores:', error);
+      }
+    }
+
+    function renderProviderOptions(providers) {
+      const container = document.getElementById('provider-options');
+      container.innerHTML = '';
+      
+      providers.forEach(provider => {
+        const option = document.createElement('div');
+        option.className = `provider-option ${provider.id === currentProvider ? 'active' : ''} ${!provider.hasApiKey ? 'disabled' : ''}`;
+        option.innerHTML = `
+          <div>
+            <div style="font-weight: 600;">${provider.name}</div>
+            <div class="provider-status">${provider.hasApiKey ? '✅ Configurado' : '⚠️ Sin API Key'}</div>
+          </div>
+        `;
+        
+        if (provider.hasApiKey) {
+          option.onclick = () => switchProvider(provider.id);
+        }
+        
+        container.appendChild(option);
+      });
+    }
+
+    async function switchProvider(providerId) {
+      try {
+        const result = await window.sandraAPI.setProvider(providerId);
+        if (result.success) {
+          currentProvider = providerId;
+          updateProviderDisplay(providerId);
+          showToast(`✅ Proveedor cambiado a ${providerId.toUpperCase()}`);
+          
+          // Recargar opciones para actualizar el activo
+          loadAvailableProviders();
+          
+          // Cerrar selector
+          document.getElementById('provider-selector').classList.remove('active');
+        }
+      } catch (error) {
+        showToast('❌ Error cambiando proveedor: ' + error.message, 'error');
+      }
+    }
+
+    function updateProviderDisplay(providerId) {
+      const providerName = providerId.charAt(0).toUpperCase() + providerId.slice(1);
+      document.getElementById('provider-name').textContent = providerName;
+    }
+
+    function toggleProviderSelector() {
+      const selector = document.getElementById('provider-selector');
+      selector.classList.toggle('active');
+    }
+
+    // Cerrar selector al hacer click fuera
+    document.addEventListener('click', (e) => {
+      const selector = document.getElementById('provider-selector');
+      const providerBtn = document.getElementById('ai-provider');
+      
+      if (!selector.contains(e.target) && !providerBtn.contains(e.target)) {
+        selector.classList.remove('active');
+      }
+    });
 
     // ==================== ROLES ====================
     document.querySelectorAll('.role-btn[data-role]').forEach(btn => {

@@ -42,8 +42,10 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   // ==================== ESTADÍSTICAS ====================
   getStats: () => ipcRenderer.invoke('get-stats'),
   
-  // ==================== PROVEEDOR IA ====================
-  switchAIProvider: (provider) => ipcRenderer.invoke('switch-ai-provider', { provider }),
+  // ==================== PROVEEDOR LLM ====================
+  getCurrentProvider: () => ipcRenderer.invoke('get-current-provider'),
+  getAvailableProviders: () => ipcRenderer.invoke('get-available-providers'),
+  setProvider: (provider) => ipcRenderer.invoke('set-provider', { provider }),
   
   // ==================== MULTIMODAL ====================
   transcribeAudio: (audioPath) => ipcRenderer.invoke('transcribe-audio', { audioPath }),
