@@ -103,7 +103,8 @@ async function initializeServices() {
 
     serviceManager.register('roles-system', RolesSystem, {
       critical: true,
-      dependencies: ['ai-orchestrator']
+      dependencies: ['ai-orchestrator'],
+      constructorArgs: ['ai-orchestrator', null] // aiOrchestrator, mcpCore
     });
 
     // Servicios OPCIONALES (pueden fallar)
@@ -130,7 +131,8 @@ async function initializeServices() {
 
     serviceManager.register('multimodal', MultimodalConversationService, {
       critical: false,
-      dependencies: ['ai-orchestrator']
+      dependencies: ['ai-orchestrator'],
+      constructorArgs: ['ai-orchestrator', 'neon-db']
     });
 
     serviceManager.register('bright-data', BrightDataService, {
@@ -139,12 +141,14 @@ async function initializeServices() {
 
     serviceManager.register('negotiation', NegotiationService, {
       critical: false,
-      dependencies: ['ai-orchestrator']
+      dependencies: ['ai-orchestrator'],
+      constructorArgs: ['ai-orchestrator', 'neon-db']
     });
 
     serviceManager.register('pef', PracticalExecutionFramework, {
       critical: false,
-      dependencies: ['ai-orchestrator']
+      dependencies: ['ai-orchestrator'],
+      constructorArgs: ['ai-orchestrator']
     });
 
     serviceManager.register('optimizer', SandraPromptOptimizer, {

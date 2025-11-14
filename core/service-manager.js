@@ -22,7 +22,8 @@ class ServiceManager {
       dependencies: options.dependencies || [],
       critical: options.critical || false,
       retries: options.retries || 0,
-      timeout: options.timeout || 30000
+      timeout: options.timeout || 30000,
+      constructorArgs: options.constructorArgs || [] // Argumentos para el constructor
     });
 
     this.status.set(name, 'registered');
@@ -72,8 +73,16 @@ class ServiceManager {
       // Esperar dependencias
       await this.waitForDependencies(config.dependencies);
 
-      // Crear instancia
-      const instance = new config.ServiceClass();
+      // Resolver argumentos del constructor (pueden ser nombres de servicios)
+      const resolvedArgs = config.constructorArgs.map(arg => {
+        if (typeof arg === 'string' && this.services.has(arg)) {
+          return this.get(arg);
+        }
+        return arg;
+      });
+
+      // Crear instancia con argumentos
+      const instance = new config.ServiceClass(...resolvedArgs);
 
       // Inicializar con timeout
       const initPromise = this.callInitMethod(instance, context);
