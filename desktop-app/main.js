@@ -1,10 +1,31 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
-// Cargar variables de entorno
+// Cargar variables de entorno MANUALMENTE (dotenv a veces falla en Electron)
 const envPath = path.join(__dirname, '..', '.env.pro');
 console.log('📁 Cargando .env.pro desde:', envPath);
-require('dotenv').config({ path: envPath });
+
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  const lines = envContent.split('\n');
+  
+  lines.forEach(line => {
+    line = line.trim();
+    // Ignorar comentarios y líneas vacías
+    if (line && !line.startsWith('#')) {
+      const [key, ...valueParts] = line.split('=');
+      if (key && valueParts.length > 0) {
+        const value = valueParts.join('=').trim();
+        process.env[key.trim()] = value;
+      }
+    }
+  });
+  
+  console.log('✅ Variables de entorno cargadas manualmente');
+} else {
+  console.error('❌ .env.pro no encontrado en:', envPath);
+}
 
 // Verificar que las API keys críticas se cargaron
 console.log('🔑 Verificando API keys:');
