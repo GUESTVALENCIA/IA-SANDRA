@@ -194,12 +194,16 @@ class AIOrchestrator {
       throw new Error(`Subagente ${agentId} no encontrado`);
     }
 
-    console.log(`🔧 ${agent.role} ejecutando: ${task.substring(0, 50)}...`);
+    // Convertir task a string si no lo es
+    const taskString = typeof task === 'string' ? task : JSON.stringify(task);
+    const taskPreview = taskString.length > 50 ? taskString.substring(0, 50) + '...' : taskString;
+    
+    console.log(`🔧 ${agent.role} ejecutando: ${taskPreview}`);
 
     // Construir prompt con contexto del agente
     const fullPrompt = `${agent.systemPrompt}
 
-Tarea: ${task}
+Tarea: ${taskString}
 
 Ejecuta esta tarea de forma PRÁCTICA y REAL. No teoría, solo ejecución.`;
 

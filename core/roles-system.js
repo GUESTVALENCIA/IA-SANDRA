@@ -1,7 +1,10 @@
 /**
- * Sistema de 18 Roles Especializados de Sandra IA
+ * Sistema de 19 Roles Especializados de Sandra IA
  * Cada rol tiene capacidades EJECUTABLES, no solo teoría
+ * Prompts optimizados por @prompt-engineer
  */
+
+const optimizedPrompts = require('./optimized-prompts');
 
 class RolesSystem {
   constructor(aiOrchestrator, mcpCore) {
@@ -11,11 +14,30 @@ class RolesSystem {
     
     this.roles = this.defineRoles();
     
-    console.log('✅ Sistema de 18 Roles inicializado');
+    console.log(`✅ Sistema de ${Object.keys(this.roles).length} Roles inicializado`);
   }
 
   defineRoles() {
     return {
+      // 0. GENERAL (ROL POR DEFECTO)
+      general: {
+        name: 'General',
+        icon: '💬',
+        description: 'Asistente general multiproposito',
+        capabilities: [
+          'conversation',
+          'general_assistance',
+          'information',
+          'coordination',
+          'routing'
+        ],
+        tools: [
+          { name: 'chat', type: 'ai', model: 'groq' },
+          { name: 'search', type: 'api', endpoint: 'search' }
+        ],
+        systemPrompt: optimizedPrompts.general
+      },
+
       // 1. ADMINISTRADOR
       administrator: {
         name: 'Administrador',
@@ -33,7 +55,7 @@ class RolesSystem {
           { name: 'process_list', type: 'command', command: 'tasklist' },
           { name: 'disk_usage', type: 'command', command: 'wmic logicaldisk get size,freespace,caption' }
         ],
-        systemPrompt: 'Eres el administrador del sistema Sandra IA. Gestionas recursos, usuarios y configuraciones.'
+        systemPrompt: optimizedPrompts.administrator
       },
 
       // 2. DESARROLLADOR
@@ -54,7 +76,7 @@ class RolesSystem {
           { name: 'git_commit', type: 'github', operation: 'commit' },
           { name: 'create_pr', type: 'github', operation: 'pull_request' }
         ],
-        systemPrompt: 'Eres un desarrollador senior. Generas código EJECUTABLE y FUNCIONAL, no teoría.'
+        systemPrompt: optimizedPrompts.developer
       },
 
       // 3. YOUTUBER
@@ -74,7 +96,7 @@ class RolesSystem {
           { name: 'optimize_title', type: 'ai', model: 'groq' },
           { name: 'analyze_trends', type: 'api', endpoint: 'youtube_trends' }
         ],
-        systemPrompt: 'Eres un creador de contenido profesional. Creas contenido VIRAL y MONETIZABLE.'
+        systemPrompt: optimizedPrompts.youtuber
       },
 
       // 4. COMMUNITY MANAGER
@@ -115,7 +137,7 @@ class RolesSystem {
           { name: 'negotiate_price', type: 'ai', model: 'groq' },
           { name: 'make_call', type: 'twilio', action: 'call' }
         ],
-        systemPrompt: 'Eres un especialista en turismo. Negocias precios REALES y cierras reservas.'
+        systemPrompt: optimizedPrompts.tourism
       },
 
       // 6. NEGOCIADOR DE VENTAS
