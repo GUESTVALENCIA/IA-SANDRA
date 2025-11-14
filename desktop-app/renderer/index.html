@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.groq.com https://api.deepgram.com https://api.heygen.com https://api.cartesia.ai https://*.neon.tech wss://*.heygen.com; font-src 'self'; media-src 'self' blob:; worker-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.groq.com https://api.deepgram.com https://api.heygen.com https://api.cartesia.ai https://*.neon.tech wss://*.heygen.com; font-src 'self'; media-src 'self' blob:; worker-src 'none'; child-src 'none';">
+  <script>
+    // Bloquear Service Workers explícitamente
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+          console.log('🚫 Service Worker desregistrado:', registration.scope);
+        }
+      });
+    }
+  </script>
   <title>Sandra IA 8.0 Pro - Multimodal</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
