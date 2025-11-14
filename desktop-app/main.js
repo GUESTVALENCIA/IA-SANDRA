@@ -37,9 +37,19 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       enableRemoteModule: false,
-      webSecurity: true
+      webSecurity: true,
+      // Deshabilitar Service Workers completamente
+      partition: 'persist:sandra',
+      session: undefined
     },
     icon: path.join(__dirname, 'assets', 'icon.ico')
+  });
+
+  // Limpiar Service Workers antes de cargar
+  mainWindow.webContents.session.clearStorageData({
+    storages: ['serviceworkers', 'cachestorage']
+  }).then(() => {
+    console.log('🧹 Service Workers y caché limpiados');
   });
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
