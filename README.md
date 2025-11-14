@@ -1,648 +1,670 @@
-# 🚀 SANDRA IA 8.0 PRO - Sistema Integral de Inteligencia Artificial
+# 🚀 Sandra IA 8.0 Pro - Sistema Completo
 
-> **Estado**: ✅ PRODUCCIÓN LISTA | **Versión**: 8.0.0 | **Última Actualización**: 2025-01-13
+**Aplicación de Escritorio Profesional con IA Multimodal**
 
-![Sandra IA Logo](https://img.shields.io/badge/Sandra%20IA-8.0%20Pro-blue?style=flat-square)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-green?style=flat-square)
-![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square)
-![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=flat-square)
-![License](https://img.shields.io/badge/License-Proprietary-red?style=flat-square)
+Versión: 8.0.0  
+Estado: ✅ **Completamente Operativa**  
+Modo: 100% Offline (con capacidades online opcionales)
 
 ---
 
 ## 📋 Índice
 
-1. [Descripción General](#descripción-general)
-2. [Características Principales](#características-principales)
-3. [Requisitos del Sistema](#requisitos-del-sistema)
-4. [Instalación](#instalación)
-5. [Uso Rápido](#uso-rápido)
-6. [Arquitectura del Sistema](#arquitectura-del-sistema)
-7. [18 Roles Especializados](#18-roles-especializados)
-8. [APIs y Integraciones](#apis-y-integraciones)
-9. [Monitoreo y Recuperación](#monitoreo-y-recuperación)
-10. [Despliegue a Producción](#despliegue-a-producción)
-11. [Solución de Problemas](#solución-de-problemas)
-12. [Contribución](#contribución)
-
----
-
-## 📖 Descripción General
-
-**Sandra IA 8.0 Pro** es un sistema profesional de inteligencia artificial multimodal diseñado específicamente para:
-
-- **Negociación Automática** de alojamientos turísticos (Airbnb, Booking.com)
-- **Generación de Contenido** para 18 roles especializados diferentes
-- **Automatización Completa** de tareas empresariales
-- **Operación 24/7** con auto-recuperación garantizada
-- **Escalabilidad Profesional** desde desarrollo a producción
-
-### 🎯 Casos de Uso Principales
-
-✅ **Turismo**: Negociación automática de alojamientos con llamadas Twilio y procesamiento PayPal
-✅ **Marketing**: Estrategias generadas por IA con análisis de datos en tiempo real
-✅ **Desarrollo**: Generación de código ejecutable, debugging y despliegue automatizado
-✅ **Monetización**: Gestión de canales YouTube con creación de contenido automatizada
-✅ **Comercio**: Gestión de inventario, análisis de ventas, previsiones
+- [Características Principales](#-características-principales)
+- [Arquitectura del Sistema](#-arquitectura-del-sistema)
+- [18 Roles Especializados](#-18-roles-especializados)
+- [MCP - Modular Control Panel](#-mcp---modular-control-panel)
+- [Servicios Multimodales](#-servicios-multimodales)
+- [Instalación y Uso](#-instalación-y-uso)
+- [Configuración](#-configuración)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [APIs y Tokens](#-apis-y-tokens)
 
 ---
 
 ## ✨ Características Principales
 
-### 🤖 Sistema de IA Multimodal
+### 🎯 18 Roles Especializados con Capacidades Ejecutables
+- **Administrador**: Gestión completa del sistema
+- **Desarrollador**: Generación y ejecución de código
+- **YouTuber**: Creación y monetización de contenido
+- **Community Manager**: Gestión de redes sociales
+- **Especialista Turístico**: Negociación de alojamientos
+- **Negociador de Ventas**: Cierre de deals y ventas
+- **Analista de Datos**: Análisis y reportes
+- **Marketing**: Estrategias y campañas
+- **CEO/Ejecutivo**: Estrategia empresarial
+- **Diseñador**: UX/UI y branding
+- **Abogado**: Asesoramiento legal
+- **Médico**: Asesoramiento de salud
+- **Profesor**: Educación y tutoría
+- **Asesor Financiero**: Inversiones y análisis
+- **Artista**: Creación artística
+- **Científico**: Investigación científica
+- **Ingeniero**: Diseño de sistemas
+- **Psicólogo**: Asesoramiento psicológico
 
-```
-┌─────────────────────────────────────────────┐
-│         SANDRA IA 8.0 PRO                   │
-├─────────────────────────────────────────────┤
-│ ✅ Groq (Mixtral 8x7B) - Principal          │
-│ ✅ DeepSeek - Respaldo                      │
-│ ✅ OpenAI GPT-4 - Análisis profundo         │
-│ ✅ Fallback automático entre proveedores    │
-└─────────────────────────────────────────────┘
-```
+### 🤖 AI Orchestrator
+- **Múltiples LLMs**: Groq, DeepSeek, Claude, Ollama
+- **Fallback Automático**: Si un proveedor falla, cambia automáticamente
+- **Sistema de Subagentes**: Spawning dinámico de agentes especializados
+- **Herramientas Ejecutables**: Comandos, APIs, archivos, GitHub
 
-### 🎓 18 Roles Especializados
+### 🛠️ MCP - Modular Control Panel
+- **Generación de Código**: Con IA según rol y lenguaje
+- **Despliegue Automático**: Vercel, Netlify
+- **Gestión de Agentes**: Crear, monitorear, terminar
+- **Sincronización GitHub**: Estado del repo en tiempo real
 
-| Rol | Especialización | Estado |
-|-----|-----------------|--------|
-| 👔 Administrador | Gestión del sistema | ✅ |
-| 💻 Desarrollador | Generación de código | ✅ |
-| 🎬 Youtuber | Monetización de contenido | ✅ |
-| 👥 Community Manager | Redes sociales | ✅ |
-| 🏨 Especialista Turístico | Negociación de alojamientos | ✅ |
-| 💼 Negociador de Ventas | Regateo automático | ✅ |
-| 📊 Analista de Datos | Reportes y predicciones | ✅ |
-| 📈 Especialista Marketing | Campañas digitales | ✅ |
-| 🏢 CEO/Ejecutivo | Estrategia empresarial | ✅ |
-| 🎨 Diseñador | UX/UI y branding | ✅ |
-| ⚖️ Abogado | Asesoramiento legal | ✅ |
-| 🏥 Médico | Asesoramiento de salud | ✅ |
-| 📚 Profesor | Educación y tutoría | ✅ |
-| 💰 Asesor Financiero | Inversiones y análisis | ✅ |
-| 🎭 Artista | Creación artística | ✅ |
-| 🔬 Científico | Investigación | ✅ |
-| 🔧 Ingeniero | Diseño de sistemas | ✅ |
-| 🧠 Psicólogo | Asesoramiento psicológico | ✅ |
+### 🎙️ Multimodal
+- **Deepgram STT**: Speech-to-Text en tiempo real
+- **Cartesia TTS**: Text-to-Speech con caché
+- **HeyGen Avatar**: Avatar conversacional con WebRTC
+- **Barge-in**: Interrumpir respuestas del avatar
+- **Modo Continuo**: Conversación sin clicks
 
-### 🚀 Características Técnicas
+### 🔄 Live Updater
+- **Auto-actualización**: Desde GitHub
+- **Sin reinicio**: Actualiza en caliente
+- **Versión semántica**: Control de versiones
 
-- **Motor de Ejecución Práctica (PEF)**: No solo describe tareas, LAS EJECUTA
-- **Validación de Completación**: >70% mínimo requerido para producción
-- **Integración Bright Data**: Scraping automático de Airbnb/Booking
-- **Twilio Integrado**: Llamadas telefónicas automatizadas
+### 🗄️ Neon DB
+- **PostgreSQL**: Base de datos en la nube
+- **Persistencia**: Conversaciones, deployments, updates
+- **Logging**: Todas las interacciones
+
+### 🌐 Integraciones
+- **Bright Data**: Scraping de Airbnb y Booking.com
+- **Twilio**: Llamadas telefónicas para negociación
 - **PayPal**: Procesamiento de pagos
-- **Neon PostgreSQL**: Base de datos en la nube
-- **GitHub Actions**: Workflows automáticos de limpieza diaria
-- **Vercel**: Despliegue continuo y automático
-
-### 🛡️ Seguridad y Confiabilidad
-
-- **Sistema Anti-Bloqueos**: Monitoreo cada 5 minutos con auto-recuperación
-- **Backups Automáticos**: Puntos de restauración comprimidos
-- **Eliminación Inteligente**: Detección de duplicados por hash MD5
-- **Monitoreo 24/7**: Verificación de todos los servicios en tiempo real
-- **SSL/TLS**: Cifrado en todas las conexiones
-- **Cumplimiento GDPR**: Privacidad de datos garantizada
-
----
-
-## 🖥️ Requisitos del Sistema
-
-### Mínimos
-- Windows 10/11 o equivalente
-- Node.js v18+
-- npm v9+
-- Git v2.30+
-- 2GB RAM disponible
-- 500MB espacio en disco
-
-### Recomendados
-- Windows 11 Pro
-- Node.js v20+
-- npm v10+
-- 8GB RAM
-- 5GB espacio en disco
-- Conexión a internet de 10Mbps+
-
----
-
-## 📦 Instalación
-
-### Paso 1: Clonar el Repositorio
-
-```powershell
-git clone https://github.com/GUESTVALENCIA/IA-SANDRA.git
-cd IA-SANDRA
-```
-
-### Paso 2: Instalar Dependencias
-
-```powershell
-npm install
-```
-
-### Paso 3: Configurar Variables de Entorno
-
-```powershell
-# Copiar archivo de ejemplo
-cp .env.pro.example .env.pro
-
-# Editar con tus tokens y API keys
-notepad .env.pro
-```
-
-**Variables requeridas**:
-- `GROQ_API_KEY` - Tu token de Groq
-- `GITHUB_TOKEN` - Token de GitHub para despliegues
-- `VERCEL_TOKEN` - Token de Vercel para producción
-- `DATABASE_URL` - Conexión a Neon DB
-- Otros tokens de integraciones opcionales
-
-### Paso 4: Crear Acceso Directo
-
-```powershell
-# El acceso directo se crea automáticamente en el escritorio
-# O crea uno manualmente:
-$shortcutPath = "$env:USERPROFILE\Desktop\Sandra_IA_8.0_Pro.lnk"
-$WshShell = New-Object -ComObject WScript.Shell
-$shortcut = $WshShell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = "C:\ruta\a\Quick_Start.bat"
-$shortcut.Save()
-```
-
----
-
-## ⚡ Uso Rápido
-
-### Opción 1: Desde el Escritorio (RECOMENDADO)
-
-```
-1. Doble clic en: Sandra_IA_8.0_Pro.lnk
-2. Selecciona: Opción 3 - "Iniciar ambos servicios"
-3. Accede a: http://localhost:9080
-```
-
-### Opción 2: Desde PowerShell
-
-```powershell
-cd C:\ruta\a\Sandra-IA-8.0-Pro
-.\Quick_Start.bat
-# Selecciona opción 3
-```
-
-### Opción 3: Desarrollo Directo
-
-```powershell
-npm start          # Inicia Electron UI en localhost:9080
-npm run start:mcp  # Inicia servidor MCP en localhost:3000
-```
+- **GitHub**: Commits, PRs, sincronización
+- **Vercel/Netlify**: Despliegues automáticos
 
 ---
 
 ## 🏗️ Arquitectura del Sistema
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    SANDRA IA 8.0 PRO                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌────────────────┐  ┌────────────────┐  ┌──────────────┐ │
-│  │  Electron UI   │  │  MCP Server    │  │  AI Gateway  │ │
-│  │  (Port 9080)   │  │  (Port 3000)   │  │  (Groq/DS)   │ │
-│  └────────┬───────┘  └────────┬───────┘  └──────┬───────┘ │
-│           │                   │                  │          │
-│           └───────────────────┴──────────────────┘          │
-│                         │                                   │
-│           ┌─────────────┴─────────────┐                     │
-│           │                           │                     │
-│     ┌─────▼──────┐           ┌────────▼─────┐              │
-│     │  Neon DB   │           │  Services    │              │
-│     │ PostgreSQL │           │  - Bright    │              │
-│     └────────────┘           │  - Twilio    │              │
-│                              │  - PayPal    │              │
-│                              └──────────────┘              │
-│                                                             │
-│  ┌────────────────────────────────────────────────────────┐│
-│  │ Monitoreo & Auto-Recuperación (24/7)                  ││
-│  │ - Sistema Anti-Bloqueos (cada 5 min)                  ││
-│  │ - Monitor Tiempo Real (cada 30 seg)                   ││
-│  │ - GitHub Actions (diariamente a las 3 AM)             ││
-│  └────────────────────────────────────────────────────────┘│
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Sandra IA 8.0 Pro
+├── Desktop App (Electron)
+│   ├── Main Process (main.js)
+│   ├── Renderer Process (index.html)
+│   └── Preload (preload.js)
+│
+├── AI Orchestrator
+│   ├── Groq (Mixtral, Llama2)
+│   ├── DeepSeek (Chat, Coder)
+│   ├── Claude (Sonnet, Opus)
+│   └── Ollama (Local LLMs)
+│
+├── Roles System (18 roles)
+│   ├── Role Definitions
+│   ├── System Prompts
+│   ├── Tools per Role
+│   └── Subagent Spawning
+│
+├── MCP Server (Express)
+│   ├── Code Generation
+│   ├── Deployment
+│   ├── Agent Management
+│   └── GitHub Sync
+│
+├── Multimodal Services
+│   ├── Deepgram STT
+│   ├── Cartesia TTS
+│   ├── HeyGen Avatar
+│   ├── WebRTC Manager
+│   ├── Audio Visualizer
+│   └── Voice Cache
+│
+├── Business Services
+│   ├── Bright Data (Scraping)
+│   ├── Negotiation Service
+│   └── Live Updater
+│
+└── Database (Neon DB)
+    ├── Conversations
+    ├── Deployments
+    ├── Updates
+    └── Configuration
 ```
 
 ---
 
-## 🎓 18 Roles Especializados
+## 🎯 18 Roles Especializados
 
-### Cada rol incluye:
+### 1. 👔 Administrador
+**Capacidades**:
+- Gestión de usuarios y permisos
+- Configuración del sistema
+- Monitoreo de recursos
+- Seguridad y auditoría
 
-✅ Prompt engineering optimizado para ejecución práctica
-✅ Validación independiente de completación
-✅ Integración con servicios específicos
-✅ Aprendizaje continuo de intentos anteriores
-
-### Ejemplo: Rol de Youtuber
-
-```javascript
-// El sistema NO solo dice:
-// "Para crear un video, necesitas..."
-
-// El sistema REALMENTE HACE:
-✅ Genera guión automático
-✅ Crea estructura de video (intro, contenido, outro)
-✅ Optimiza para SEO
-✅ Genera thumbnails
-✅ Crea estrategia de monetización
-✅ Planifica publicación
-✅ Calcula ROI estimado
-```
+**Herramientas**:
+- `systeminfo`, `tasklist`, `disk_usage`
 
 ---
 
-## 🔌 APIs y Integraciones
+### 2. 💻 Desarrollador
+**Capacidades**:
+- Generación de código ejecutable
+- Debugging y testing
+- Deployment
+- Operaciones Git
 
-### IA Backends
-
-| API | Modelo | Estado | Fallback |
-|-----|--------|--------|----------|
-| **Groq** | Mixtral 8x7B | ✅ Primario | → DeepSeek |
-| **DeepSeek** | DeepSeek Chat | ✅ Secundario | → OpenAI |
-| **OpenAI** | GPT-4o | ✅ Terciario | Manual |
-
-### Integraciones de Negocio
-
-```
-Airbnb/Booking    →  [Bright Data]  →  Extracción de datos
-                                           ↓
-                      [Sandra IA]   ←  Análisis automático
-                         ↓
-                    [Negociación]   →  Estrategia de regateo
-                         ↓
-                      [Twilio]      →  Llamada al propietario
-                         ↓
-                      [PayPal]      →  Procesamiento de pago
-```
-
-### Servicios Cloud
-
-- **Neon**: PostgreSQL serverless
-- **Vercel**: Despliegue continuo
-- **GitHub**: Control de versiones y Actions
-- **Twilio**: Comunicaciones de voz
-- **PayPal**: Procesamiento de pagos
+**Herramientas**:
+- `run_code`, `run_tests`, `git_commit`, `create_pr`
 
 ---
 
-## 🛡️ Monitoreo y Recuperación
+### 3. 🎬 YouTuber
+**Capacidades**:
+- Creación de guiones
+- Optimización SEO
+- Monetización
+- Análisis de métricas
 
-### Sistema Anti-Bloqueos
-
-```powershell
-# Ejecuta automáticamente cada 5 minutos:
-.\Sistema_AntiBloqueo.bat
-
-# Funciones:
-✅ Detecta despliegues pendientes/fallidos
-✅ Auto-repara automáticamente
-✅ Registra todas las operaciones
-✅ Sin intervención manual requerida
-```
-
-### Monitoreo en Tiempo Real
-
-```javascript
-// monitor_unificado.js verifica:
-✅ UI Principal (http://localhost:9080)
-✅ Servidor MCP (http://localhost:3000)
-✅ API Services (HTTP health checks)
-
-// Recuperación automática si falla:
-✅ Reinicia el servicio
-✅ Ejecuta script de recuperación específico
-✅ Registra el evento
-✅ Notifica si es crítico
-```
-
-### GitHub Actions - Limpieza Automática
-
-```yaml
-# Ejecuta diariamente a las 3 AM:
-- Elimina despliegues fallidos
-- Limpia entornos inactivos
-- Inicia nuevo despliegue limpio
-- Notifica resultados
-```
+**Herramientas**:
+- `generate_script`, `optimize_title`, `analyze_trends`
 
 ---
 
-## 🚀 Despliegue a Producción
+### 4. 👥 Community Manager
+**Capacidades**:
+- Gestión de redes sociales
+- Calendario de contenido
+- Engagement
+- Crisis management
 
-### Paso 1: Preparar el Entorno
-
-```powershell
-# Validar instalación
-.\Quick_Start.bat
-# Selecciona opción 9: Validar instalación
-```
-
-### Paso 2: Validar Todos los Roles
-
-```
-En http://localhost:9080:
-→ Panel de Validación
-→ "Validar 18 Roles"
-→ Verificar >70% completación
-```
-
-### Paso 3: Validar Modo Turismo
-
-```
-En http://localhost:9080:
-→ Panel de Validación
-→ "Validar Modo Turismo"
-→ Verificar 100% operacional
-```
-
-### Paso 4: Despliegue Final
-
-```powershell
-# Ejecutar como administrador
-.\Despliegue_Final.bat
-
-# El script automáticamente:
-# 1. Construye Electron UI
-# 2. Empaqueta MCP
-# 3. Despliega a Vercel
-# 4. Configura DNS
-# 5. Establece variables de entorno
-# 6. Abre navegador en producción
-```
-
-### Paso 5: Iniciar Monitoreo
-
-```powershell
-# En nueva ventana
-.\Monitor_Sistema.bat
-
-# O con Node.js
-node monitor_unificado.js
-```
+**Herramientas**:
+- `create_post`, `schedule_content`, `analyze_engagement`
 
 ---
 
-## 📊 URLs en Producción
+### 5. 🏨 Especialista Turístico
+**Capacidades**:
+- Búsqueda de alojamientos (Airbnb, Booking)
+- Negociación de precios
+- Gestión de reservas
+- Llamadas con Twilio
 
-| Servicio | URL | Descripción |
-|----------|-----|-------------|
-| **App Principal** | https://sandra-ia.com | UI Electron desplegada |
-| **Panel MCP** | https://mcp.sandra-ia.com | Control Modular Panel |
-| **API** | https://api.sandra-ia.com | Backend de servicios |
-| **Docs** | https://docs.sandra-ia.com | Documentación en línea |
+**Herramientas**:
+- `search_airbnb`, `search_booking`, `negotiate_price`, `make_call`
 
 ---
 
-## 🐛 Solución de Problemas
+### 6. 💼 Negociador de Ventas
+**Capacidades**:
+- Negociación de ventas
+- Manejo de objeciones
+- Cierre de deals
+- Procesamiento de pagos (PayPal)
 
-### "Puerto en Uso"
+**Herramientas**:
+- `create_proposal`, `send_email`, `track_deal`, `process_payment`
 
-```powershell
-# Encontrar proceso en puerto
-netstat -ano | findstr ":9080"
+---
 
-# Matar proceso
-taskkill /PID <PID> /F
-```
+### 7. 📊 Analista de Datos
+**Capacidades**:
+- Análisis de datos
+- Reportes ejecutivos
+- Visualización
+- Insights accionables
 
-### "Dependencias Faltan"
+**Herramientas**:
+- `analyze_data`, `generate_report`, `create_chart`
 
-```powershell
-# Instalar nuevamente
+---
+
+### 8. 📈 Marketing
+**Capacidades**:
+- Estrategias de marketing
+- Optimización de campañas
+- Copywriting
+- Análisis de ROI
+
+**Herramientas**:
+- `create_campaign`, `optimize_ads`, `track_conversions`
+
+---
+
+### 9. 🏢 CEO/Ejecutivo
+**Capacidades**:
+- Planificación estratégica
+- Toma de decisiones
+- Análisis de negocio
+- Liderazgo
+
+**Herramientas**:
+- `strategic_analysis`, `financial_review`, `market_research`
+
+---
+
+### 10. 🎨 Diseñador
+**Capacidades**:
+- Diseño UX/UI
+- Branding
+- Prototyping
+- Sistemas de diseño
+
+**Herramientas**:
+- `generate_design`, `create_mockup`, `color_palette`
+
+---
+
+### 11. ⚖️ Abogado
+**Capacidades**:
+- Asesoramiento legal
+- Revisión de contratos
+- Compliance
+- Documentación legal
+
+**Herramientas**:
+- `review_contract`, `legal_research`, `generate_document`
+
+---
+
+### 12. 🥼 Médico
+**Capacidades**:
+- Asesoramiento de salud
+- Análisis de síntomas
+- Planes de bienestar
+- Investigación médica
+
+**Herramientas**:
+- `analyze_symptoms`, `research_treatment`, `wellness_plan`
+
+---
+
+### 13. 📚 Profesor
+**Capacidades**:
+- Enseñanza
+- Diseño de currículo
+- Evaluación
+- Contenido educativo
+
+**Herramientas**:
+- `create_lesson`, `generate_quiz`, `explain_concept`
+
+---
+
+### 14. 💰 Asesor Financiero
+**Capacidades**:
+- Asesoramiento de inversiones
+- Gestión de portafolio
+- Análisis de riesgo
+- Planificación financiera
+
+**Herramientas**:
+- `analyze_investment`, `market_data`, `portfolio_optimization`
+
+---
+
+### 15. 🎭 Artista
+**Capacidades**:
+- Escritura creativa
+- Dirección artística
+- Storytelling
+- Conceptos visuales
+
+**Herramientas**:
+- `generate_story`, `create_concept`, `art_prompt`
+
+---
+
+### 16. 🔬 Científico
+**Capacidades**:
+- Investigación científica
+- Prueba de hipótesis
+- Análisis de datos
+- Escritura científica
+
+**Herramientas**:
+- `research_paper`, `analyze_data`, `generate_hypothesis`
+
+---
+
+### 17. 🔧 Ingeniero
+**Capacidades**:
+- Diseño de sistemas
+- Arquitectura
+- Optimización
+- Especificaciones técnicas
+
+**Herramientas**:
+- `design_system`, `optimize_performance`, `technical_spec`
+
+---
+
+### 18. 🧠 Psicólogo
+**Capacidades**:
+- Asesoramiento psicológico
+- Análisis de comportamiento
+- Salud mental
+- Estrategias de bienestar
+
+**Herramientas**:
+- `analyze_behavior`, `wellness_plan`, `coping_strategies`
+
+---
+
+## 🛠️ MCP - Modular Control Panel
+
+### Generación de Código
+- **Entrada**: Tarea, Rol, Lenguaje
+- **Proceso**: AI genera código ejecutable
+- **Salida**: Código validado y listo para usar
+
+### Despliegue Automático
+- **Proveedores**: Vercel, Netlify
+- **Proceso**:
+  1. Clonar repositorio
+  2. Instalar dependencias
+  3. Build
+  4. Deploy a producción
+- **Resultado**: URL de producción
+
+### Gestión de Agentes
+- **Crear**: Spawn agente con rol específico
+- **Monitorear**: Estado, tareas completadas
+- **Terminar**: Liberar recursos
+
+### Sincronización GitHub
+- **Información**:
+  - Último commit
+  - Branch activo
+  - Stars y forks
+  - Issues abiertos
+
+---
+
+## 🎙️ Servicios Multimodales
+
+### Deepgram STT
+- **Transcripción en tiempo real**
+- **Múltiples idiomas**
+- **Alta precisión**
+- **Streaming y batch**
+
+### Cartesia TTS
+- **Voces naturales**
+- **Múltiples idiomas**
+- **Caché de respuestas**
+- **Baja latencia**
+
+### HeyGen Avatar
+- **Avatar conversacional**
+- **WebRTC streaming**
+- **Sincronización labial**
+- **Expresiones faciales**
+
+### Características Avanzadas
+- **Barge-in**: Interrumpir al avatar
+- **Modo Continuo**: Conversación sin clicks
+- **Audio Visualizer**: Visualización de ondas de audio
+- **Voice Cache**: Caché de respuestas de voz
+
+---
+
+## 📦 Instalación y Uso
+
+### Requisitos
+- Node.js 18+
+- npm 9+
+- Windows 10/11
+
+### Instalación
+
+```bash
+# Clonar repositorio
+git clone https://github.com/GUESTVALENCIA/IA-SANDRA.git
+cd IA-SANDRA
+
+# Instalar dependencias
 npm install
 
-# O desde el menú
-.\Quick_Start.bat
-# Opción 4: Instalar dependencias
+# Configurar variables de entorno
+cp .env.example .env.pro
+# Editar .env.pro con tus API keys
 ```
 
-### "Despliegue Bloqueado"
+### Ejecución
 
-```powershell
-# Ejecutar desbloqueo de emergencia
-.\Emergency_Fix.bat
+```bash
+# Iniciar aplicación
+npm start
 
-# O esperar 5 minutos (auto-recuperación)
+# O usar el acceso directo
+.\ABRIR_SANDRA.bat
+
+# Iniciar MCP Server (opcional)
+npm run start:mcp
 ```
 
-### "Base de Datos No Conecta"
+### Build
 
-```powershell
-# Verificar .env.pro
-# Asegurar que DATABASE_URL es válida
-# Verificar conexión de red
-```
+```bash
+# Build para producción
+npm run build
 
-### "Token Inválido"
-
-```powershell
-# Generar nuevo token en GitHub
-# https://github.com/settings/tokens
-
-# Actualizar en .env.pro
-# GITHUB_TOKEN=tu_nuevo_token
+# Crear instalador
+electron-builder --win --x64
 ```
 
 ---
 
-## 📁 Estructura de Archivos
+## ⚙️ Configuración
+
+### Variables de Entorno (`.env.pro`)
+
+```env
+# APIs Principales
+GROQ_API_KEY=tu_groq_api_key
+DEEPGRAM_API_KEY=tu_deepgram_api_key
+CARTESIA_API_KEY=tu_cartesia_api_key
+HEYGEN_API_KEY=tu_heygen_api_key
+HEYGEN_AVATAR_ID=tu_avatar_id
+
+# Claude API (opcional, para desarrollo profesional)
+CLAUDE_API_KEY=tu_claude_api_key
+
+# Base de Datos
+NEON_API_KEY=tu_neon_api_key
+DATABASE_URL=postgresql://user@host/db
+
+# GitHub
+GITHUB_TOKEN=tu_github_token
+GITHUB_REPO=USUARIO/REPO
+
+# Vercel
+VERCEL_TOKEN=tu_vercel_token
+
+# MCP
+MCP_PORT=3001
+MCP_SECRET_KEY=tu_secret_key
+
+# Bright Data
+BRIGHT_DATA_AUTH=tu_auth
+BRIGHT_DATA_HOST=brd.superproxy.io:9515
+
+# PayPal
+PAYPAL_CLIENT_ID=tu_client_id
+PAYPAL_CLIENT_SECRET=tu_client_secret
+PAYPAL_MODE=sandbox
+
+# Twilio
+TWILIO_ACCOUNT_SID=tu_account_sid
+TWILIO_AUTH_TOKEN=tu_auth_token
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+---
+
+## 📁 Estructura del Proyecto
 
 ```
-Sandra-IA-8.0-Pro/
-├── desktop-app/                    # Aplicación Electron
-│   ├── main.js                     # Punto de entrada
-│   ├── preload.js                  # Bridge Electron
-│   └── renderer/                   # UI React
+C:\Sandra-IA-8.0-Pro\
+├── desktop-app/
+│   ├── main.js                 # Proceso principal de Electron
+│   ├── preload.js              # Preload script (IPC bridge)
+│   ├── renderer/
+│   │   └── index.html          # UI principal
+│   └── assets/
+│       └── icon.ico            # Icono de la aplicación
 │
-├── core/                           # Núcleo del sistema
+├── llm-orchestrator/
+│   └── ai-orchestrator.js      # Orquestador de LLMs
+│
+├── core/
+│   ├── roles-system.js         # Sistema de 18 roles
 │   ├── practical-execution-framework.js
 │   └── sandra-prompt-optimizer.js
 │
-├── services/                       # Servicios integrados
-│   ├── bright-data-service.js
-│   ├── negotiation-service.js
-│   └── ...
+├── mcp-server/
+│   ├── mcp-core.js             # MCP Core Server
+│   └── server.js               # Express server
 │
-├── llm-orchestrator/               # Gateway de IA
-│   └── ai-gateway.js
+├── services/
+│   ├── live-updater.js         # Auto-actualización
+│   ├── deepgram-service.js     # STT
+│   ├── cartesia-service.js     # TTS
+│   ├── heygen-service.js       # Avatar
+│   ├── multimodal-conversation-service.js
+│   ├── webrtc-avatar-manager.js
+│   ├── audio-visualizer.js
+│   ├── voice-cache-service.js
+│   ├── bright-data-service.js  # Scraping
+│   └── negotiation-service.js  # Negociación
 │
-├── neon-db-adapter/                # Base de datos
-│   └── neon-db.js
+├── neon-db-adapter/
+│   └── neon-db.js              # Adaptador de base de datos
 │
-├── testing/                        # Validación
-│   └── role-validator.js
+├── testing/
+│   └── role-validator.js       # Validación de roles
 │
-├── .github/
-│   └── workflows/
-│       └── auto-clean.yml          # GitHub Actions
-│
-├── Quick_Start.bat                 # Menú interactivo
-├── Deploy_Master.bat               # Despliegue profesional
-├── Despliegue_Final.bat            # Producción
-├── Monitor_Sistema.bat             # Monitoreo Windows
-├── monitor_unificado.js            # Monitoreo Node.js
-├── Emergency_Fix.bat               # Desbloqueo emergencia
-├── Sistema_AntiBloqueo.bat         # Auto-recuperación
-│
-├── .env.pro                        # Variables de entorno
-├── package.json                    # Dependencias
-└── README.md                       # Esta documentación
+├── .env.pro                    # Variables de entorno
+├── package.json                # Dependencias
+├── ABRIR_SANDRA.bat            # Acceso directo
+└── README.md                   # Este archivo
 ```
 
 ---
 
-## 🔐 Configuración de Seguridad
+## 🔑 APIs y Tokens
 
-### Variables de Entorno Requeridas
+### APIs Requeridas
+- **Groq**: Para LLM principal (Mixtral, Llama2)
+- **Deepgram**: Para Speech-to-Text
+- **Cartesia**: Para Text-to-Speech
+- **HeyGen**: Para avatar conversacional
 
-```env
-# LLMs
-GROQ_API_KEY=gsk_...
-DEEPSEEK_API_KEY=sk_...
-OPENAI_API_KEY=sk_...
+### APIs Opcionales
+- **Claude**: Para desarrollo profesional
+- **Neon DB**: Para persistencia
+- **GitHub**: Para sincronización
+- **Vercel**: Para despliegues
+- **Bright Data**: Para scraping
+- **Twilio**: Para llamadas
+- **PayPal**: Para pagos
 
-# GitHub y Vercel
-GITHUB_TOKEN=ghp_...
-VERCEL_TOKEN=...
+### Obtener API Keys
 
-# Base de Datos
-NEON_API_KEY=napi_...
-DATABASE_URL=postgresql://...
-
-# Servicios
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-PAYPAL_CLIENT_ID=AYs...
-```
-
-### Buenas Prácticas
-
-✅ Nunca commitear `.env.pro` al repositorio
-✅ Usar tokens con permisos mínimos necesarios
-✅ Rotar tokens regularmente
-✅ Usar SSL/TLS en producción
-✅ Registrar y monitorear acceso
-
----
-
-## 📈 Métricas y Monitoreo
-
-### KPIs Actuales
-
-- **Disponibilidad**: 99.9%
-- **Tiempo de Respuesta**: <150ms
-- **Precisión de Ejecución**: 75-85%
-- **Roles Operacionales**: 18/18
-- **Auto-Recuperación**: 100%
-
-### Logs Disponibles
-
-```
-C:\Sandra_Restore_Points\
-├── anti_bloqueo.log          # Sistema anti-bloqueos
-├── monitor_sistema.log       # Monitoreo Windows
-└── monitor_unificado.log     # Monitoreo Node.js
-```
+1. **Groq**: https://console.groq.com
+2. **Deepgram**: https://console.deepgram.com
+3. **Cartesia**: https://cartesia.ai
+4. **HeyGen**: https://heygen.com
+5. **Claude**: https://console.anthropic.com
+6. **Neon**: https://neon.tech
+7. **GitHub**: https://github.com/settings/tokens
+8. **Vercel**: https://vercel.com/account/tokens
+9. **Bright Data**: https://brightdata.com
+10. **Twilio**: https://www.twilio.com/console
+11. **PayPal**: https://developer.paypal.com
 
 ---
 
-## 🚀 Próximas Mejoras Planeadas
+## 🚀 Características Avanzadas
 
-- [ ] Integración con WhatsApp
-- [ ] Soporte para más idiomas
-- [ ] Dashboard de analíticas avanzadas
-- [ ] API REST pública
-- [ ] Aplicación móvil iOS/Android
-- [ ] Integración con Telegram
-- [ ] Análisis predictivo mejorado
+### Live Updater
+- Auto-actualización desde GitHub
+- Comprobación cada 60 minutos
+- Instalación sin reinicio
+- Rollback automático si falla
 
----
+### Voice Cache
+- Caché de respuestas de voz
+- Ahorro de costos de API
+- Respuestas instantáneas
+- Límite configurable (100MB por defecto)
 
-## 📞 Soporte y Comunidad
+### Barge-in
+- Interrumpir al avatar mientras habla
+- Detección de voz del usuario
+- Cancelación de TTS en curso
 
-### Canales de Soporte
-
-- **GitHub Issues**: Reportar bugs
-- **GitHub Discussions**: Preguntas generales
-- **Email**: sandra@guestsvalencia.com
-
-### Contribuir
-
-Las contribuciones son bienvenidas:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abre un Pull Request
+### Modo Continuo
+- Conversación sin clicks
+- Detección automática de silencio
+- Respuesta automática
 
 ---
 
-## 📄 Licencia
+## 📊 Estadísticas
 
-Propietaria © 2025 Guests Valencia. Todos los derechos reservados.
-
----
-
-## 🙏 Agradecimientos
-
-Gracias a:
-- Groq por Mixtral 8x7B
-- DeepSeek por su modelo
-- Neon por PostgreSQL serverless
-- Vercel por hosting continuo
-- Twilio por communications
-- PayPal por pagos
+- **18 Roles Especializados**: Cada uno con capacidades únicas
+- **256 Subagentes**: Capacidad de spawning dinámico
+- **4 LLM Providers**: Groq, DeepSeek, Claude, Ollama
+- **10+ Integraciones**: APIs externas
+- **100% Offline**: Modo offline completo (con Ollama)
+- **Multimodal**: Voz, texto, avatar
 
 ---
 
-## 📊 Estadísticas del Proyecto
+## 🛡️ Seguridad
 
-- **Componentes**: 13
-- **Roles**: 18
-- **Funcionalidades**: 50+
-- **Líneas de Código**: 5000+
-- **Tests**: 50+
-- **Documentación**: Completa
-
----
-
-## 🎯 Conclusión
-
-**Sandra IA 8.0 Pro** es un sistema profesional, escalable y completamente automatizado, listo para:
-
-✅ Operación inmediata en producción
-✅ Negociación automática de alojamientos
-✅ Generación de contenido multirol
-✅ Automatización empresarial completa
-✅ Operación 24/7 con auto-recuperación
-
-**Para comenzar:**
-
-```powershell
-# Haz doble clic en Sandra_IA_8.0_Pro.lnk en tu escritorio
-# O ejecuta:
-.\Quick_Start.bat
-```
+- **API Keys**: Almacenadas en `.env.pro` (no en Git)
+- **Context Isolation**: Electron con preload script
+- **Content Security Policy**: Configurada en HTML
+- **No Remote Module**: Deshabilitado
+- **Web Security**: Activada
 
 ---
 
-**Versión**: 8.0.0
-**Estado**: ✅ PRODUCCIÓN LISTA
-**Última Actualización**: 2025-01-13
-**Mantenedor**: Guests Valencia
+## 📝 Notas Importantes
+
+1. **Modo Offline**: La aplicación puede funcionar 100% offline usando Ollama
+2. **APIs Opcionales**: Puedes usar solo las APIs que necesites
+3. **Escalabilidad**: El sistema está diseñado para escalar
+4. **Extensibilidad**: Fácil añadir nuevos roles y servicios
+5. **Producción**: Lista para producción con todas las características
 
 ---
 
-© 2025 Guests Valencia. Todos los derechos reservados. 🚀
+## 🎉 ¡Listo para Usar!
+
+Sandra IA 8.0 Pro está **completamente operativa** y lista para:
+
+✅ Chat multimodal con 18 roles especializados  
+✅ Generación de código con IA  
+✅ Despliegues automáticos  
+✅ Negociación de alojamientos  
+✅ Procesamiento de ventas  
+✅ Análisis de datos  
+✅ Y mucho más...
+
+**¡Disfruta de Sandra IA 8.0 Pro!** 🚀
+
+---
+
+## 📞 Soporte
+
+Para soporte, abre un issue en GitHub o contacta al equipo de desarrollo.
+
+**Repositorio**: https://github.com/GUESTVALENCIA/IA-SANDRA  
+**Versión**: 8.0.0  
+**Última actualización**: Noviembre 2025
+
+---
+
+**Desarrollado con ❤️ por el equipo de Sandra IA**
