@@ -2,6 +2,10 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.pro') });
 
+// Importar gestores profesionales
+const ConfigValidator = require('../core/config-validator');
+const ServiceManager = require('../core/service-manager');
+
 // Importar todos los servicios
 const NeonDB = require('../neon-db-adapter/neon-db');
 const AIOrchestrator = require('../llm-orchestrator/ai-orchestrator');
@@ -18,9 +22,8 @@ const MCPCore = require('../mcp-server/mcp-core');
 const RolesSystem = require('../core/roles-system');
 
 let mainWindow;
-let db, aiOrchestrator, brightData, negotiation, pef, optimizer;
-let deepgram, cartesia, heygen, multimodal;
-let liveUpdater, mcpServer, rolesSystem;
+let serviceManager;
+let configReport;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -41,8 +44,10 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
-  // Abrir DevTools temporalmente para debug
-  mainWindow.webContents.openDevTools();
+  // Abrir DevTools solo en desarrollo
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
 
   // Inicializar servicios
   initializeServices();
@@ -54,202 +59,147 @@ function createWindow() {
 
 async function initializeServices() {
   try {
-    console.log('🚀 Iniciando servicios de Sandra IA 8.0 Pro...');
+    console.log('🚀 Sandra IA 8.0 Pro - Inicialización Profesional');
+    console.log('═'.repeat(60));
 
-    const initializedServices = [];
+    // FASE 1: Validar configuración
+    console.log('\n📋 FASE 1: Validando configuración...');
+    const validator = new ConfigValidator();
+    configReport = await validator.validateAll();
 
-    // 1. Base de datos (con manejo de errores)
-    try {
-      db = new NeonDB();
-      if (db.initializeDatabase) {
-        await db.initializeDatabase();
-      }
-      console.log('✅ Neon DB inicializada');
-      initializedServices.push('neon-db');
-    } catch (error) {
-      console.warn('⚠️ Neon DB no disponible (modo offline):', error.message);
-      db = { 
-        logMessage: async () => ({}), 
-        getStats: async () => ({ conversations: 0, deployments: 0 }),
-        initializeDatabase: async () => ({})
-      };
+    if (!configReport.canStart) {
+      throw new Error('Configuración inválida. Revisar errores críticos.');
     }
 
-    // 2. AI Orchestrator (núcleo de IA)
-    try {
-      aiOrchestrator = new AIOrchestrator();
-      console.log('✅ AI Orchestrator inicializado');
-      initializedServices.push('ai-orchestrator');
-    } catch (error) {
-      console.warn('⚠️ AI Orchestrator error:', error.message);
-      aiOrchestrator = {
-        generateResponse: async (prompt) => 'Respuesta en modo offline',
-        spawnSubagent: async () => ({ id: 'offline', role: 'offline' }),
-        getAllSubagents: () => []
-      };
-    }
+    // FASE 2: Registrar servicios
+    console.log('\n📋 FASE 2: Registrando servicios...');
+    serviceManager = new ServiceManager();
 
-    // 3. Sistema de 18 Roles
-    try {
-      rolesSystem = new RolesSystem(aiOrchestrator, null);
-      console.log('✅ Sistema de 18 Roles inicializado');
-      initializedServices.push('roles-system');
-    } catch (error) {
-      console.warn('⚠️ Roles System error:', error.message);
-      rolesSystem = {
-        getAllRoles: () => [],
-        getActiveRoles: () => [],
-        executeWithRole: async (role, task) => ({ response: 'Modo offline', role, icon: '💬' }),
-        activateRole: async () => ({}),
-        deactivateRole: () => true
-      };
-    }
+    // Servicios CRÍTICOS (deben iniciar)
+    serviceManager.register('ai-orchestrator', AIOrchestrator, {
+      critical: true,
+      retries: 2
+    });
 
-    // 4. MCP Server (con manejo de errores)
-    try {
-      mcpServer = new MCPCore();
-      if (mcpServer.setDependencies) {
-        mcpServer.setDependencies(db, aiOrchestrator);
-      }
-      // Iniciar MCP en puerto separado (sin bloquear)
+    serviceManager.register('roles-system', RolesSystem, {
+      critical: true,
+      dependencies: ['ai-orchestrator']
+    });
+
+    // Servicios OPCIONALES (pueden fallar)
+    serviceManager.register('neon-db', NeonDB, {
+      critical: false
+    });
+
+    serviceManager.register('mcp-server', MCPCore, {
+      critical: false,
+      dependencies: ['ai-orchestrator']
+    });
+
+    serviceManager.register('deepgram', DeepgramService, {
+      critical: false
+    });
+
+    serviceManager.register('cartesia', CartesiaService, {
+      critical: false
+    });
+
+    serviceManager.register('heygen', HeyGenService, {
+      critical: false
+    });
+
+    serviceManager.register('multimodal', MultimodalConversationService, {
+      critical: false,
+      dependencies: ['ai-orchestrator']
+    });
+
+    serviceManager.register('bright-data', BrightDataService, {
+      critical: false
+    });
+
+    serviceManager.register('negotiation', NegotiationService, {
+      critical: false,
+      dependencies: ['ai-orchestrator']
+    });
+
+    serviceManager.register('pef', PracticalExecutionFramework, {
+      critical: false,
+      dependencies: ['ai-orchestrator']
+    });
+
+    serviceManager.register('optimizer', SandraPromptOptimizer, {
+      critical: false
+    });
+
+    serviceManager.register('live-updater', LiveUpdater, {
+      critical: false
+    });
+
+    // FASE 3: Inicializar todos los servicios
+    console.log('\n📋 FASE 3: Inicializando servicios...');
+    const summary = await serviceManager.initializeAll({
+      mainWindow,
+      configReport
+    });
+
+    // FASE 4: Iniciar MCP Server si está listo
+    const mcpServer = serviceManager.get('mcp-server');
+    if (mcpServer && typeof mcpServer.start === 'function') {
       setTimeout(() => {
         try {
           mcpServer.start();
-          console.log('✅ MCP Server inicializado');
+          console.log('✅ MCP Server escuchando en puerto 3001');
         } catch (e) {
-          console.warn('⚠️ MCP Server no pudo iniciar:', e.message);
+          console.warn('⚠️  MCP Server no pudo iniciar:', e.message);
         }
       }, 1000);
-      initializedServices.push('mcp-server');
-    } catch (error) {
-      console.warn('⚠️ MCP Server error:', error.message);
-      mcpServer = {
-        deployProject: async () => ({ success: false }),
-        generateCode: async () => ({ code: '// Modo offline' }),
-        syncWithGitHub: async () => ({ success: false })
-      };
     }
 
-    // 5-8. Servicios opcionales
-    try {
-      brightData = new BrightDataService();
-      console.log('✅ Bright Data Service inicializado');
-      initializedServices.push('bright-data');
-    } catch (error) {
-      console.warn('⚠️ Bright Data no disponible');
-      brightData = { extractAccommodationData: async () => [], processSale: async () => ({}) };
-    }
+    // FASE 5: Notificar al renderer
+    const rolesSystem = serviceManager.get('roles-system');
+    const rolesCount = rolesSystem?.getAllRoles ? rolesSystem.getAllRoles().length : 19;
 
-    try {
-      negotiation = new NegotiationService(aiOrchestrator, db);
-      console.log('✅ Negotiation Service inicializado');
-      initializedServices.push('negotiation');
-    } catch (error) {
-      console.warn('⚠️ Negotiation Service no disponible');
-      negotiation = { initiateNegotiation: async () => ({}), initiatePhoneCall: async () => ({}) };
-    }
-
-    try {
-      pef = new PracticalExecutionFramework(aiOrchestrator);
-      console.log('✅ PEF inicializado');
-      initializedServices.push('pef');
-    } catch (error) {
-      console.warn('⚠️ PEF no disponible');
-      pef = { executeTask: async () => ({}), validateRoleExecution: async () => ({}) };
-    }
-
-    try {
-      optimizer = new SandraPromptOptimizer();
-      console.log('✅ Sandra Prompt Optimizer inicializado');
-      initializedServices.push('optimizer');
-    } catch (error) {
-      console.warn('⚠️ Optimizer no disponible');
-      optimizer = { optimizePromptForRole: (msg) => msg };
-    }
-
-    // 9. Servicios multimodales (opcionales)
-    try {
-      deepgram = new DeepgramService();
-      console.log('✅ Deepgram STT inicializado');
-      initializedServices.push('deepgram');
-    } catch (error) {
-      console.warn('⚠️ Deepgram no disponible');
-      deepgram = { transcribeFile: async () => ({}), transcribeBuffer: async () => ({}) };
-    }
-
-    try {
-      cartesia = new CartesiaService();
-      console.log('✅ Cartesia TTS inicializado');
-      initializedServices.push('cartesia');
-    } catch (error) {
-      console.warn('⚠️ Cartesia no disponible');
-      cartesia = { generateSpeech: async () => ({}) };
-    }
-
-    try {
-      heygen = new HeyGenService();
-      console.log('✅ HeyGen Avatar inicializado');
-      initializedServices.push('heygen');
-    } catch (error) {
-      console.warn('⚠️ HeyGen no disponible');
-      heygen = { speak: async () => ({}), createStreamingSession: async () => ({}), stop: async () => ({}) };
-    }
-
-    try {
-      multimodal = new MultimodalConversationService(aiOrchestrator, db);
-      console.log('✅ Multimodal Conversation Service inicializado');
-      initializedServices.push('multimodal');
-    } catch (error) {
-      console.warn('⚠️ Multimodal Service no disponible');
-      multimodal = {
-        startConversation: async () => ({}),
-        stopConversation: async () => ({}),
-        sendAudioData: () => {},
-        setBargeIn: () => {},
-        getStatus: () => ({ active: false })
-      };
-    }
-
-    // 10. Live Updater (opcional)
-    try {
-      liveUpdater = new LiveUpdater(mainWindow, db);
-      if (liveUpdater.startAutoCheck) {
-        liveUpdater.startAutoCheck(60);
-      }
-      console.log('✅ Live Updater inicializado');
-      initializedServices.push('live-updater');
-    } catch (error) {
-      console.warn('⚠️ Live Updater no disponible');
-      liveUpdater = { checkForUpdates: async () => false, installUpdate: async () => ({}) };
-    }
-
-    // Notificar al renderer que todo está listo
     if (mainWindow && mainWindow.webContents) {
       mainWindow.webContents.send('services-ready', {
         status: 'ready',
-        services: initializedServices,
-        rolesCount: rolesSystem.getAllRoles ? rolesSystem.getAllRoles().length : 18,
-        mcpPort: 3001
+        services: summary.services.filter(s => s.status === 'ready').map(s => s.name),
+        rolesCount,
+        mcpPort: 3001,
+        configReport: {
+          critical: configReport.results.critical.length,
+          optional: configReport.results.optional.length,
+          warnings: configReport.results.warnings.length
+        }
       });
     }
 
-    console.log(`🎉 Servicios iniciados: ${initializedServices.length} de 13`);
-    console.log('✅ Sandra IA 8.0 Pro lista para usar');
+    console.log('\n═'.repeat(60));
+    console.log('🎉 Sandra IA 8.0 Pro lista para usar');
+    console.log(`   📊 ${summary.ready}/${summary.total} servicios operativos`);
+    console.log(`   🎯 ${rolesCount} roles especializados disponibles`);
+    console.log('═'.repeat(60) + '\n');
+
   } catch (error) {
-    console.error('❌ Error crítico inicializando servicios:', error);
+    console.error('\n❌ ERROR CRÍTICO EN INICIALIZACIÓN:');
+    console.error('═'.repeat(60));
+    console.error(error.message);
     console.error('Stack:', error.stack);
-    
-    // Intentar notificar al renderer incluso con error
+    console.error('═'.repeat(60) + '\n');
+
+    // Intentar notificar al renderer
     if (mainWindow && mainWindow.webContents) {
       try {
         mainWindow.webContents.send('services-error', {
           error: error.message,
-          stack: error.stack
+          stack: error.stack,
+          configReport
         });
       } catch (e) {
         console.error('No se pudo notificar error al renderer:', e);
       }
     }
+
+    throw error;
   }
 }
 
@@ -257,17 +207,29 @@ async function initializeServices() {
 
 ipcMain.handle('send-message', async (event, { message, role }) => {
   try {
+    const rolesSystem = serviceManager?.get('roles-system');
+    const optimizer = serviceManager?.get('optimizer');
+    const db = serviceManager?.get('neon-db');
+
+    if (!rolesSystem) {
+      return { success: false, error: 'Sistema de roles no disponible' };
+    }
+
     const sessionId = `session_${Date.now()}`;
     
-    // Optimizar prompt según el rol
-    const optimizedPrompt = optimizer.optimizePromptForRole(message, role);
+    // Optimizar prompt según el rol (si optimizer disponible)
+    const optimizedPrompt = optimizer?.optimizePromptForRole 
+      ? optimizer.optimizePromptForRole(message, role)
+      : message;
     
     // Ejecutar con el rol específico
     const result = await rolesSystem.executeWithRole(role, optimizedPrompt);
     
-    // Guardar en base de datos
-    await db.logMessage(sessionId, message, 'user');
-    await db.logMessage(sessionId, result.response, 'assistant');
+    // Guardar en base de datos (si disponible)
+    if (db?.logMessage) {
+      await db.logMessage(sessionId, message, 'user');
+      await db.logMessage(sessionId, result.response, 'assistant');
+    }
     
     return { 
       success: true, 
@@ -285,6 +247,10 @@ ipcMain.handle('send-message', async (event, { message, role }) => {
 
 ipcMain.handle('get-all-roles', async (event) => {
   try {
+    const rolesSystem = serviceManager?.get('roles-system');
+    if (!rolesSystem) {
+      return { success: false, error: 'Sistema de roles no disponible' };
+    }
     const roles = rolesSystem.getAllRoles();
     return { success: true, roles };
   } catch (error) {
@@ -294,6 +260,10 @@ ipcMain.handle('get-all-roles', async (event) => {
 
 ipcMain.handle('activate-role', async (event, { roleName }) => {
   try {
+    const rolesSystem = serviceManager?.get('roles-system');
+    if (!rolesSystem) {
+      return { success: false, error: 'Sistema de roles no disponible' };
+    }
     const agent = await rolesSystem.activateRole(roleName);
     return { success: true, agent };
   } catch (error) {
@@ -303,6 +273,10 @@ ipcMain.handle('activate-role', async (event, { roleName }) => {
 
 ipcMain.handle('deactivate-role', async (event, { roleName }) => {
   try {
+    const rolesSystem = serviceManager?.get('roles-system');
+    if (!rolesSystem) {
+      return { success: false, error: 'Sistema de roles no disponible' };
+    }
     const result = rolesSystem.deactivateRole(roleName);
     return { success: result };
   } catch (error) {
@@ -312,6 +286,10 @@ ipcMain.handle('deactivate-role', async (event, { roleName }) => {
 
 ipcMain.handle('get-active-roles', async (event) => {
   try {
+    const rolesSystem = serviceManager?.get('roles-system');
+    if (!rolesSystem) {
+      return { success: false, error: 'Sistema de roles no disponible' };
+    }
     const roles = rolesSystem.getActiveRoles();
     return { success: true, roles };
   } catch (error) {
@@ -321,6 +299,10 @@ ipcMain.handle('get-active-roles', async (event) => {
 
 ipcMain.handle('execute-with-role', async (event, { roleName, task }) => {
   try {
+    const rolesSystem = serviceManager?.get('roles-system');
+    if (!rolesSystem) {
+      return { success: false, error: 'Sistema de roles no disponible' };
+    }
     const result = await rolesSystem.executeWithRole(roleName, task);
     return { success: true, result };
   } catch (error) {
