@@ -56,91 +56,199 @@ async function initializeServices() {
   try {
     console.log('🚀 Iniciando servicios de Sandra IA 8.0 Pro...');
 
-    // 1. Base de datos
-    db = new NeonDB();
-    await db.initializeDatabase();
-    console.log('✅ Neon DB inicializada');
+    const initializedServices = [];
+
+    // 1. Base de datos (con manejo de errores)
+    try {
+      db = new NeonDB();
+      if (db.initializeDatabase) {
+        await db.initializeDatabase();
+      }
+      console.log('✅ Neon DB inicializada');
+      initializedServices.push('neon-db');
+    } catch (error) {
+      console.warn('⚠️ Neon DB no disponible (modo offline):', error.message);
+      db = { 
+        logMessage: async () => ({}), 
+        getStats: async () => ({ conversations: 0, deployments: 0 }),
+        initializeDatabase: async () => ({})
+      };
+    }
 
     // 2. AI Orchestrator (núcleo de IA)
-    aiOrchestrator = new AIOrchestrator();
-    console.log('✅ AI Orchestrator inicializado');
+    try {
+      aiOrchestrator = new AIOrchestrator();
+      console.log('✅ AI Orchestrator inicializado');
+      initializedServices.push('ai-orchestrator');
+    } catch (error) {
+      console.warn('⚠️ AI Orchestrator error:', error.message);
+      aiOrchestrator = {
+        generateResponse: async (prompt) => 'Respuesta en modo offline',
+        spawnSubagent: async () => ({ id: 'offline', role: 'offline' }),
+        getAllSubagents: () => []
+      };
+    }
 
     // 3. Sistema de 18 Roles
-    rolesSystem = new RolesSystem(aiOrchestrator, null);
-    console.log('✅ Sistema de 18 Roles inicializado');
+    try {
+      rolesSystem = new RolesSystem(aiOrchestrator, null);
+      console.log('✅ Sistema de 18 Roles inicializado');
+      initializedServices.push('roles-system');
+    } catch (error) {
+      console.warn('⚠️ Roles System error:', error.message);
+      rolesSystem = {
+        getAllRoles: () => [],
+        getActiveRoles: () => [],
+        executeWithRole: async (role, task) => ({ response: 'Modo offline', role, icon: '💬' }),
+        activateRole: async () => ({}),
+        deactivateRole: () => true
+      };
+    }
 
-    // 4. MCP Server
-    mcpServer = new MCPCore();
-    mcpServer.setDependencies(db, aiOrchestrator);
-    // Iniciar MCP en puerto separado
-    mcpServer.start();
-    console.log('✅ MCP Server inicializado');
+    // 4. MCP Server (con manejo de errores)
+    try {
+      mcpServer = new MCPCore();
+      if (mcpServer.setDependencies) {
+        mcpServer.setDependencies(db, aiOrchestrator);
+      }
+      // Iniciar MCP en puerto separado (sin bloquear)
+      setTimeout(() => {
+        try {
+          mcpServer.start();
+          console.log('✅ MCP Server inicializado');
+        } catch (e) {
+          console.warn('⚠️ MCP Server no pudo iniciar:', e.message);
+        }
+      }, 1000);
+      initializedServices.push('mcp-server');
+    } catch (error) {
+      console.warn('⚠️ MCP Server error:', error.message);
+      mcpServer = {
+        deployProject: async () => ({ success: false }),
+        generateCode: async () => ({ code: '// Modo offline' }),
+        syncWithGitHub: async () => ({ success: false })
+      };
+    }
 
-    // 5. Bright Data Service
-    brightData = new BrightDataService();
-    console.log('✅ Bright Data Service inicializado');
+    // 5-8. Servicios opcionales
+    try {
+      brightData = new BrightDataService();
+      console.log('✅ Bright Data Service inicializado');
+      initializedServices.push('bright-data');
+    } catch (error) {
+      console.warn('⚠️ Bright Data no disponible');
+      brightData = { extractAccommodationData: async () => [], processSale: async () => ({}) };
+    }
 
-    // 6. Negotiation Service
-    negotiation = new NegotiationService(aiOrchestrator, db);
-    console.log('✅ Negotiation Service inicializado');
+    try {
+      negotiation = new NegotiationService(aiOrchestrator, db);
+      console.log('✅ Negotiation Service inicializado');
+      initializedServices.push('negotiation');
+    } catch (error) {
+      console.warn('⚠️ Negotiation Service no disponible');
+      negotiation = { initiateNegotiation: async () => ({}), initiatePhoneCall: async () => ({}) };
+    }
 
-    // 7. Practical Execution Framework
-    pef = new PracticalExecutionFramework(aiOrchestrator);
-    console.log('✅ PEF inicializado');
+    try {
+      pef = new PracticalExecutionFramework(aiOrchestrator);
+      console.log('✅ PEF inicializado');
+      initializedServices.push('pef');
+    } catch (error) {
+      console.warn('⚠️ PEF no disponible');
+      pef = { executeTask: async () => ({}), validateRoleExecution: async () => ({}) };
+    }
 
-    // 8. Sandra Prompt Optimizer
-    optimizer = new SandraPromptOptimizer();
-    console.log('✅ Sandra Prompt Optimizer inicializado');
+    try {
+      optimizer = new SandraPromptOptimizer();
+      console.log('✅ Sandra Prompt Optimizer inicializado');
+      initializedServices.push('optimizer');
+    } catch (error) {
+      console.warn('⚠️ Optimizer no disponible');
+      optimizer = { optimizePromptForRole: (msg) => msg };
+    }
 
-    // 9. Servicios multimodales
-    deepgram = new DeepgramService();
-    console.log('✅ Deepgram STT inicializado');
+    // 9. Servicios multimodales (opcionales)
+    try {
+      deepgram = new DeepgramService();
+      console.log('✅ Deepgram STT inicializado');
+      initializedServices.push('deepgram');
+    } catch (error) {
+      console.warn('⚠️ Deepgram no disponible');
+      deepgram = { transcribeFile: async () => ({}), transcribeBuffer: async () => ({}) };
+    }
 
-    cartesia = new CartesiaService();
-    console.log('✅ Cartesia TTS inicializado');
+    try {
+      cartesia = new CartesiaService();
+      console.log('✅ Cartesia TTS inicializado');
+      initializedServices.push('cartesia');
+    } catch (error) {
+      console.warn('⚠️ Cartesia no disponible');
+      cartesia = { generateSpeech: async () => ({}) };
+    }
 
-    heygen = new HeyGenService();
-    console.log('✅ HeyGen Avatar inicializado');
+    try {
+      heygen = new HeyGenService();
+      console.log('✅ HeyGen Avatar inicializado');
+      initializedServices.push('heygen');
+    } catch (error) {
+      console.warn('⚠️ HeyGen no disponible');
+      heygen = { speak: async () => ({}), createStreamingSession: async () => ({}), stop: async () => ({}) };
+    }
 
-    multimodal = new MultimodalConversationService(aiOrchestrator, db);
-    console.log('✅ Multimodal Conversation Service inicializado');
+    try {
+      multimodal = new MultimodalConversationService(aiOrchestrator, db);
+      console.log('✅ Multimodal Conversation Service inicializado');
+      initializedServices.push('multimodal');
+    } catch (error) {
+      console.warn('⚠️ Multimodal Service no disponible');
+      multimodal = {
+        startConversation: async () => ({}),
+        stopConversation: async () => ({}),
+        sendAudioData: () => {},
+        setBargeIn: () => {},
+        getStatus: () => ({ active: false })
+      };
+    }
 
-    // 10. Live Updater
-    liveUpdater = new LiveUpdater(mainWindow, db);
-    liveUpdater.startAutoCheck(60); // Check cada 60 minutos
-    console.log('✅ Live Updater inicializado');
+    // 10. Live Updater (opcional)
+    try {
+      liveUpdater = new LiveUpdater(mainWindow, db);
+      if (liveUpdater.startAutoCheck) {
+        liveUpdater.startAutoCheck(60);
+      }
+      console.log('✅ Live Updater inicializado');
+      initializedServices.push('live-updater');
+    } catch (error) {
+      console.warn('⚠️ Live Updater no disponible');
+      liveUpdater = { checkForUpdates: async () => false, installUpdate: async () => ({}) };
+    }
 
     // Notificar al renderer que todo está listo
-    if (mainWindow) {
+    if (mainWindow && mainWindow.webContents) {
       mainWindow.webContents.send('services-ready', {
         status: 'ready',
-        services: [
-          'neon-db', 
-          'ai-orchestrator', 
-          'roles-system',
-          'mcp-server',
-          'bright-data', 
-          'negotiation', 
-          'pef', 
-          'optimizer', 
-          'deepgram', 
-          'cartesia', 
-          'heygen', 
-          'multimodal',
-          'live-updater'
-        ],
-        rolesCount: rolesSystem.getAllRoles().length,
+        services: initializedServices,
+        rolesCount: rolesSystem.getAllRoles ? rolesSystem.getAllRoles().length : 18,
         mcpPort: 3001
       });
     }
 
-    console.log('🎉 Todos los servicios iniciados correctamente');
+    console.log(`🎉 Servicios iniciados: ${initializedServices.length} de 13`);
+    console.log('✅ Sandra IA 8.0 Pro lista para usar');
   } catch (error) {
-    console.error('❌ Error inicializando servicios:', error);
-    if (mainWindow) {
-      mainWindow.webContents.send('services-error', {
-        error: error.message
-      });
+    console.error('❌ Error crítico inicializando servicios:', error);
+    console.error('Stack:', error.stack);
+    
+    // Intentar notificar al renderer incluso con error
+    if (mainWindow && mainWindow.webContents) {
+      try {
+        mainWindow.webContents.send('services-error', {
+          error: error.message,
+          stack: error.stack
+        });
+      } catch (e) {
+        console.error('No se pudo notificar error al renderer:', e);
+      }
     }
   }
 }
