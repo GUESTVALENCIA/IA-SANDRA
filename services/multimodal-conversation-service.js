@@ -211,30 +211,12 @@ class MultimodalConversationService {
       this.isThinking = false;
       this._emitSessionState();
 
-      // Sincronizar video con Wav2Lip si está en modo avatar/video
-      let syncedVideoPath = null;
-      if (this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video')) {
-        try {
-          // Obtener video de Sora actual (desde el frontend)
-          const soraVideoPath = this.currentSoraVideo || path.join(__dirname, '../desktop-app/renderer/assets/sora-videos/default-avatar.mp4');
-          
-          console.log('🎬 Sincronizando video con Wav2Lip...');
-          const syncResult = await this.emoreLipSync.generateSyncedVideo(soraVideoPath, ttsAudio);
-          
-          if (syncResult.success) {
-            syncedVideoPath = syncResult.videoPath;
-            console.log('✅ Video sincronizado:', syncedVideoPath);
-          }
-        } catch (error) {
-          console.warn('⚠️ Wav2Lip no disponible, usando video sin lip-sync:', error.message);
-        }
-      }
+      this._emitResponse({ text: response, audioBuffer: ttsAudio });
 
-      this._emitResponse({ 
-        text: response, 
-        audioBuffer: ttsAudio,
-        syncedVideo: syncedVideoPath // Enviar video sincronizado al frontend
-      });
+      // Lip-sync si hay audio y avatar activo
+      if (this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video')) {
+        await this.handleLipSyncFrame(ttsAudio);
+      }
     } catch (error) {
       this.isThinking = false;
       this._emitSessionState();
