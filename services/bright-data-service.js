@@ -11,18 +11,100 @@ class BrightDataService {
     this.host = process.env.BRIGHT_DATA_HOST || 'brd.superproxy.io:9515';
     this.proxyUrl = `http://${this.auth}@${this.host}`;
     
-    // Tus alojamientos en Valencia (El Cabañal)
+    // Alojamientos de Guests-Valencia (gestión profesional)
     this.myListings = {
-      airbnb: [
-        // URLs de tus alojamientos en Airbnb (añadir las reales)
-        'https://www.airbnb.es/rooms/YOUR_LISTING_ID_1',
-        'https://www.airbnb.es/rooms/YOUR_LISTING_ID_2'
-      ],
-      booking: [
-        // URLs de tus alojamientos en Booking (añadir las reales)
-        'https://www.booking.com/hotel/es/YOUR_PROPERTY_1.html',
-        'https://www.booking.com/hotel/es/YOUR_PROPERTY_2.html'
+      properties: [
+        {
+          id: 'cabanyal-beach-400m',
+          name: 'El Cabanyal 400m from the Beach',
+          type: 'Apartamento completo',
+          location: 'Calle del Progreso, 313, piso 3 puerta 4, Poblados marítimos, 46011 Valencia',
+          capacity: 6,
+          bedrooms: 3,
+          bathrooms: 1,
+          size: '78 m²',
+          rating: 7.9,
+          reviews: 20,
+          locationScore: 9.1,
+          priceFrom: 80,
+          features: ['WiFi gratis', 'Aire acondicionado', 'Balcón', 'Cocina equipada', 'Lavadora', 'Frente a la playa'],
+          nearBeach: '400m de Playa de las Arenas',
+          checkIn: '15:00-22:00',
+          checkOut: '11:00-12:00',
+          license: 'VT-44228-CS',
+          platforms: ['booking'],
+          highlights: [
+            'Ubicación excelente (9.1/10)',
+            'A 7 min a pie de Playa de las Arenas',
+            'Barrio El Cabañal - zona marítima',
+            'Personal muy valorado (9.1/10)'
+          ]
+        },
+        {
+          id: 'montanejos-river-duplex',
+          name: 'Dúplex en Montanejos 200 metros del río Mijares',
+          type: 'Dúplex completo',
+          location: 'Carretera de Tales, 30, puerta 9, 12448 Montanejos, Castellón',
+          capacity: 8,
+          bedrooms: 4,
+          bathrooms: 2,
+          size: '137 m²',
+          rating: 6.7,
+          reviews: 25,
+          locationScore: 9.3,
+          priceFrom: 120,
+          features: ['WiFi gratis (10/10)', 'Vistas a la montaña', 'Terraza', 'Balcón', 'Parking gratis', 'Lavadora', 'Bañera'],
+          nearRiver: '200m del río Mijares',
+          checkIn: '15:00-20:00',
+          checkOut: '11:00-12:00',
+          license: 'VT-44228-CS',
+          platforms: ['booking'],
+          highlights: [
+            'Ubicación excelente (9.3/10)',
+            'Ideal para familias (8 personas)',
+            'Cerca de aguas termales de Montanejos',
+            'Parking privado gratis',
+            'Vistas al río Mijares'
+          ]
+        },
+        {
+          id: 'betera-metro-apartment',
+          name: 'Precioso apartamento a minutos del metro',
+          type: 'Apartamento completo',
+          location: 'Carretera de Valencia, 4 piso 3, 46117 Bétera, Valencia',
+          capacity: 4,
+          bedrooms: 2,
+          bathrooms: 1,
+          size: '78 m²',
+          rating: null,
+          reviews: 0,
+          locationScore: null,
+          priceFrom: 70,
+          features: ['Parking gratis', 'Calefacción', 'Cocina equipada', 'Lavadora', 'TV pantalla plana', 'Ascensor'],
+          nearMetro: '200m de estación Bétera',
+          checkIn: '15:00-22:00',
+          checkOut: '11:00-12:00',
+          license: 'VT-44228-CS',
+          platforms: ['booking'],
+          highlights: [
+            'A 200m del metro (línea a Valencia)',
+            'Parking gratis en las inmediaciones',
+            'Zona tranquila cerca de Valencia',
+            'Ideal para estancias largas'
+          ]
+        }
       ]
+    };
+    
+    // Información de la empresa
+    this.companyInfo = {
+      name: 'Guests-Valencia',
+      description: 'Expertos en gestión de alojamientos turísticos vacacionales y de corta estancia',
+      experience: '4 años de experiencia en el sector',
+      coverage: 'Toda la Comunidad Valenciana',
+      totalProperties: 6,
+      rating: 7.8,
+      totalReviews: 63
     };
     
     if (this.auth) {
@@ -38,32 +120,25 @@ class BrightDataService {
    */
   async getMyAccommodations(checkIn = null, checkOut = null, guests = 2) {
     try {
-      const results = [];
-      
-      // Scraping de Airbnb
-      for (const url of this.myListings.airbnb) {
-        const data = await this.scrapeAirbnb(url, { checkIn, checkOut, guests });
-        if (data.success) results.push(data);
-      }
-      
-      // Scraping de Booking
-      for (const url of this.myListings.booking) {
-        const data = await this.scrapeBooking(url, { checkIn, checkOut, guests });
-        if (data.success) results.push(data);
-      }
+      // Filtrar alojamientos por capacidad
+      const availableProperties = this.myListings.properties.filter(
+        prop => prop.capacity >= guests
+      );
       
       return {
         success: true,
-        accommodations: results,
-        location: 'El Cabañal, Valencia',
+        company: this.companyInfo,
+        accommodations: availableProperties,
+        totalProperties: this.myListings.properties.length,
+        availableForGuests: availableProperties.length,
+        searchCriteria: { checkIn, checkOut, guests },
         timestamp: new Date().toISOString()
       };
     } catch (error) {
       console.error('Error obteniendo alojamientos:', error);
       return {
         success: false,
-        error: error.message,
-        fallback: this.getFallbackData()
+        error: error.message
       };
     }
   }
