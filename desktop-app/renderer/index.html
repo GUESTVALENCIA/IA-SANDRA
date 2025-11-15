@@ -2041,19 +2041,32 @@
         const raw = data?.transcript || '';
         const t = raw.toLowerCase();
 
-        // Wake word "Hola Sandra"
-        if (!isAwake && /(^|\b)hola sandra(\b|$)/i.test(t)) {
-          isAwake = true;
-          showToast('🟢 Sandra activa por voz');
-          // Disparar SOS en caliente
+        // Wake word "Hola Sandra" → Iniciar llamada conversacional automáticamente
+        if (/(^|\b)hola sandra(\b|$)/i.test(t)) {
+          console.log('🎤 Wake word detectado: "Hola Sandra"');
+          
+          // Marcar como despierta
+          if (!isAwake) {
+            isAwake = true;
+            showToast('🟢 ¡Hola! Sandra activada por voz', 'success');
+          }
+          
+          // Disparar SOS en caliente (agente de emergencia)
           if (window.sandraAPI && window.sandraAPI.triggerSOS) {
             window.sandraAPI.triggerSOS().then(res => {
               if (!res?.success) console.warn('SOS error:', res?.error);
             }).catch(e => console.warn('SOS exception:', e.message));
           }
-          // Iniciar llamada al detectar wake word
+          
+          // INICIAR LLAMADA CONVERSACIONAL AUTOMÁTICAMENTE
           if (typeof startConversationalCall === 'function' && !isCallActive) {
-            startConversationalCall();
+            console.log('📞 Iniciando llamada conversacional automática...');
+            setTimeout(() => {
+              startConversationalCall();
+              showToast('📞 Llamada conversacional iniciada', 'success');
+            }, 500); // Pequeño delay para que el toast se vea
+          } else if (isCallActive) {
+            console.log('ℹ️ Llamada ya activa, continuando...');
           }
         }
 
