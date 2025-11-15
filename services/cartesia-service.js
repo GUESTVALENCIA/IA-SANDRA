@@ -6,8 +6,10 @@ const VoiceCacheService = require('./voice-cache-service');
 class CartesiaService {
   constructor() {
     this.apiKey = process.env.CARTESIA_API_KEY;
-    this.baseUrl = 'https://api.cartesia.ai/v1';
-    this.voiceId = 'a0e99841-438c-4a64-b679-ae501e7d6091'; // Voz femenina en español
+    // Base URL según docs actuales de Cartesia
+    this.baseUrl = 'https://api.cartesia.ai';
+    this.apiVersion = '2024-11-13';
+    this.voiceId = process.env.CARTESIA_VOICE_ID || 'a0e99841-438c-4a64-b679-ae501e7d6091'; // Voz por defecto (puede ser sobrescrita por env)
     this.currentAudio = null;
     this.isPlaying = false;
     this.cache = new VoiceCacheService();
@@ -15,6 +17,9 @@ class CartesiaService {
     
     if (this.apiKey) {
       console.log('✅ Cartesia TTS Service inicializado con caché');
+      if (this.voiceId) {
+        console.log(`🔊 Cartesia voice id: ${this.voiceId}`);
+      }
     } else {
       console.warn('⚠️ Cartesia API Key no encontrada');
     }
@@ -46,14 +51,15 @@ class CartesiaService {
         throw new Error('Cartesia API Key no configurada');
       }
 
-      const response = await axios.post(
+      // Endpoint /tts/bytes para obtener audio completo en una respuesta
+      const { data } = await axios.post(
         `${this.baseUrl}/tts/bytes`,
         {
           model_id: 'sonic-english',
           transcript: text,
           voice: {
             mode: 'id',
-            id: options.voiceId || this.voiceId
+            id: voiceId
           },
           output_format: {
             container: 'wav',
@@ -65,13 +71,15 @@ class CartesiaService {
         {
           headers: {
             'X-API-Key': this.apiKey,
+            'Cartesia-Version': this.apiVersion,
             'Content-Type': 'application/json'
           },
-          responseType: 'arraybuffer'
+          responseType: 'arraybuffer',
+          timeout: 30000
         }
       );
 
-      const audioBuffer = Buffer.from(response.data);
+      const audioBuffer = Buffer.from(data);
 
       // Guardar en caché
       if (this.cacheEnabled) {
@@ -89,7 +97,9 @@ class CartesiaService {
         cached: false
       };
     } catch (error) {
-      console.error('Error generando speech:', error.response?.data || error.message);
+      const status = error.response?.status;
+      const body = error.response?.data;
+      console.error('Error generando speech:', status, body || error.message);
       return {
         success: false,
         error: error.message
@@ -152,6 +162,7 @@ class CartesiaService {
         {
           headers: {
             'X-API-Key': this.apiKey,
+            'Cartesia-Version': this.apiVersion,
             'Content-Type': 'application/json'
           },
           responseType: 'stream'

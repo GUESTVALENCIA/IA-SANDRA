@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.groq.com https://api.deepgram.com https://api.heygen.com https://api.cartesia.ai https://*.neon.tech wss://*.heygen.com; font-src 'self'; media-src 'self' blob:; worker-src 'none'; child-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.groq.com https://api.deepgram.com wss://api.deepgram.com https://api.heygen.com https://api.cartesia.ai https://*.neon.tech wss://*.heygen.com; font-src 'self'; media-src 'self' blob:; worker-src 'none'; child-src 'none';">
   <script>
     // Bloquear Service Workers explícitamente
     if ('serviceWorker' in navigator) {
@@ -495,44 +495,7 @@
       transform: scale(1);
     }
 
-    /* RECORDING INDICATOR */
-    .recording-indicator {
-      position: absolute;
-      top: -50px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      padding: 12px 24px;
-      border-radius: 25px;
-      display: none;
-      align-items: center;
-      gap: 10px;
-      font-weight: 600;
-      box-shadow: 0 5px 20px rgba(239, 68, 68, 0.5);
-      animation: slideDown 0.3s ease-out;
-    }
-
-    @keyframes slideDown {
-      from { transform: translateX(-50%) translateY(-10px); opacity: 0; }
-      to { transform: translateX(-50%) translateY(0); opacity: 1; }
-    }
-
-    .recording-indicator.active {
-      display: flex;
-    }
-
-    .recording-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #fff;
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
+    /* RECORDING INDICATOR eliminado para experiencia limpia */
 
     /* LOADING */
     .loading {
@@ -648,7 +611,7 @@
           <button class="role-btn" id="btn-mic-approve" style="padding:6px 10px;">🎤 Permitir micrófono</button>
           <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
             <input type="checkbox" id="toggle-always-listen">
-            Escucha siempre (“Hola Sandra”)
+            Escucha siempre ("Hola Sandra")
           </label>
           <span id="voice-state" class="voice-badge">Mic: Inactivo</span>
         </div>
@@ -895,17 +858,7 @@
               <strong>¡Hola! 👋 Soy Sandra IA 8.0 Pro</strong><br>
               <p style="margin: 10px 0; opacity: 0.9;">Asistente multimodal premium con <strong>62 roles especializados</strong> listos para ayudarte.</p>
               
-              <div class="quick-actions" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
-                <button class="quick-action-btn" onclick="executeQuickAction('system-status')">
-                  🚀 Verificar estado del sistema
-                </button>
-                <button class="quick-action-btn" onclick="executeQuickAction('test-multimodal')">
-                  🎤 Probar chat multimodal
-                </button>
-                <button class="quick-action-btn" onclick="executeQuickAction('github-sync')">
-                  🔄 Sincronizar con GitHub
-                </button>
-              </div>
+              <!-- Acciones rápidas removidas para una UI más limpia -->
               
               <p style="margin-top: 15px; font-size: 13px; opacity: 0.7;">O simplemente escribe o habla para comenzar una conversación.</p>
             </div>
@@ -953,11 +906,8 @@
 
     <!-- MULTIMODAL INPUT BAR -->
     <div class="input-bar">
-      <div class="recording-indicator" id="recording-indicator">
-        <div class="recording-dot"></div>
-        <span>Llamada activa (voz) – pulsa para finalizar</span>
-      </div>
-      
+      <!-- Indicador de grabación eliminado -->
+
       <!-- Audio Visualizer Canvas -->
       <canvas id="audio-visualizer" style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 400px; height: 50px; border-radius: 8px; background: rgba(0,0,0,0.3); display: none;"></canvas>
       
@@ -1166,9 +1116,9 @@
       saveVoicePrefs();
       updateVoiceState();
       if (alwaysListen && micApproved && window.sandraAPI) {
-        await window.sandraAPI.setContinuousMode(true);
-        await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
-        showToast('🔊 Escucha siempre activada');
+        // Iniciar escucha ligera (sin continuous mode)
+        await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: false });
+        showToast('🔊 Escucha por wake word activada');
       }
     });
 
@@ -1186,13 +1136,18 @@
     let continuousMode = false;
     let bargeInEnabled = true;
     let webrtcManager = null;
+    let mouthAudioCtx = null;
+    let mouthAnalyser = null;
+    let mouthRAF = null;
+    let browserSpeaker = null;
+    let currentTtsAudio = null;
 
     // ==================== ELEMENTOS DOM ====================
     const messagesContainer = document.getElementById('messages');
     const messageInput = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-btn');
     const voiceBtn = document.getElementById('voice-btn');
-    const recordingIndicator = document.getElementById('recording-indicator');
+    // recordingIndicator eliminado
     const loading = document.getElementById('loading');
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
@@ -1553,9 +1508,8 @@
         }
         
         // Actualizar UI
-        voiceBtn.classList.add('recording');
-        voiceBtn.textContent = '⏹️';
-        recordingIndicator.classList.add('active');
+        if (voiceBtn) voiceBtn.classList.add('recording');
+        if (voiceBtn) voiceBtn.textContent = '⏹️';
         
         showToast('🎤 Grabando... suelta para enviar');
       } catch (error) {
@@ -1584,9 +1538,8 @@
         isRecording = false;
         
         // Restaurar UI
-        voiceBtn.classList.remove('recording');
-        voiceBtn.textContent = '🎤';
-        recordingIndicator.classList.remove('active');
+        if (voiceBtn) voiceBtn.classList.remove('recording');
+        if (voiceBtn) voiceBtn.textContent = '🎤';
         
         showToast('Procesando audio...');
       } catch (e) {
@@ -1635,28 +1588,61 @@
 
     async function startVoiceStreaming() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 44100
-          } 
-        });
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0 && window.sandraAPI && isCallActive) {
-            event.data.arrayBuffer().then((ab) => {
-              const buffer = new Uint8Array(ab);
-              window.sandraAPI.sendAudioStream({ audioData: { buffer, mimeType: 'audio/webm;codecs=opus' } });
-            });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+        const sampleRate = audioCtx.sampleRate; // típicamente 48000
+        console.log('[VoiceStreaming] sampleRate=', sampleRate, 'bufferSize=', processor.bufferSize);
+        source.connect(processor);
+        processor.connect(audioCtx.destination);
+
+        function downsampleTo16k(float32Audio, inSampleRate) {
+          const outSampleRate = 16000;
+          if (inSampleRate === outSampleRate) return float32Audio;
+          const sampleRateRatio = inSampleRate / outSampleRate;
+          const newLength = Math.round(float32Audio.length / sampleRateRatio);
+          const result = new Float32Array(newLength);
+          let offsetResult = 0;
+          let offsetBuffer = 0;
+          while (offsetResult < result.length) {
+            const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+            let accum = 0, count = 0;
+            for (let i = offsetBuffer; i < nextOffsetBuffer && i < float32Audio.length; i++) {
+              accum += float32Audio[i];
+              count++;
+            }
+            result[offsetResult] = count > 0 ? (accum / count) : 0;
+            offsetResult++;
+            offsetBuffer = nextOffsetBuffer;
           }
+          return result;
+        }
+
+        processor.onaudioprocess = (e) => {
+          if (!isCallActive || !window.sandraAPI) return;
+          const input = e.inputBuffer.getChannelData(0);
+          // Remuestrear a 16 kHz para Deepgram básico
+          const ds = downsampleTo16k(input, sampleRate);
+          // Convertir Float32 [-1,1] a PCM16 little-endian
+          const pcmBuffer = new Int16Array(ds.length);
+          for (let i = 0; i < ds.length; i++) {
+            let s = Math.max(-1, Math.min(1, ds[i]));
+            pcmBuffer[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          }
+          const u8 = new Uint8Array(pcmBuffer.buffer);
+          // Convertir a base64 para transporte robusto por IPC
+          const CHUNK = 0x8000;
+          let binary = '';
+          for (let i = 0; i < u8.length; i += CHUNK) {
+            binary += String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK));
+          }
+          const b64 = btoa(binary);
+          window.sandraAPI.sendAudioStream(b64);
         };
-        mediaRecorder.onstop = () => {
-          try { stream.getTracks().forEach(t => t.stop()); } catch {}
-        };
-        mediaRecorder.start(100);
+
+        mediaRecorder = { stop: () => { try { processor.disconnect(); source.disconnect(); audioCtx.close(); stream.getTracks().forEach(t => t.stop()); } catch {} } };
         isRecording = true;
-        recordingIndicator.classList.add('active');
         showToast('🎤 Streaming de voz activo');
       } catch (e) {
         console.error(e);
@@ -1669,7 +1655,6 @@
         if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
       } catch {}
       isRecording = false;
-      recordingIndicator.classList.remove('active');
       showToast('🔇 Streaming detenido');
     }
 
@@ -1677,8 +1662,7 @@
       if (!micApproved) await requestMicPermission();
       if (!window.sandraAPI) return showToast('❌ API no disponible', 'error');
       try {
-        await window.sandraAPI.setContinuousMode(true);
-        const res = await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
+        const res = await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: false });
         if (!res || !res.success) return showToast('❌ No se pudo iniciar la llamada conversacional', 'error');
         await startVoiceStreaming();
         isCallActive = true;
@@ -1953,18 +1937,105 @@
     if (window.sandraAPI) {
       // Actualización de transcripción en tiempo real
       window.sandraAPI.onTranscriptUpdate((data) => {
-        const t = (data?.transcript || '').toLowerCase();
+        const raw = data?.transcript || '';
+        const t = raw.toLowerCase();
+
+        // Wake word "Hola Sandra"
         if (!isAwake && /(^|\b)hola sandra(\b|$)/i.test(t)) {
           isAwake = true;
           showToast('🟢 Sandra activa por voz');
+          // Disparar SOS en caliente
+          if (window.sandraAPI && window.sandraAPI.triggerSOS) {
+            window.sandraAPI.triggerSOS().then(res => {
+              if (!res?.success) console.warn('SOS error:', res?.error);
+            }).catch(e => console.warn('SOS exception:', e.message));
+          }
+          // Iniciar llamada al detectar wake word
+          if (typeof startConversationalCall === 'function' && !isCallActive) {
+            startConversationalCall();
+          }
         }
+
+        // Barge-in en frontend: si Sandra está hablando y el usuario habla, cortar audio al instante
+        if (raw && raw.trim()) {
+          try {
+            // Cortar audio TTS basado en Cartesia (Audio element)
+            if (currentTtsAudio && !currentTtsAudio.paused) {
+              currentTtsAudio.pause();
+              currentTtsAudio.currentTime = currentTtsAudio.duration || currentTtsAudio.currentTime;
+              currentTtsAudio = null;
+            }
+            // Cortar TTS del navegador si está activo
+            if (window.speechSynthesis && window.speechSynthesis.speaking) {
+              window.speechSynthesis.cancel();
+            }
+          } catch (e) {
+            console.warn('Error aplicando barge-in en frontend:', e);
+          }
+          // También parar animación de boca
+          try {
+            if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+            mouthAnimTimer = null;
+            soraMouth.classList.remove('mouth-talking');
+          } catch {}
+        }
+
+        // Log de depuración de transcripción
+        if (t) console.log('[Transcript]', data.isFinal ? '(final)' : '(interim)', t);
       });
+
+      // Estado de sesión multimodal
+      if (window.sandraAPI.onMultimodalSessionState) {
+        window.sandraAPI.onMultimodalSessionState((state) => {
+          console.log('[MultimodalState]', JSON.stringify(state));
+          const statusEl = document.getElementById('mode-status');
+          if (statusEl && state) {
+            statusEl.textContent = state.sessionActive ? `Modo: ${state.mode} (live)` : 'Modo: Inactivo';
+          }
+          const callStateEl = document.getElementById('call-state');
+          if (callStateEl && state) {
+            callStateEl.textContent = state.sessionActive ? 'Llamada: Activa' : 'Llamada: Inactiva';
+          }
+        });
+      }
 
       // Respuesta de IA lista
       window.sandraAPI.onResponseReady((data) => {
         console.log('Respuesta IA:', data.text);
         addMessage(data.text, 'assistant');
-        // Simular lipsync sobre overlay mientras “habla”
+
+        // Reproducir audio TTS si viene incluido
+        try {
+          if (data && data.audioBuffer) {
+            // Normalizar a Uint8Array (puede venir como { type:'Buffer', data:[...] } o ArrayBufferView)
+            let u8;
+            if (data.audioBuffer.data && Array.isArray(data.audioBuffer.data)) {
+              u8 = new Uint8Array(data.audioBuffer.data);
+            } else if (data.audioBuffer.buffer) {
+              u8 = new Uint8Array(data.audioBuffer.buffer);
+            } else {
+              u8 = new Uint8Array(data.audioBuffer);
+            }
+            const blob = new Blob([u8], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+
+            // Guardar referencia global para barge-in
+            currentTtsAudio = audio;
+
+            audio.addEventListener('play', () => {
+              startMouthSyncForAudio(audio);
+            });
+            audio.addEventListener('ended', () => {
+              if (currentTtsAudio === audio) currentTtsAudio = null;
+              stopMouthSync();
+            });
+            audio.play().catch(() => {});
+          }
+        } catch (e) {
+          console.warn('No se pudo reproducir TTS:', e);
+        }
+        // Simular lipsync sobre overlay mientras "habla"
         if (mouthAnimTimer) clearInterval(mouthAnimTimer);
         soraMouth.classList.add('mouth-talking');
         mouthAnimTimer = setInterval(() => {
@@ -2231,6 +2302,92 @@
     });
 
     console.log('🛠️ MCP Panel - Listo');
+
+    // ==================== TTS FALLBACK (NAVEGADOR) ====================
+    function speakWithBrowserTTS(text) {
+      try {
+        if (!('speechSynthesis' in window)) return;
+        if (!text || !text.trim()) return;
+
+        // Cancelar cualquier utterance anterior
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'es-ES';
+
+        // Elegir voz española si está disponible
+        const voices = window.speechSynthesis.getVoices();
+        const esVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('es'));
+        if (esVoice) utter.voice = esVoice;
+
+        utter.onstart = () => {
+          if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+          soraMouth.classList.add('mouth-talking');
+          mouthAnimTimer = setInterval(() => {
+            soraMouth.classList.toggle('mouth-talking');
+          }, 150);
+        };
+        const stopAnim = () => {
+          if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+          mouthAnimTimer = null;
+          soraMouth.classList.remove('mouth-talking');
+        };
+        utter.onend = stopAnim;
+        utter.onerror = stopAnim;
+
+        window.speechSynthesis.speak(utter);
+        browserSpeaker = utter;
+      } catch (e) {
+        console.warn('Error en TTS de navegador:', e);
+      }
+    }
+
+    // ==================== LIP-SYNC AVANZADO (analizador de audio) ====================
+    function startMouthSyncForAudio(audioEl) {
+      try {
+        if (!audioEl) return;
+        stopMouthSync();
+        mouthAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = mouthAudioCtx.createMediaElementSource(audioEl);
+        mouthAnalyser = mouthAudioCtx.createAnalyser();
+        mouthAnalyser.fftSize = 1024;
+        source.connect(mouthAnalyser);
+        mouthAnalyser.connect(mouthAudioCtx.destination);
+        const dataArray = new Uint8Array(mouthAnalyser.frequencyBinCount);
+        const baseScale = 1.0;
+        const maxScale = 1.6;
+        const smoothing = 0.85;
+        function tick() {
+          if (!mouthAnalyser) return;
+          mouthAnalyser.smoothingTimeConstant = smoothing;
+          mouthAnalyser.getByteTimeDomainData(dataArray);
+          // Calcular amplitud RMS simple
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            const v = (dataArray[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / dataArray.length);
+          const scale = Math.min(maxScale, baseScale + rms * 2.5);
+          soraMouth.style.opacity = rms > 0.02 ? '0.85' : '0.1';
+          soraMouth.style.transform = `translateX(-50%) scaleY(${scale.toFixed(2)})`;
+          mouthRAF = requestAnimationFrame(tick);
+        }
+        tick();
+      } catch (e) {
+        console.warn('Mouth sync error:', e);
+      }
+    }
+    function stopMouthSync() {
+      try {
+        if (mouthRAF) cancelAnimationFrame(mouthRAF);
+        mouthRAF = null;
+        if (mouthAudioCtx) mouthAudioCtx.close();
+        mouthAudioCtx = null;
+        mouthAnalyser = null;
+        soraMouth.style.opacity = '0.0';
+        soraMouth.style.transform = 'translateX(-50%) scaleY(1.0)';
+      } catch {}
+    }
   </script>
   <script src="enterprise.js"></script>
 </body>
