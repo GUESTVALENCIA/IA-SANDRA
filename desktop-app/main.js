@@ -304,6 +304,7 @@ ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) =
     const optimizer = serviceManager?.get('optimizer');
     const db = serviceManager?.get('neon-db');
     const aiOrchestrator = serviceManager?.get('ai-orchestrator');
+    const brightData = serviceManager?.get('bright-data');
 
     if (!rolesSystem) {
       return { success: false, error: 'Sistema de roles no disponible' };
@@ -313,7 +314,39 @@ ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) =
     
     // Importante: preservar exactamente el contexto del usuario.
     // Desactivamos optimizer para evitar pérdida de intención/tema.
-    const optimizedPrompt = message;
+    let optimizedPrompt = message;
+
+    // ==================== INTEGRACIÓN BRIGHT DATA ====================
+    // Si el rol es Concierge o Turismo y el mensaje menciona alojamientos,
+    // consultar automáticamente los datos reales de Guests-Valencia
+    const isAccommodationQuery = /alojamiento|apartamento|hotel|hostal|dónde.*quedar|dónde.*alojar|disponible|reserva|habitación/i.test(message);
+    const isHospitalityRole = ['concierge', 'tourism'].includes(role);
+    
+    if (brightData && isHospitalityRole && isAccommodationQuery) {
+      try {
+        // Extraer número de personas del mensaje (si existe)
+        const guestsMatch = message.match(/(\d+)\s*(persona|gente|adulto)/i);
+        const guests = guestsMatch ? parseInt(guestsMatch[1]) : 2;
+        
+        console.log(`🏨 Consultando alojamientos de Guests-Valencia para ${guests} personas...`);
+        const accommodationsData = await brightData.getMyAccommodations(null, null, guests);
+        
+        if (accommodationsData.success && accommodationsData.accommodations.length > 0) {
+          // Inyectar los datos reales en el prompt
+          optimizedPrompt = `${message}
+
+[DATOS EN TIEMPO REAL DE GUESTS-VALENCIA]:
+${JSON.stringify(accommodationsData, null, 2)}
+
+INSTRUCCIONES: Usa EXCLUSIVAMENTE estos datos reales para responder. Presenta los alojamientos disponibles de forma profesional y personalizada.`;
+          
+          console.log('✅ Datos de alojamientos inyectados en el prompt');
+        }
+      } catch (error) {
+        console.error('Error consultando Bright Data:', error);
+        // Continuar sin los datos en tiempo real
+      }
+    }
 
     // Ejecutar con el rol específico y modo (text/voice/video) para tareas.
     // Se pasa también el mensaje original para que el sistema de roles pueda

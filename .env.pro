@@ -14,6 +14,10 @@ OPENAI_API_KEY=sk-proj-jlzuHVbxJOOZMP4rqK5Ejict4S5lAdHfzymLqmupa81aSq4FUowf2A1Iz
 # DeepGram (STT)
 DEEPGRAM_API_KEY=30e9dbaec29dcde1b23a8bd9de31438c74f23522
 
+# Cartesia (TTS)
+CARTESIA_API_KEY=sk_car_7WNxDFvUChMNx5MzzXbVes
+CARTESIA_VOICE_ID=a34aec03-0f17-4fff-903f-d9458a8a92a6
+
 # HeyGen (Avatar)
 HEYGEN_API_KEY=M2IzYzcyOGY1ZmFhNGI5YmE5NzBlZTFiNDhmOTc3MDMtMTc1MzU4MDA1OA==
 HEYGEN_AVATAR_ID=a7a7e63f00a74ff984d4b43f984c438c
@@ -36,6 +40,7 @@ VERCEL_PROJECT_ID=prj_j0oMCNvOgiMauVLQrYIkaHFymn8o
 # Bright Data (Web Scraping)
 BRIGHT_DATA_AUTH=brd-customer-hl_c4b3455e-zone-mcp_booking_airbnb:rsxgwjh411m4
 BRIGHT_DATA_HOST=brd.superproxy.io:9515
+BRIGHT_DATA_WSS=wss://brd-customer-hl_c4b3455e-zone-mcp_booking_airbnb:rsxgwjh411m4@brd.superproxy.io:9222
 
 # Twilio (Llamadas)
 TWILIO_ACCOUNT_SID=AC38300ea2b028ab4a55d6487f6451f69b
