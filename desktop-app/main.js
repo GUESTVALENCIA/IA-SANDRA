@@ -274,10 +274,9 @@ ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) =
 
     const sessionId = `session_${Date.now()}`;
     
-    // Optimizar prompt según el rol (si optimizer disponible)
-    const optimizedPrompt = optimizer?.optimizePromptForRole 
-      ? optimizer.optimizePromptForRole(message, role)
-      : message;
+    // Importante: preservar exactamente el contexto del usuario.
+    // Desactivamos optimizer para evitar pérdida de intención/tema.
+    const optimizedPrompt = message;
 
     // Ejecutar con el rol específico y modo (text/voice/video) para tareas.
     // Se pasa también el mensaje original para que el sistema de roles pueda
