@@ -220,10 +220,11 @@ class MultimodalConversationService {
 
       await this._logMessages(transcript, response);
 
-      // TTS solo si no es modo texto puro
+      // TTS solo si no es modo texto puro (con saneado para voz)
       let ttsAudio = null;
       if (this.currentMode === 'voice' || this.currentMode === 'video' || this.currentMode === 'avatar') {
-        const ttsResult = await this.cartesia.generateSpeech(response);
+        const spoken = this._sanitizeForSpeech(response);
+        const ttsResult = await this.cartesia.generateSpeech(spoken);
         ttsAudio = ttsResult?.audioBuffer || null;
       }
 
@@ -322,9 +323,22 @@ class MultimodalConversationService {
         throw new Error('Transcripción vacía');
       }
 
-      // GPT-4o para voz
+      // GPT-4o para voz (inyectando datos live si aplica)
+      let inputForLLM = transcript;
+      try {
+        const isAccommodationQuery = /alojamiento|alojamientos|apartamento|hotel|hostal|disponibil|reserva|habita|precio|valencia|montanejos/i.test(transcript);
+        if (isAccommodationQuery && this.brightData && typeof this.brightData.getMyAccommodations === 'function') {
+          const guestsMatch = transcript.match(/(\d+)\s*(personas|personas|adultos?)/i);
+          const guests = guestsMatch ? parseInt(guestsMatch[1], 10) : 2;
+          const liveData = await this.brightData.getMyAccommodations(null, null, guests);
+          if (liveData && liveData.success && Array.isArray(liveData.accommodations)) {
+            inputForLLM = `${transcript}\n\n[DATOS EN TIEMPO REAL DE GUESTS-VALENCIA]:\n${JSON.stringify(liveData, null, 2)}\n\nINSTRUCCIONES: Responde de forma conversacional (sin listas ni emojis), breve y directa, usando estos datos.`;
+          }
+        }
+      } catch {}
+
       const response = await this.aiGateway.generateResponse(
-        transcript,
+        inputForLLM,
         'openai',
         'gpt-4o',
         {
@@ -336,8 +350,9 @@ class MultimodalConversationService {
 
       await this._logMessages(transcript, response);
 
-      // TTS con Cartesia
-      const ttsResult = await this.cartesia.generateSpeech(response);
+      // TTS con Cartesia (saneado para voz)
+      const spoken = this._sanitizeForSpeech(response);
+      const ttsResult = await this.cartesia.generateSpeech(spoken);
       const ttsAudio = ttsResult?.audioBuffer || null;
 
       this.isThinking = false;
@@ -371,7 +386,7 @@ class MultimodalConversationService {
       }
 
       // Generar TTS con Cartesia
-      const ttsResult = await this.cartesia.generateSpeech(text);
+      const ttsResult = await this.cartesia.generateSpeech(this._sanitizeForSpeech(text));
       const audioBuffer = ttsResult?.audioBuffer || null;
 
       // HeyGen avatar
@@ -695,6 +710,36 @@ class MultimodalConversationService {
     if (this.onResponseReady) {
       this.onResponseReady({ text, audioBuffer, syncedVideoPath });
     }
+  }
+
+  /**
+   * Saneado de texto para voz (no leer emojis ni numeraciones de listas)
+   * - Elimina emojis y pictogramas
+   * - Quita prefijos de lista: "1. ", "2) ", "- ", "• ", "* "
+   * - Normaliza espacios y signos repetidos
+   */
+  _sanitizeForSpeech(text) {
+    if (!text) return '';
+    // Eliminar bloques de metadatos (por si acaso llegan) tipo [DATOS ...]
+    let out = text.replace(/\[[^\]]+\]/g, ' ');
+    // Quitar emojis/pictogramas comunes
+    out = out.replace(/[\u{1F300}-\u{1FAFF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE0F}]/gu, '');
+    // Procesar por líneas para quitar prefijos de lista
+    const lines = out.split(/\r?\n+/).map(l => {
+      return l
+        .replace(/^\s*[\-\*\u2022]\s+/g, '')       // "- ", "* ", "• "
+        .replace(/^\s*\(?\d+\)?[\.\)]\s+/g, '')    // "1. ", "2) ", "(3) "
+        .trim();
+    }).filter(Boolean);
+    out = lines.join('. ');
+    // Normalizaciones
+    out = out
+      .replace(/\s{2,}/g, ' ')     // espacios múltiples
+      .replace(/[\.!\?]{2,}/g, '.') // signos repetidos
+      .replace(/\s*([,.;:])\s*/g, '$1 ') // espacios alrededor de puntuación
+      .replace(/\s+\./g, '.')      // espacio antes del punto
+      .trim();
+    return out;
   }
 
   /**
