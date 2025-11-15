@@ -2287,38 +2287,39 @@
           
           ringCtx = new (window.AudioContext || window.webkitAudioContext)();
           ringGain = ringCtx.createGain();
-          ringGain.gain.value = 0.32; // Volumen profesional
+          ringGain.gain.value = 0.28; // volumen claro y cercano (ORIGINAL)
           ringGain.connect(ringCtx.destination);
           
-          // Tono de llamada estándar: 425 Hz (tono telefónico europeo)
-          const ringOnce = (startAt, duration = 1.0) => {
+          // Tono de llamada tipo telefónico: 425 Hz, timbre largo con pausa (ORIGINAL)
+          const ringOnce = (startAt) => {
             const osc = ringCtx.createOscillator();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(425, startAt);
             const g = ringCtx.createGain();
             g.gain.setValueAtTime(0.0001, startAt);
-            g.gain.linearRampToValueAtTime(0.22, startAt + 0.05);
-            g.gain.setValueAtTime(0.22, startAt + duration);
-            g.gain.exponentialRampToValueAtTime(0.0001, startAt + duration + 0.1);
+            g.gain.linearRampToValueAtTime(0.18, startAt + 0.04); // ataque más rápido y cercano (ORIGINAL)
+            g.gain.setValueAtTime(0.18, startAt + 1.9);          // sustain ~1.9s (ORIGINAL)
+            g.gain.exponentialRampToValueAtTime(0.0001, startAt + 2.0); // release (ORIGINAL)
             osc.connect(g).connect(ringGain);
             osc.start(startAt);
-            osc.stop(startAt + duration + 0.15);
+            osc.stop(startAt + 2.05);
           };
 
-          // Secuencia profesional: silencio → timbre → pausa → timbre → descolgado
-          const t0 = ringCtx.currentTime + 0.8;
-          ringOnce(t0, 1.0);           // Primer timbre
-          ringOnce(t0 + 1.4, 1.0);     // Segundo timbre (tras 0.4s pausa)
+          // TIMING ORIGINAL RESTAURADO: 2.5s + 2.0s + 1.2s + 2.0s + 1.0s
+          const RING_DELAY_MS = 2500;
+          const t0 = ringCtx.currentTime + (RING_DELAY_MS / 1000);
+          ringOnce(t0);           // 1er timbre ~2.0s
+          ringOnce(t0 + 3.2);     // pausa ~1.2s y 2º timbre
           
-          // Total: 0.8 + 1.0 + 0.4 + 1.0 + 0.3 = 3.5s
-          const totalBeforeAnswerMs = 3500;
+          // Parar tono y saludar 1s después del 2º timbre (ORIGINAL)
+          const totalBeforeGreetMs = RING_DELAY_MS + 2000 + 1200 + 2000 + 1000;
           
-          ringTimer = setTimeout(() => { stopRingtone(); }, totalBeforeAnswerMs);
+          ringTimer = setTimeout(() => { stopRingtone(); }, totalBeforeGreetMs);
           ringGreetTimer = setTimeout(() => {
             console.log('📞 [CallCenter] Timbres completados, descolgando...');
             stopRingtone();
             playCallCenterAnswer(); // Descolgar + saludo
-          }, totalBeforeAnswerMs);
+          }, totalBeforeGreetMs);
           
         } catch (e) {
           console.error('❌ [CallCenter] Error iniciando ringtone:', e);
