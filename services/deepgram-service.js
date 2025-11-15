@@ -125,10 +125,7 @@ class DeepgramService {
         sample_rate: 16000,
         channels: 1,
         interim_results: true,
-        // Configuración tipo ChatGPT: espera más silencio antes de finalizar
-        endpointing: 1500,  // 1.5 segundos de silencio (antes: 300ms)
-        vad_turnoff: 1200,  // Tiempo para detectar fin de turno (1.2s)
-        utterance_end_ms: 1500  // Tiempo para finalizar utterance (1.5s)
+        endpointing: 1000  // 1 segundo (más tolerante que 300ms, pero válido para Deepgram)
       });
 
       // Evento: Conexión abierta
