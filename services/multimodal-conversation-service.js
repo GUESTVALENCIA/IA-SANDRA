@@ -1,6 +1,9 @@
+const path = require('path');
+const fs = require('fs');
 const DeepgramService = require('./deepgram-service');
 const CartesiaService = require('./cartesia-service');
 const HeyGenService = require('./heygen-service');
+const LipSyncService = require('./lipsync-service');
 
 // WebRTC Manager opcional (para lip-sync avanzado)
 let WebRTCAvatarManager;
@@ -29,6 +32,7 @@ class MultimodalConversationService {
     this.deepgram = new DeepgramService();
     this.cartesia = new CartesiaService();
     this.heygen = new HeyGenService();
+    this.lipsync = new LipSyncService();
     this.webrtcManager = WebRTCAvatarManager ? new WebRTCAvatarManager() : null;
 
     this.aiGateway = aiGateway;
@@ -209,10 +213,26 @@ class MultimodalConversationService {
       this.isThinking = false;
       this._emitSessionState();
 
-      this._emitResponse({ text: response, audioBuffer: ttsAudio });
+      // Lip-sync avanzado opcional (engine externo) si hay audio y avatar/video
+      let syncedVideoPath = null;
+      if (this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video') && this.lipsync && this.lipsync.enabled) {
+        try {
+          const sourceVideo = process.env.LIPSYNC_SOURCE_VIDEO;
+          if (sourceVideo && fs.existsSync(sourceVideo)) {
+            const sync = await this.lipsync.generateSyncedVideo(sourceVideo, ttsAudio);
+            if (sync.success) {
+              syncedVideoPath = sync.videoPath;
+            }
+          }
+        } catch (e) {
+          // Ignorar errores de lip-sync externo para no romper la llamada
+        }
+      }
 
-      // Lip-sync si hay audio y avatar activo
-      if (this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video')) {
+      this._emitResponse({ text: response, audioBuffer: ttsAudio, syncedVideoPath });
+
+      // Lip-sync de animación rápida (pseudo) para overlays si no hubo video sincronizado
+      if (!syncedVideoPath && this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video')) {
         await this.handleLipSyncFrame(ttsAudio);
       }
     } catch (error) {
@@ -654,9 +674,9 @@ class MultimodalConversationService {
   /**
    * Emitir respuesta
    */
-  _emitResponse({ text, audioBuffer }) {
+  _emitResponse({ text, audioBuffer, syncedVideoPath }) {
     if (this.onResponseReady) {
-      this.onResponseReady({ text, audioBuffer });
+      this.onResponseReady({ text, audioBuffer, syncedVideoPath });
     }
   }
 

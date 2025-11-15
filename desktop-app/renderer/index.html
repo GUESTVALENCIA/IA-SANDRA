@@ -2114,7 +2114,22 @@
         console.log('Respuesta IA:', data.text);
         addMessage(data.text, 'assistant');
 
-        // Reproducir audio TTS si viene incluido
+        // Si llega un video sincronizado, reproducirlo (evitar doble audio)
+        if (data && data.syncedVideoPath && soraVideo) {
+          try {
+            const fileUrl = 'file:///' + data.syncedVideoPath.replace(/\\/g, '/');
+            soraVideo.loop = false;
+            soraVideo.muted = false;
+            soraVideo.src = fileUrl;
+            soraVideo.play().catch(() => {});
+            // No reproducir audio aparte cuando hay video ya sincronizado
+            return;
+          } catch (e) {
+            console.warn('No se pudo reproducir video sincronizado:', e);
+          }
+        }
+
+        // Reproducir audio TTS si viene incluido (cuando no hay video sincronizado)
         try {
           if (data && data.audioBuffer) {
             // Normalizar a Uint8Array (puede venir como { type:'Buffer', data:[...] } o ArrayBufferView)
