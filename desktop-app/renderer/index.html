@@ -16,6 +16,7 @@
     }
   </script>
   <title>Sandra IA 8.0 Pro - Multimodal</title>
+  <link rel="stylesheet" href="enterprise.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -588,6 +589,50 @@
     .toast.error {
       background: rgba(239, 68, 68, 0.95);
     }
+
+    /* ENTERPRISE ADDITIONS */
+    .voice-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.15);
+      padding: 6px 12px;
+      border-radius: 12px;
+    }
+    .voice-badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(16,185,129,0.2);
+      border: 1px solid rgba(16,185,129,0.5);
+      color: #10b981;
+    }
+    .avatar-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #0f3460;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid rgba(102,126,234,0.3);
+    }
+    .sora-mouth-overlay {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 24px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      opacity: 0.0;
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+    .mouth-talking {
+      opacity: 0.85 !important;
+      transform: translateX(-50%) scaleY(1.25);
+    }
   </style>
 </head>
 <body>
@@ -599,6 +644,14 @@
         🚀 Sandra IA 8.0 Pro
       </h1>
       <div class="header-controls">
+        <div class="voice-controls">
+          <button class="role-btn" id="btn-mic-approve" style="padding:6px 10px;">🎤 Permitir micrófono</button>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
+            <input type="checkbox" id="toggle-always-listen">
+            Escucha siempre (“Hola Sandra”)
+          </label>
+          <span id="voice-state" class="voice-badge">Mic: Inactivo</span>
+        </div>
         <div class="ai-provider" id="ai-provider" onclick="toggleProviderSelector()">
           <span id="provider-name">Ollama</span>
           <span>▼</span>
@@ -869,8 +922,11 @@
     <!-- AVATAR PANEL -->
     <div class="avatar-panel">
       <div class="avatar-container">
-        <video id="heygen-avatar-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
-        <div id="heygen-avatar"></div>
+        <div class="avatar-stage">
+          <video id="sora-video" autoplay loop muted playsinline style="width:100%; height:100%; object-fit: cover; display:block; background:#000;"></video>
+          <div id="sora-mouth" class="sora-mouth-overlay"></div>
+        </div>
+        <div id="heygen-avatar" style="margin-top:10px;"></div>
       </div>
       
       <!-- Selector de Voz -->
@@ -1083,6 +1139,73 @@
   </div>
 
   <script>
+    // ==================== ENTERPRISE JS (cargado adicionalmente) ====================
+    // Flags de voz
+    let alwaysListen = false;
+    let micApproved = false;
+    let isAwake = false;
+    let mouthAnimTimer = null;
+
+    const btnMicApprove = document.getElementById('btn-mic-approve');
+    const toggleAlways = document.getElementById('toggle-always-listen');
+    const voiceState = document.getElementById('voice-state');
+    const soraVideo = document.getElementById('sora-video');
+    const soraMouth = document.getElementById('sora-mouth');
+
+    // Persistencia simple
+    function loadVoicePrefs() {
+      try {
+        micApproved = localStorage.getItem('sandra_micApproved') === 'true';
+        alwaysListen = localStorage.getItem('sandra_alwaysListen') === 'true';
+        toggleAlways.checked = alwaysListen;
+        updateVoiceState();
+      } catch {}
+    }
+    function saveVoicePrefs() {
+      try {
+        localStorage.setItem('sandra_micApproved', micApproved ? 'true' : 'false');
+        localStorage.setItem('sandra_alwaysListen', alwaysListen ? 'true' : 'false');
+      } catch {}
+    }
+    function updateVoiceState(text) {
+      if (text) {
+        voiceState.textContent = text;
+        return;
+      }
+      voiceState.textContent = micApproved ? (alwaysListen ? 'Mic: Escucha siempre' : 'Mic: Permitido') : 'Mic: Inactivo';
+    }
+
+    async function requestMicPermission() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        // Parar tracks inmediatamente, solo buscamos permiso persistente
+        stream.getTracks().forEach(t => t.stop());
+        micApproved = true;
+        saveVoicePrefs();
+        updateVoiceState('Mic: Permitido');
+        showToast('🎤 Micrófono permitido');
+        if (alwaysListen && window.sandraAPI) {
+          await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
+        }
+      } catch (e) {
+        showToast('❌ No se pudo acceder al micrófono', 'error');
+      }
+    }
+
+    btnMicApprove.addEventListener('click', requestMicPermission);
+    toggleAlways.addEventListener('change', async (e) => {
+      alwaysListen = e.target.checked;
+      saveVoicePrefs();
+      updateVoiceState();
+      if (alwaysListen && micApproved && window.sandraAPI) {
+        await window.sandraAPI.setContinuousMode(true);
+        await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
+        showToast('🔊 Escucha siempre activada');
+      }
+    });
+
+    loadVoicePrefs();
+
     // ==================== VARIABLES GLOBALES ====================
     let currentRole = 'general';
     let isRecording = false;
@@ -1802,10 +1925,10 @@
     if (window.sandraAPI) {
       // Actualización de transcripción en tiempo real
       window.sandraAPI.onTranscriptUpdate((data) => {
-        if (data.isFinal) {
-          console.log('Transcripción final:', data.transcript);
-        } else {
-          console.log('Transcripción intermedia:', data.transcript);
+        const t = (data?.transcript || '').toLowerCase();
+        if (!isAwake && /(^|\b)hola sandra(\b|$)/i.test(t)) {
+          isAwake = true;
+          showToast('🟢 Sandra activa por voz');
         }
       });
 
@@ -1813,6 +1936,16 @@
       window.sandraAPI.onResponseReady((data) => {
         console.log('Respuesta IA:', data.text);
         addMessage(data.text, 'assistant');
+        // Simular lipsync sobre overlay mientras “habla”
+        if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+        soraMouth.classList.add('mouth-talking');
+        mouthAnimTimer = setInterval(() => {
+          soraMouth.classList.toggle('mouth-talking');
+        }, 160);
+        setTimeout(() => {
+          if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+          soraMouth.classList.remove('mouth-talking');
+        }, Math.min(6000, Math.max(1800, data.text?.length || 1200)));
       });
 
       // Avatar hablando
@@ -1833,7 +1966,28 @@
     }
 
     // Inicializar avatar
-    initializeHeyGenAvatar();
+    // initializeHeyGenAvatar(); // Dejado listo para inyección futura del widget HeyGen
+
+    // Botón para cargar un video local de Sora
+    (function addSoraLoader(){
+      const panel = document.querySelector('.avatar-panel');
+      const wrap = document.createElement('div');
+      wrap.style.marginTop = '8px';
+      wrap.innerHTML = `
+        <label style="font-size:12px;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">🎬 Video Sora (local):</label>
+        <input id="sora-file" type="file" accept="video/*" style="width:100%;font-size:12px;">
+      `;
+      panel.appendChild(wrap);
+      const input = wrap.querySelector('#sora-file');
+      input.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          soraVideo.src = url;
+          showToast('🎬 Video Sora cargado');
+        }
+      });
+    })();
 
     console.log('✅ Sandra IA 8.0 Pro - Sistema Multimodal Completo Cargado');
     console.log('🎤 Deepgram STT - Listo');
@@ -2050,5 +2204,6 @@
 
     console.log('🛠️ MCP Panel - Listo');
   </script>
+  <script src="enterprise.js"></script>
 </body>
 </html>
