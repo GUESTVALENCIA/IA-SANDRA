@@ -4,21 +4,12 @@
  */
 
 const axios = require('axios');
-let puppeteer = null;
-try {
-  // Carga segura: si no está instalado, seguimos con fallback HTTP/axios
-  puppeteer = require('puppeteer-core');
-} catch (e) {
-  puppeteer = null;
-}
 
 class BrightDataService {
   constructor() {
     this.auth = process.env.BRIGHT_DATA_AUTH; // brd-customer-hl_c4b3455e-zone-mcp_booking_airbnb:rsxgwjh411m4
     this.host = process.env.BRIGHT_DATA_HOST || 'brd.superproxy.io:9515';
     this.proxyUrl = `http://${this.auth}@${this.host}`;
-    this.wss = process.env.BRIGHT_DATA_WSS; // wss://USER:PASS@brd.superproxy.io:9222
-    this.browser = null;
     
     // Alojamientos de Guests-Valencia (gestión profesional)
     this.myListings = {
@@ -116,30 +107,12 @@ class BrightDataService {
       totalReviews: 63
     };
     
-    if (this.auth) console.log('✅ Bright Data Service: proxy HTTP activo:', this.host);
-    if (this.wss)  console.log('✅ Bright Data Service: Browser API WSS configurado');
-    if (!this.auth && !this.wss) console.warn('⚠️ Bright Data no configurado - usando datos de ejemplo');
-  }
-
-  async ensureBrowser() {
-    if (!this.wss || !puppeteer) return false;
-    if (this.browser && this.browser.isConnected()) return true;
-    try {
-      this.browser = await puppeteer.connect({
-        browserWSEndpoint: this.wss,
-        defaultViewport: { width: 1280, height: 800 }
-      });
-      console.log('🟢 Bright Data Browser conectado');
-      return true;
-    } catch (e) {
-      console.warn('⚠️ No se pudo conectar a Bright Data Browser:', e.message);
-      return false;
+    if (this.auth) {
+      console.log('✅ Bright Data Service inicializado (MODO ACTIVO)');
+      console.log(`🌐 Proxy: ${this.host}`);
+    } else {
+      console.warn('⚠️ Bright Data API no configurada - Usando datos de ejemplo');
     }
-  }
-
-  async closeBrowser() {
-    try { if (this.browser) await this.browser.close(); } catch {}
-    this.browser = null;
   }
 
   /**
@@ -147,50 +120,42 @@ class BrightDataService {
    */
   async getMyAccommodations(checkIn = null, checkOut = null, guests = 2) {
     try {
-      // Intentar Browser API (WSS) si está disponible y hay URLs
-      const hasBrowser = await this.ensureBrowser();
       const urls = [
         process.env.BRIGHTDATA_BOOKING_URL_1,
         process.env.BRIGHTDATA_BOOKING_URL_2,
         process.env.BRIGHTDATA_BOOKING_URL_3
       ].filter(Boolean);
 
-      const results = [];
-
-      if (hasBrowser && urls.length > 0) {
-        const context = await this.browser.createBrowserContext();
+      const live = [];
+      for (const u of urls) {
         try {
-          for (const url of urls) {
-            const data = await this.fetchBookingViaBrowser(context, url, { checkIn, checkOut, guests });
-            if (data) results.push(data);
-          }
-        } finally {
-          try { await context.close(); } catch {}
-        }
+          const data = await this.scrapeBooking(u, { checkIn, checkOut, guests });
+          if (data && data.success) live.push(data);
+        } catch {}
       }
 
-      // Si no hay Browser API o falló, usar información local como fallback elegante
-      if (results.length === 0) {
-        const availableProperties = this.myListings.properties.filter(p => p.capacity >= guests);
+      if (live.length > 0) {
         return {
           success: true,
           company: this.companyInfo,
-          accommodations: availableProperties,
-          mode: 'fallback',
-          totalProperties: this.myListings.properties.length,
-          availableForGuests: availableProperties.length,
+          accommodations: live,
+          mode: 'live',
+          totalProperties: live.length,
+          availableForGuests: live.length,
           searchCriteria: { checkIn, checkOut, guests },
           timestamp: new Date().toISOString()
         };
       }
 
+      // Fallback local si no se pudo obtener live
+      const availableProperties = this.myListings.properties.filter(p => p.capacity >= guests);
       return {
         success: true,
         company: this.companyInfo,
-        accommodations: results,
-        mode: 'live',
-        totalProperties: results.length,
-        availableForGuests: results.length,
+        accommodations: availableProperties,
+        mode: 'fallback',
+        totalProperties: this.myListings.properties.length,
+        availableForGuests: availableProperties.length,
         searchCriteria: { checkIn, checkOut, guests },
         timestamp: new Date().toISOString()
       };
@@ -200,67 +165,6 @@ class BrightDataService {
         success: false,
         error: error.message
       };
-    }
-  }
-
-  /**
-   * Obtener datos de Booking usando Bright Data Browser API
-   */
-  async fetchBookingViaBrowser(context, baseUrl, { checkIn, checkOut, guests }) {
-    try {
-      const url = this.addBookingParams(baseUrl, { checkIn, checkOut, guests });
-      const page = await context.newPage();
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/118 Safari/537.36');
-      await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
-
-      // Intentar varios patern de Booking nuevos
-      const data = await page.evaluate(() => {
-        function pick(selArr) {
-          for (const s of selArr) {
-            const el = document.querySelector(s);
-            if (el && el.textContent?.trim()) return el.textContent.trim();
-          }
-          return null;
-        }
-        const title = pick(['h2[data-testid="title"]','h2.hp__hotel-name','div[data-capla-component="b-property-web-title"] h2']);
-        const price = pick(['div[data-testid="price-and-discounted-price"]','span.prc-d-sri-price-sr','div.f6431b446c']);
-        const location = pick(['a[data-testid="breadcrumb-item-link"]','span.hp_address_subtitle','span.hp_address_subtitle_js_tooltips']);
-        const availability = pick(['div[data-testid="availability-cta"]','div#availability']);
-        return { title, price, location, availability };
-      });
-
-      const screenshotsDir = null; // opcional: guardar capturas para debug
-      try { await page.close(); } catch {}
-
-      return {
-        success: true,
-        platform: 'booking',
-        url,
-        name: data.title || 'Alojamiento Booking',
-        price: data.price || 'Consultar',
-        location: data.location || '',
-        available: !!data.availability,
-        scrapedAt: new Date().toISOString()
-      };
-    } catch (e) {
-      console.warn('Booking WSS error:', e.message);
-      return null;
-    }
-  }
-
-  addBookingParams(url, { checkIn, checkOut, guests }) {
-    try {
-      if (!checkIn || !checkOut) return url;
-      const u = new URL(url);
-      u.searchParams.set('checkin', checkIn);
-      u.searchParams.set('checkout', checkOut);
-      const g = Number(guests || 2);
-      u.searchParams.set('group_adults', String(Math.max(1, g)));
-      u.searchParams.set('no_rooms', '1');
-      u.searchParams.set('group_children', '0');
-      return u.toString();
-    } catch {
-      return url;
     }
   }
 
@@ -329,15 +233,45 @@ class BrightDataService {
         timeout: 30000
       });
 
-      // Parsear datos de Booking (simplificado - ajustar según estructura real)
+      // Parsear datos de Booking (básico y robusto)
+      const html = String(response.data || '');
+
+      const pick = (regexArr) => {
+        for (const r of regexArr) {
+          const m = html.match(r);
+          if (m && m[1]) return m[1].trim();
+        }
+        return null;
+      };
+
+      const title = pick([
+        /<h2[^>]*data-testid="title"[^>]*>([^<]+)<\/h2>/i,
+        /<h2[^>]*class="[^"]*hp__hotel-name[^"]*"[^>]*>([^<]+)<\/h2>/i,
+        /<title>([^<]+)<\/title>/i
+      ]);
+
+      const location = pick([
+        /<span[^>]*class="[^"]*hp_address_subtitle[^"]*"[^>]*>([^<]+)<\/span>/i,
+        /<a[^>]*data-testid="breadcrumb-item-link"[^>]*>([^<]+)<\/a>/i
+      ]);
+
+      const price = pick([
+        /data-testid="price-and-discounted-price"[^>]*>[^<]*([\d\.\,]+ ?€)/i,
+        /class="[^"]*f6431b446c[^"]*"[^>]*>[^<]*([\d\.\,]+ ?€)/i,
+        />([\d\.\,]+ ?€)<\/span>/i
+      ]);
+
+      const unavailable = /no es posible realizar reservas|agotado|no disponible/i.test(html);
+      const availability = !unavailable;
+
       return {
         success: true,
         platform: 'booking',
         url,
-        name: 'Alojamiento El Cabañal',
-        price: 'Consultar disponibilidad',
-        available: true,
-        rawData: response.data.substring(0, 500)
+        name: title || 'Alojamiento Booking',
+        price: price || 'Consultar',
+        location: location || '',
+        available: availability
       };
     } catch (error) {
       console.error('Error scraping Booking:', error.message);
