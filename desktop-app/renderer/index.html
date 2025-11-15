@@ -596,6 +596,51 @@
       opacity: 0.85 !important;
       transform: translateX(-50%) scaleY(1.25);
     }
+
+    /* Controles de avatar */
+    .avatar-control-btn {
+      padding: 6px 10px;
+      font-size: 11px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.8);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .avatar-control-btn:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
+      color: #fff;
+    }
+    .avatar-control-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #667eea;
+      color: #fff;
+    }
+
+    /* Tamaños de avatar */
+    .avatar-stage {
+      transition: all 0.3s ease;
+    }
+    .avatar-stage.size-normal {
+      height: 300px;
+    }
+    .avatar-stage.size-medium {
+      height: 500px;
+    }
+    .avatar-stage.size-full {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999;
+      background: #000;
+      border-radius: 0;
+      aspect-ratio: unset;
+    }
   </style>
 </head>
 <body>
@@ -875,7 +920,15 @@
     <!-- AVATAR PANEL -->
     <div class="avatar-panel">
       <div class="avatar-container">
-        <div class="avatar-stage">
+        <!-- Controles de avatar (PiP, tamaño) -->
+        <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+          <button id="btn-pip" class="avatar-control-btn" title="Picture-in-Picture (flotante)">🖼️ PiP</button>
+          <button id="btn-size-normal" class="avatar-control-btn active" title="Tamaño normal">📱 Normal</button>
+          <button id="btn-size-medium" class="avatar-control-btn" title="Tamaño medio">📺 Medio</button>
+          <button id="btn-size-full" class="avatar-control-btn" title="Pantalla completa">🖥️ Completo</button>
+        </div>
+        
+        <div class="avatar-stage size-normal" id="avatar-stage">
           <video id="sora-video" autoplay loop muted playsinline style="width:100%; height:100%; object-fit: cover; display:block; background:#000;"></video>
           <div id="sora-mouth" class="sora-mouth-overlay"></div>
         </div>
@@ -2315,6 +2368,86 @@
     });
 
     console.log('🛠️ MCP Panel - Listo');
+
+    // ==================== CONTROLES DE AVATAR (PiP, TAMAÑO) ====================
+    const btnPip = document.getElementById('btn-pip');
+    const btnSizeNormal = document.getElementById('btn-size-normal');
+    const btnSizeMedium = document.getElementById('btn-size-medium');
+    const btnSizeFull = document.getElementById('btn-size-full');
+    const avatarStage = document.getElementById('avatar-stage');
+    let currentSize = 'normal';
+
+    // Picture-in-Picture
+    btnPip.addEventListener('click', async () => {
+      try {
+        if (soraVideo && document.pictureInPictureEnabled && !soraVideo.disablePictureInPicture) {
+          if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+            showToast('📺 Modo PiP desactivado');
+          } else {
+            await soraVideo.requestPictureInPicture();
+            showToast('🖼️ Modo Picture-in-Picture activado');
+          }
+        } else {
+          showToast('❌ Picture-in-Picture no disponible', 'error');
+        }
+      } catch (e) {
+        console.error('Error PiP:', e);
+        showToast('❌ No se pudo activar PiP', 'error');
+      }
+    });
+
+    // Tamaño Normal
+    btnSizeNormal.addEventListener('click', () => {
+      avatarStage.classList.remove('size-medium', 'size-full');
+      avatarStage.classList.add('size-normal');
+      currentSize = 'normal';
+      [btnSizeNormal, btnSizeMedium, btnSizeFull].forEach(b => b.classList.remove('active'));
+      btnSizeNormal.classList.add('active');
+      showToast('📱 Tamaño normal');
+    });
+
+    // Tamaño Medio
+    btnSizeMedium.addEventListener('click', () => {
+      avatarStage.classList.remove('size-normal', 'size-full');
+      avatarStage.classList.add('size-medium');
+      currentSize = 'medium';
+      [btnSizeNormal, btnSizeMedium, btnSizeFull].forEach(b => b.classList.remove('active'));
+      btnSizeMedium.classList.add('active');
+      showToast('📺 Tamaño medio');
+    });
+
+    // Pantalla Completa
+    btnSizeFull.addEventListener('click', () => {
+      if (currentSize === 'full') {
+        // Volver a normal
+        avatarStage.classList.remove('size-full');
+        avatarStage.classList.add('size-normal');
+        currentSize = 'normal';
+        btnSizeFull.classList.remove('active');
+        btnSizeNormal.classList.add('active');
+        showToast('📱 Tamaño normal');
+      } else {
+        // Activar pantalla completa
+        avatarStage.classList.remove('size-normal', 'size-medium');
+        avatarStage.classList.add('size-full');
+        currentSize = 'full';
+        [btnSizeNormal, btnSizeMedium, btnSizeFull].forEach(b => b.classList.remove('active'));
+        btnSizeFull.classList.add('active');
+        showToast('🖥️ Pantalla completa (ESC para salir)');
+      }
+    });
+
+    // Salir de pantalla completa con ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && currentSize === 'full') {
+        avatarStage.classList.remove('size-full');
+        avatarStage.classList.add('size-normal');
+        currentSize = 'normal';
+        btnSizeFull.classList.remove('active');
+        btnSizeNormal.classList.add('active');
+      }
+    });
 
     // ==================== TTS FALLBACK (NAVEGADOR) ====================
     function speakWithBrowserTTS(text) {
