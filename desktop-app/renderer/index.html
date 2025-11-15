@@ -1776,26 +1776,69 @@
     }
 
     async function stopConversationalCall() {
+      console.log('📴 [CallCenter] Finalizando llamada...');
+      
+      // 1. Detener tono si está sonando
+      try { stopRingtone(); } catch {}
+      
+      // 2. Sonido de colgado (estilo call center)
+      playHangupSound();
+      
+      // 3. Detener streaming de voz
       stopVoiceStreaming();
+      
+      // 4. Detener conversación multimodal
       try {
         if (window.sandraAPI) await window.sandraAPI.stopMultimodalConversation();
       } catch {}
-      // Detener tono y saludo programado
-      try { stopRingtone(); } catch {}
-      // Parar cualquier TTS en reproducción
-      try { if (currentTtsAudio) { currentTtsAudio.pause(); currentTtsAudio.currentTime = 0; currentTtsAudio = null; } } catch {}
+      
+      // 5. Parar cualquier TTS en reproducción
+      try { 
+        if (currentTtsAudio) { 
+          currentTtsAudio.pause(); 
+          currentTtsAudio.currentTime = 0; 
+          currentTtsAudio = null; 
+        } 
+      } catch {}
+      
+      // 6. Reset flag de saludo para próxima llamada
       greetedThisCall = false;
+      
+      // 7. Actualizar UI
       isCallActive = false;
       btnConvoCall.textContent = '📞 Llamada conversacional';
       callState.textContent = 'Llamada: Inactiva';
       
-      // Pausar avatar Sora al finalizar llamada
+      // 8. Pausar avatar Sora
       if (soraVideo) {
         soraVideo.pause();
       }
       stopMouthSync();
       
       showToast('📴 Llamada finalizada');
+      console.log('✅ [CallCenter] Llamada finalizada correctamente');
+    }
+    
+    // Sonido de colgado (estilo call center)
+    function playHangupSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = 600;
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        setTimeout(() => {
+          try { osc.stop(); ctx.close().catch(() => {}); } catch {}
+        }, 130);
+        console.log('🔊 [CallCenter] Sonido de colgado');
+      } catch (e) {
+        console.warn('⚠️ [CallCenter] Error reproduciendo sonido de colgado:', e);
+      }
     }
 
     // ==================== AGREGAR MENSAJE ====================
@@ -2296,38 +2339,56 @@
       async function maybePlayGreeting() {
         if (greetedThisCall) return;
         greetedThisCall = true;
+        
+        const greeting = 'Hola, soy Sandra, asistente de Guests Valencia. ¿En qué puedo servirte?';
+        console.log('👋 [CallCenter] Iniciando saludo...');
+        
         try {
-          if (window.sandraAPI?.multimodalGreet) {
-            const greeting = 'Hola, soy Sandra, asistente de Guests‑Valencia. ¿En qué puedo servirte?';
-            await window.sandraAPI.multimodalGreet(greeting);
-            // Fallback: si en ~1.2s no hay audio reproduciéndose, generar TTS directo y reproducir aquí
-            setTimeout(async () => {
-              try {
-                if (!currentTtsAudio || currentTtsAudio.paused) {
-                  const res = await window.sandraAPI.generateSpeech(greeting, {});
-                  if (res && res.success && res.audioBuffer) {
-                    let u8;
-                    if (res.audioBuffer.data && Array.isArray(res.audioBuffer.data)) {
-                      u8 = new Uint8Array(res.audioBuffer.data);
-                    } else if (res.audioBuffer.buffer) {
-                      u8 = new Uint8Array(res.audioBuffer.buffer);
-                    } else {
-                      u8 = new Uint8Array(res.audioBuffer);
-                    }
-                    const blob = new Blob([u8], { type: 'audio/wav' });
-                    const url = URL.createObjectURL(blob);
-                    const audio = new Audio(url);
-                    currentTtsAudio = audio;
-                    audio.play().catch(() => {});
-                  }
-                }
-              } catch (e) {
-                console.warn('Fallback greeting TTS error:', e);
-              }
-            }, 1200);
+          // ESTRATEGIA DIRECTA: generar TTS inmediatamente y reproducir
+          // No depender del pipeline multimodal complejo que puede fallar
+          const res = await window.sandraAPI.generateSpeech(greeting, {});
+          
+          if (res && res.success && res.audioBuffer) {
+            console.log('✅ [CallCenter] TTS generado correctamente');
+            
+            // Normalizar buffer
+            let u8;
+            if (res.audioBuffer.data && Array.isArray(res.audioBuffer.data)) {
+              u8 = new Uint8Array(res.audioBuffer.data);
+            } else if (res.audioBuffer.buffer) {
+              u8 = new Uint8Array(res.audioBuffer.buffer);
+            } else {
+              u8 = new Uint8Array(res.audioBuffer);
+            }
+            
+            const blob = new Blob([u8], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            
+            currentTtsAudio = audio;
+            
+            audio.addEventListener('play', () => {
+              console.log('🎤 [CallCenter] Saludo reproduciéndose');
+              startMouthSyncForAudio(audio);
+            });
+            
+            audio.addEventListener('ended', () => {
+              console.log('✅ [CallCenter] Saludo completado');
+              if (currentTtsAudio === audio) currentTtsAudio = null;
+              stopMouthSync();
+            });
+            
+            audio.addEventListener('error', (e) => {
+              console.error('❌ [CallCenter] Error reproduciendo saludo:', e);
+            });
+            
+            await audio.play();
+            console.log('✅ [CallCenter] Saludo iniciado correctamente');
+          } else {
+            console.error('❌ [CallCenter] No se recibió audio del TTS:', res);
           }
         } catch (e) {
-          console.warn('No se pudo reproducir saludo:', e);
+          console.error('❌ [CallCenter] Error generando/reproduciendo saludo:', e);
         }
       }
     }
