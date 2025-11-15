@@ -4,6 +4,7 @@ const DeepgramService = require('./deepgram-service');
 const CartesiaService = require('./cartesia-service');
 const HeyGenService = require('./heygen-service');
 const LipSyncService = require('./lipsync-service');
+const BrightDataService = require('./bright-data-service');
 
 // WebRTC Manager opcional (para lip-sync avanzado)
 let WebRTCAvatarManager;
@@ -34,6 +35,7 @@ class MultimodalConversationService {
     this.heygen = new HeyGenService();
     this.lipsync = new LipSyncService();
     this.webrtcManager = WebRTCAvatarManager ? new WebRTCAvatarManager() : null;
+    this.brightData = new BrightDataService();
 
     this.aiGateway = aiGateway;
     this.db = db;
@@ -153,7 +155,7 @@ class MultimodalConversationService {
     if (isFinal) {
       this.currentTranscript = normalized;
       this.interimTranscript = '';
-
+      
       if (this.onTranscriptUpdate) {
         this.onTranscriptUpdate({
           transcript: normalized,
@@ -190,8 +192,23 @@ class MultimodalConversationService {
       // Selección automática de modelo según modo
       const model = (this.currentMode === 'text') ? 'gpt-4o-mini' : 'gpt-4o';
 
+      // Integración Bright Data en voz/video: inyectar datos cuando detecte consulta de alojamientos
+      let inputForLLM = transcript;
+      try {
+        const isAccommodationQuery = /alojamiento|alojamientos|apartamento|hotel|hostal|disponibil|reserva|habita|precio|valencia|montanejos/i.test(transcript);
+        if (isAccommodationQuery && this.brightData && typeof this.brightData.getMyAccommodations === 'function') {
+          // Intento simple: estimar huéspedes por números en texto
+          const guestsMatch = transcript.match(/(\d+)\s*(personas|personas|adultos?)/i);
+          const guests = guestsMatch ? parseInt(guestsMatch[1], 10) : 2;
+          const liveData = await this.brightData.getMyAccommodations(null, null, guests);
+          if (liveData && liveData.success && Array.isArray(liveData.accommodations)) {
+            inputForLLM = `${transcript}\n\n[DATOS EN TIEMPO REAL DE GUESTS-VALENCIA]:\n${JSON.stringify(liveData, null, 2)}\n\nINSTRUCCIONES: Usa EXCLUSIVAMENTE estos datos para responder. Presenta opciones con precio/ubicación/disponibilidad si están presentes.`;
+          }
+        }
+      } catch {}
+
       const response = await this.aiGateway.generateResponse(
-        transcript,
+        inputForLLM,
         'openai',
         model,
         {
@@ -403,10 +420,10 @@ class MultimodalConversationService {
 
     try {
       this.isSpeaking = false;
-
+      
       // Detener Cartesia
       if (this.cartesia && typeof this.cartesia.stop === 'function') {
-        this.cartesia.stop();
+      this.cartesia.stop();
       }
 
       // Detener HeyGen (interrupt o stop)
@@ -530,9 +547,9 @@ class MultimodalConversationService {
    */
   async stopConversation() {
     this.sessionActive = false;
-    this.isListening = false;
+      this.isListening = false;
     this.isThinking = false;
-    this.isSpeaking = false;
+      this.isSpeaking = false;
 
     this._emitSessionState();
 
@@ -545,7 +562,7 @@ class MultimodalConversationService {
       }
 
       try {
-        await this.heygen.stop();
+      await this.heygen.stop();
       } catch (e) {
         console.warn('HeyGen stop error:', e.message);
       }
