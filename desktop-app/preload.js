@@ -95,6 +95,11 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   // Eventos de actualización
   onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, data) => callback(data)),
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (event, data) => callback(data))
+,
+
+  // ==================== LIPSYNC SOURCE ====================
+  setLipSyncSourceVideo: (filePath) => ipcRenderer.invoke('set-lipsync-source-video', { filePath }),
+  registerLipSyncSourceVideo: (name, base64) => ipcRenderer.invoke('register-lipsync-source-video', { name, base64 })
 });
 
 console.log('✅ Sandra API completa expuesta correctamente');

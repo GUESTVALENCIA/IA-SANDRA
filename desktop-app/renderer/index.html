@@ -2209,6 +2209,39 @@
           const url = URL.createObjectURL(file);
           soraVideo.src = url;
           showToast('🎬 Video Sora cargado');
+
+          // Intentar registrar ruta real para lip-sync
+          try {
+            // Si Electron expone file.path, usarlo directamente
+            if (file.path && window.sandraAPI?.setLipSyncSourceVideo) {
+              window.sandraAPI.setLipSyncSourceVideo(file.path).then(res => {
+                if (!res?.success) console.warn('setLipSyncSourceVideo error:', res?.error);
+              }).catch(err => console.warn('setLipSyncSourceVideo ex:', err.message));
+            } else if (window.sandraAPI?.registerLipSyncSourceVideo) {
+              // Subir el contenido para guardarlo en temp y usarlo en backend
+              const reader = new FileReader();
+              reader.onload = function() {
+                try {
+                  const arr = new Uint8Array(reader.result);
+                  // Convertir a base64
+                  let binary = '';
+                  const CHUNK = 0x8000;
+                  for (let i = 0; i < arr.length; i += CHUNK) {
+                    binary += String.fromCharCode.apply(null, arr.subarray(i, i + CHUNK));
+                  }
+                  const b64 = btoa(binary);
+                  window.sandraAPI.registerLipSyncSourceVideo(file.name, b64).then(res => {
+                    if (!res?.success) console.warn('registerLipSyncSourceVideo error:', res?.error);
+                  }).catch(err => console.warn('registerLipSyncSourceVideo ex:', err.message));
+                } catch (e) {
+                  console.warn('Error preparando video para lip-sync:', e);
+                }
+              };
+              reader.readAsArrayBuffer(file);
+            }
+          } catch (e) {
+            console.warn('No se pudo registrar lip-sync source:', e);
+          }
         }
       });
     })();

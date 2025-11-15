@@ -617,6 +617,45 @@ ipcMain.handle('get-my-accommodations', async (event, { checkIn, checkOut, guest
   }
 });
 
+// ==================== IPC HANDLERS - LIPSYNC SOURCE ====================
+const pathFs = require('path');
+const fsSync = require('fs');
+const fsPromises = require('fs').promises;
+
+ipcMain.handle('set-lipsync-source-video', async (event, { filePath }) => {
+  try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) return { success: false, error: 'Servicio multimodal no disponible' };
+    if (!filePath || !fsSync.existsSync(filePath)) return { success: false, error: 'Ruta inválida' };
+    if (typeof multimodal.setLipSyncSourceVideo === 'function') {
+      multimodal.setLipSyncSourceVideo(filePath);
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('register-lipsync-source-video', async (event, { name, base64 }) => {
+  try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) return { success: false, error: 'Servicio multimodal no disponible' };
+    if (!base64) return { success: false, error: 'Contenido vacío' };
+    const tempDir = pathFs.join(__dirname, '..', 'temp-lipsync');
+    await fsPromises.mkdir(tempDir, { recursive: true });
+    const safeName = (name || 'sora_source.mp4').replace(/[^\w\-.]+/g, '_');
+    const outPath = pathFs.join(tempDir, `src_${Date.now()}_${safeName}`);
+    const buf = Buffer.from(base64, 'base64');
+    await fsPromises.writeFile(outPath, buf);
+    if (typeof multimodal.setLipSyncSourceVideo === 'function') {
+      multimodal.setLipSyncSourceVideo(outPath);
+    }
+    return { success: true, filePath: outPath };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 // ==================== IPC HANDLERS - VENTAS ====================
 
 ipcMain.handle('process-sale', async (event, { saleData }) => {

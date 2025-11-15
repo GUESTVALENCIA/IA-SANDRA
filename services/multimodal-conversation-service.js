@@ -217,7 +217,7 @@ class MultimodalConversationService {
       let syncedVideoPath = null;
       if (this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video') && this.lipsync && this.lipsync.enabled) {
         try {
-          const sourceVideo = process.env.LIPSYNC_SOURCE_VIDEO;
+          const sourceVideo = this.lipsyncSourceVideo || process.env.LIPSYNC_SOURCE_VIDEO;
           if (sourceVideo && fs.existsSync(sourceVideo)) {
             const sync = await this.lipsync.generateSyncedVideo(sourceVideo, ttsAudio);
             if (sync.success) {
@@ -688,6 +688,13 @@ class MultimodalConversationService {
     if (this.onError) {
       this.onError(error);
     }
+  }
+
+  /**
+   * Establecer video fuente de Sora para lip-sync
+   */
+  setLipSyncSourceVideo(filePath) {
+    this.lipsyncSourceVideo = filePath;
   }
 
   /**
