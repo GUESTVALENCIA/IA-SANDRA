@@ -64,6 +64,10 @@ class MultimodalConversationService {
     // Avatar / Lip-sync
     this.avatarProvider = 'heygen'; // futuro: 'sora'
     this.avatarLipSyncEnabled = true;
+
+    // Datos en vivo de alojamientos (para controlar respuesta de voz)
+    this.lastLiveAccommodationData = null;
+    this.lastLiveGuests = null;
     
     // Callbacks para frontend
     this.onTranscriptUpdate = null;
@@ -218,12 +222,18 @@ class MultimodalConversationService {
         }
       );
 
-      await this._logMessages(transcript, response);
+      // Sobre-escritura controlada cuando hay datos live (solo alojamientos propios)
+      let finalText = response;
+      if (this.lastLiveAccommodationData && this.lastLiveAccommodationData.success) {
+        finalText = this._composeAccommodationReply(this.lastLiveAccommodationData, this.lastLiveGuests);
+      }
+
+      await this._logMessages(transcript, finalText);
 
       // TTS solo si no es modo texto puro (con saneado para voz)
       let ttsAudio = null;
       if (this.currentMode === 'voice' || this.currentMode === 'video' || this.currentMode === 'avatar') {
-        const spoken = this._sanitizeForSpeech(response);
+        const spoken = this._sanitizeForSpeech(finalText);
         const ttsResult = await this.cartesia.generateSpeech(spoken);
         ttsAudio = ttsResult?.audioBuffer || null;
       }
@@ -247,7 +257,7 @@ class MultimodalConversationService {
         }
       }
 
-      this._emitResponse({ text: response, audioBuffer: ttsAudio, syncedVideoPath });
+      this._emitResponse({ text: finalText, audioBuffer: ttsAudio, syncedVideoPath });
 
       // Lip-sync de animación rápida (pseudo) para overlays si no hubo video sincronizado
       if (!syncedVideoPath && this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video')) {
@@ -332,6 +342,8 @@ class MultimodalConversationService {
           const guests = guestsMatch ? parseInt(guestsMatch[1], 10) : 2;
           const liveData = await this.brightData.getMyAccommodations(null, null, guests);
           if (liveData && liveData.success && Array.isArray(liveData.accommodations)) {
+            this.lastLiveAccommodationData = liveData;
+            this.lastLiveGuests = guests;
             inputForLLM = `${transcript}\n\n[DATOS EN TIEMPO REAL DE GUESTS-VALENCIA]:\n${JSON.stringify(liveData, null, 2)}\n\nINSTRUCCIONES: Responde de forma conversacional (sin listas ni emojis), breve y directa, usando estos datos.`;
           }
         }
@@ -348,17 +360,23 @@ class MultimodalConversationService {
         }
       );
 
-      await this._logMessages(transcript, response);
+      // Si hay datos live, componer respuesta controlada SOLO con nuestros alojamientos
+      let finalText = response;
+      if (this.lastLiveAccommodationData && this.lastLiveAccommodationData.success) {
+        finalText = this._composeAccommodationReply(this.lastLiveAccommodationData, this.lastLiveGuests);
+      }
+
+      await this._logMessages(transcript, finalText);
 
       // TTS con Cartesia (saneado para voz)
-      const spoken = this._sanitizeForSpeech(response);
+      const spoken = this._sanitizeForSpeech(finalText);
       const ttsResult = await this.cartesia.generateSpeech(spoken);
       const ttsAudio = ttsResult?.audioBuffer || null;
 
       this.isThinking = false;
       this._emitSessionState();
 
-      this._emitResponse({ text: response, audioBuffer: ttsAudio });
+      this._emitResponse({ text: finalText, audioBuffer: ttsAudio });
 
       // Lip-sync si hay avatar
       if (this.avatarLipSyncEnabled && ttsAudio) {
@@ -471,7 +489,8 @@ class MultimodalConversationService {
    */
   async _handlePotentialBargeIn(transcript) {
     const now = Date.now();
-    const cooldownMs = 2000;  // 2 segundos de cooldown (tipo ChatGPT)
+    const cooldownMs = 3500;  // Más margen entre interrupciones
+    const holdMs = 1000;      // Requiere ~1s de voz sostenida antes de cortar TTS
 
     if (this.bargeInInProgress) return;
     if (this.lastBargeInAt && now - this.lastBargeInAt < cooldownMs) return;
@@ -479,10 +498,20 @@ class MultimodalConversationService {
     // Solo activar barge-in si el transcript tiene suficiente contenido
     // (evita interrupciones por ruido o palabras sueltas)
     const words = transcript.trim().split(/\s+/);
-    if (words.length < 3) {
+    if (words.length < 4) {
       // Menos de 3 palabras → probablemente ruido o inicio de frase
       return;
     }
+
+    // Ventana de retención: esperar ~1s de habla continua antes de interrumpir
+    if (!this._bargeHoldStartAt) this._bargeHoldStartAt = now;
+    const elapsedHold = now - this._bargeHoldStartAt;
+    if (elapsedHold < holdMs) {
+      // Aún no se cumple el tiempo sostenido: no interrumpir
+      return;
+    }
+    // Reset para próxima detección
+    this._bargeHoldStartAt = null;
 
     this.bargeInInProgress = true;
     this.lastBargeInAt = now;
@@ -740,6 +769,27 @@ class MultimodalConversationService {
       .replace(/\s+\./g, '.')      // espacio antes del punto
       .trim();
     return out;
+  }
+
+  /**
+   * Componer una respuesta breve SOLO con nuestros alojamientos (sin listas)
+   */
+  _composeAccommodationReply(liveData, guests) {
+    try {
+      const accs = Array.isArray(liveData.accommodations) ? liveData.accommodations.slice(0, 3) : [];
+      const parts = accs.map(a => {
+        const n = a.name || 'Alojamiento';
+        const loc = a.location ? `, ${a.location}` : '';
+        const p = a.price ? `, desde ${a.price}` : '';
+        return `${n}${loc}${p}`.trim();
+      }).filter(Boolean);
+      const g = guests ? ` para ${guests} personas` : '';
+      if (parts.length === 0) return `Puedo verificar disponibilidad${g}. ¿Qué fechas exactas necesitas?`;
+      const joined = parts.join(' | ');
+      return `Opciones Guests‑Valencia${g}: ${joined}. ¿Confirmas fechas para verificar disponibilidad en tiempo real?`;
+    } catch {
+      return `Puedo verificar disponibilidad. ¿Qué fechas exactas necesitas?`;
+    }
   }
 
   /**

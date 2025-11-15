@@ -287,7 +287,7 @@ class BrightDataService {
       location: 'El Cabañal, Valencia',
       accommodations: [
         {
-          name: 'Apartamento Playa Cabañal',
+          name: 'El Cabanyal 400m from the Beach',
           type: 'Apartamento completo',
           capacity: '4-6 personas',
           location: 'El Cabañal, a 2 min de la playa',
@@ -297,12 +297,12 @@ class BrightDataService {
           available: true
         },
         {
-          name: 'Casa Marinera Cabañal',
+          name: 'Precioso apartamento a minutos del metro',
           type: 'Casa completa',
           capacity: '6 personas',
-          location: 'Barrio Marítimo del Cabañal',
-          features: ['WiFi', '3 habitaciones', 'Patio', 'Cerca de la playa'],
-          price: 'Desde 120€/noche',
+          location: 'Bétera (metro a 200m)',
+          features: ['WiFi', '2 habitaciones', 'Ascensor', 'Parking cercano'],
+          price: 'Desde 70€/noche',
           platform: 'booking',
           available: true
         }
@@ -314,7 +314,7 @@ class BrightDataService {
     return {
       success: true,
       platform: 'airbnb',
-      name: 'Apartamento Playa Cabañal',
+      name: 'El Cabanyal 400m from the Beach',
       location: 'El Cabañal, Valencia',
       price: 'Desde 80€/noche',
       available: true,
@@ -326,9 +326,9 @@ class BrightDataService {
     return {
       success: true,
       platform: 'booking',
-      name: 'Casa Marinera Cabañal',
-      location: 'El Cabañal, Valencia',
-      price: 'Desde 120€/noche',
+      name: 'Precioso apartamento a minutos del metro',
+      location: 'Bétera, Valencia',
+      price: 'Desde 70€/noche',
       available: true,
       note: 'Datos de ejemplo - Configurar URLs reales en bright-data-service.js'
     };

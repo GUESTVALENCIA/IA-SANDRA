@@ -125,7 +125,7 @@ class DeepgramService {
         sample_rate: 16000,
         channels: 1,
         interim_results: true,
-        endpointing: 300  // Valor original - respuesta rápida
+        endpointing: 1200  // Aumentar margen de silencio antes de cerrar enunciado (barge-in más tolerante)
       });
 
       // Evento: Conexión abierta
