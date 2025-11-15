@@ -955,7 +955,7 @@
     <div class="input-bar">
       <div class="recording-indicator" id="recording-indicator">
         <div class="recording-dot"></div>
-        <span>Grabando... (Click para detener)</span>
+        <span>Llamada activa (voz) – pulsa para finalizar</span>
       </div>
       
       <!-- Audio Visualizer Canvas -->
@@ -1642,12 +1642,12 @@
             sampleRate: 44100
           } 
         });
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
         mediaRecorder.ondataavailable = (event) => {
           if (event.data && event.data.size > 0 && window.sandraAPI && isCallActive) {
             event.data.arrayBuffer().then((ab) => {
               const buffer = new Uint8Array(ab);
-              window.sandraAPI.sendAudioStream({ audioData: { buffer, mimeType: 'audio/webm' } });
+              window.sandraAPI.sendAudioStream({ audioData: { buffer, mimeType: 'audio/webm;codecs=opus' } });
             });
           }
         };
