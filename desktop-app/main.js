@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -53,9 +53,26 @@ const LiveUpdater = require('../services/live-updater');
 const MCPCore = require('../mcp-server/mcp-core');
 const RolesSystem = require('../core/roles-system');
 
+
 let mainWindow;
 let serviceManager;
 let configReport;
+let backgroundDaemons = {
+  systemMonitor: null,
+  gitSync: null,
+  convoGuard: null
+};
+let sosAgentId = null;
+let sosPrimaryId = null;
+let sosHotId = null;
+let sosUnhealthyCount = 0;
+const SOS_PROMPT = `Eres el Subagente SOS de Sandra IA. Objetivo: soporte en caliente, reacción inmediata ante incidentes, fallos de conversación o desconexiones de audio/video/voz.
+Reglas:
+- Responde solo lo imprescindible (máx. 3 viñetas o 4 frases).
+- Ejecuta diagnóstico rápido (servicios críticos: Deepgram, Cartesia, Multimodal, UI) y propone 1 acción directa.
+- Si detectas caída de un servicio, sugiere reinicio focalizado o fallback.
+- Prioriza recuperar la llamada conversacional, la voz de Sandra y el avatar.
+- Tono profesional, sin adornos, 1 emoji como máximo (solo si aclara).`;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -64,6 +81,7 @@ function createWindow() {
     minWidth: 1200,
     minHeight: 800,
     backgroundColor: '#1a1a2e',
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -85,10 +103,24 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  // Ocultar completamente menú de aplicación
+  try { Menu.setApplicationMenu(null); } catch {}
 
   // Abrir DevTools solo en desarrollo
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools();
+  }
+
+  // Atajos de depuración siempre disponibles
+  try {
+    globalShortcut.register('CommandOrControl+Shift+I', () => {
+      if (mainWindow && mainWindow.webContents) mainWindow.webContents.toggleDevTools();
+    });
+    globalShortcut.register('F12', () => {
+      if (mainWindow && mainWindow.webContents) mainWindow.webContents.toggleDevTools();
+    });
+  } catch (e) {
+    console.warn('No se pudieron registrar atajos de DevTools:', e.message);
   }
 
   // Inicializar servicios
@@ -234,6 +266,11 @@ async function initializeServices() {
     console.log(`   📊 ${summary.ready}/${summary.total} servicios operativos`);
     console.log(`   🎯 ${rolesCount} roles especializados disponibles`);
     console.log('═'.repeat(60) + '\n');
+
+    // Iniciar subagentes/daemons en segundo plano
+    startBackgroundDaemons();
+    // Iniciar SOS primario y monitor
+    startSOSAgents();
 
   } catch (error) {
     console.error('\n❌ ERROR CRÍTICO EN INICIALIZACIÓN:');
@@ -528,6 +565,17 @@ ipcMain.handle('search-accommodations', async (event, { destination, checkIn, ch
   }
 });
 
+// Consultar MIS alojamientos (El Cabañal, Valencia)
+ipcMain.handle('get-my-accommodations', async (event, { checkIn, checkOut, guests }) => {
+  try {
+    const results = await brightData.getMyAccommodations(checkIn, checkOut, guests);
+    return results;
+  } catch (error) {
+    console.error('Error en get-my-accommodations:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 // ==================== IPC HANDLERS - VENTAS ====================
 
 ipcMain.handle('process-sale', async (event, { saleData }) => {
@@ -702,7 +750,36 @@ ipcMain.handle('send-audio-stream', async (event, { audioData }) => {
     if (!multimodal) {
       return { success: false, error: 'Servicio multimodal no disponible' };
     }
-    multimodal.sendAudioData(audioData);
+
+    // Normalizar de forma robusta a Buffer antes de enviar
+    // Aceptar tanto audioData crudo como { audioData: ... }
+    if (audioData && typeof audioData === 'object' && audioData.audioData) {
+      audioData = audioData.audioData;
+    }
+    let payload = audioData;
+    try {
+      if (Buffer.isBuffer(audioData)) {
+        payload = audioData;
+      } else if (audioData && audioData.type === 'Buffer' && Array.isArray(audioData.data)) {
+        payload = Buffer.from(audioData.data);
+      } else if (ArrayBuffer.isView(audioData)) {
+        payload = Buffer.from(audioData.buffer, audioData.byteOffset, audioData.byteLength);
+      } else if (audioData instanceof ArrayBuffer) {
+        payload = Buffer.from(audioData);
+      } else if (Array.isArray(audioData)) {
+        payload = Buffer.from(Uint8Array.from(audioData));
+      } else if (audioData && typeof audioData === 'object' && typeof audioData.length === 'number') {
+        // Objeto array-like
+        payload = Buffer.from(Uint8Array.from(audioData));
+      } else if (typeof audioData === 'string') {
+        // Intentar base64
+        payload = Buffer.from(audioData, 'base64');
+      }
+    } catch (e) {
+      console.warn('No se pudo normalizar audioData:', e.message);
+    }
+
+    multimodal.sendAudioData(payload);
     return { success: true };
   } catch (error) {
     console.error('Error en send-audio-stream:', error);
@@ -777,6 +854,31 @@ ipcMain.handle('get-multimodal-status', async (event) => {
     return { success: true, status };
   } catch (error) {
     console.error('Error en get-multimodal-status:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Disparar subagente SOS (wake word "Hola Sandra")
+ipcMain.handle('trigger-sos', async (event) => {
+  try {
+    const aiOrchestrator = serviceManager?.get('ai-orchestrator');
+    if (!aiOrchestrator) {
+      return { success: false, error: 'AI Orchestrator no disponible' };
+    }
+    if (!sosAgentId) {
+      const agent = await aiOrchestrator.spawnSubagent('sos', {
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        systemPrompt: SOS_PROMPT
+      });
+      sosAgentId = agent.id;
+      console.log('🆘 SOS subagente activado:', sosAgentId);
+    } else {
+      console.log('🆘 SOS ya activo:', sosAgentId);
+    }
+    return { success: true, agentId: sosAgentId };
+  } catch (error) {
+    console.error('Error en trigger-sos:', error);
     return { success: false, error: error.message };
   }
 });
@@ -869,3 +971,125 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
+
+// ==================== BACKGROUND DAEMONS (SUBAGENTES) ====================
+function startBackgroundDaemons() {
+  try {
+    const aiOrchestrator = serviceManager?.get('ai-orchestrator');
+    const rolesSystem = serviceManager?.get('roles-system');
+    const multimodal = serviceManager?.get('multimodal');
+
+    if (!aiOrchestrator || !rolesSystem) {
+      console.warn('⚠️ No se pudo iniciar daemons: orquestador o roles no disponibles');
+      return;
+    }
+
+    // 1) Monitoreo del sistema (cada 60s)
+    clearInterval(backgroundDaemons.systemMonitor);
+    backgroundDaemons.systemMonitor = setInterval(async () => {
+      try {
+        await rolesSystem.executeWithRole('dev_support', 'Monitorea estado del sistema y registra anomalías. Reporta solo si hay incidencia.', { mode: 'text' });
+      } catch (e) {
+        console.warn('⚠️ System monitor error:', e?.message);
+      }
+    }, 60_000);
+
+    // 2) Sincronización GitHub silenciosa (cada 10 min)
+    clearInterval(backgroundDaemons.gitSync);
+    backgroundDaemons.gitSync = setInterval(async () => {
+      try {
+        const mcp = serviceManager?.get('mcp-server');
+        if (mcp?.syncWithGitHub) {
+          await mcp.syncWithGitHub();
+        } else {
+          // Fallback suave usando el orquestador para no bloquear
+          await aiOrchestrator.generateResponse(
+            'Verifica y sincroniza silenciosamente el repositorio Git si hay cambios. No abras ventanas.',
+            'openai',
+            'gpt-4o-mini',
+            {}
+          );
+        }
+      } catch (e) {
+        console.warn('⚠️ Git sync daemon error:', e?.message);
+      }
+    }, 10 * 60_000);
+
+    // 3) Guardián conversacional (cada 5s): asegurar barge-in activo durante llamadas
+    clearInterval(backgroundDaemons.convoGuard);
+    backgroundDaemons.convoGuard = setInterval(async () => {
+      try {
+        if (!multimodal?.getStatus) return;
+        const st = multimodal.getStatus();
+        if (st?.sessionActive && (st?.currentMode === 'voice' || st?.currentMode === 'avatar')) {
+          if (!st?.bargeInEnabled && multimodal.setBargeIn) {
+            multimodal.setBargeIn(true);
+          }
+        }
+      } catch (e) {
+        // no romper ciclo
+      }
+    }, 5_000);
+
+    console.log('✅ Daemons de fondo iniciados (monitor, sync, guard)');
+  } catch (e) {
+    console.error('❌ Error iniciando background daemons:', e);
+  }
+}
+
+// ==================== SOS AGENTS (PRIMARIO + HOT) ====================
+function startSOSAgents() {
+  try {
+    const aiOrchestrator = serviceManager?.get('ai-orchestrator');
+    if (!aiOrchestrator) {
+      console.warn('⚠️ No se pudo iniciar SOS: orquestador no disponible');
+      return;
+    }
+
+    // Crear SOS primario fijo si no existe
+    const ensurePrimary = async () => {
+      if (!sosPrimaryId) {
+        const agent = await aiOrchestrator.spawnSubagent('sos', {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          systemPrompt: SOS_PROMPT
+        });
+        sosPrimaryId = agent.id;
+        console.log('🟢 SOS primario activo:', sosPrimaryId);
+      }
+    };
+
+    // Health-check periódico al primario; si falla, levantar HOT
+    clearInterval(backgroundDaemons.sosHealth);
+    backgroundDaemons.sosHealth = setInterval(async () => {
+      try {
+        await ensurePrimary();
+        if (!sosPrimaryId) return;
+        // Ping ligero
+        await aiOrchestrator.executeWithSubagent(sosPrimaryId, 'PING', { mode: 'text' });
+        sosUnhealthyCount = 0;
+        // Si había HOT por contingencia y el primario está sano, podemos mantener HOT inactivo (no terminamos por ahora)
+      } catch (e) {
+        sosUnhealthyCount++;
+        console.warn(`⚠️ SOS primario sin respuesta (${sosUnhealthyCount})`);
+        // Elevar HOT si no existe o si el primario lleva 2+ fallos seguidos
+        if (!sosHotId || sosUnhealthyCount >= 2) {
+          try {
+            const agentHot = await aiOrchestrator.spawnSubagent('sos', {
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+              systemPrompt: SOS_PROMPT + '\n\nModo: HOT STANDBY. Asume el control si el primario no responde.'
+            });
+            sosHotId = agentHot.id;
+            console.log('🟠 SOS HOT levantado:', sosHotId);
+          } catch (err) {
+            console.error('❌ No se pudo levantar SOS HOT:', err.message);
+          }
+        }
+      }
+    }, 30_000);
+
+  } catch (e) {
+    console.error('❌ Error iniciando SOS agents:', e);
+  }
+}

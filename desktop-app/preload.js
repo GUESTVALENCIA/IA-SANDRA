@@ -32,6 +32,7 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   
   // ==================== BÚSQUEDA ====================
   searchAccommodations: (destination, checkIn, checkOut, guests) => ipcRenderer.invoke('search-accommodations', { destination, checkIn, checkOut, guests }),
+  getMyAccommodations: (checkIn, checkOut, guests) => ipcRenderer.invoke('get-my-accommodations', { checkIn, checkOut, guests }),
   
   // ==================== VENTAS ====================
   processSale: (saleData) => ipcRenderer.invoke('process-sale', { saleData }),
@@ -67,6 +68,9 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   setBargeIn: (enabled) => ipcRenderer.invoke('set-barge-in', { enabled }),
   setContinuousMode: (enabled) => ipcRenderer.invoke('set-continuous-mode', { enabled }),
   getMultimodalStatus: () => ipcRenderer.invoke('get-multimodal-status'),
+
+  // SOS
+  triggerSOS: () => ipcRenderer.invoke('trigger-sos'),
 
   // Sistema
   getSystemStatus: () => ipcRenderer.invoke('get-system-status'),
