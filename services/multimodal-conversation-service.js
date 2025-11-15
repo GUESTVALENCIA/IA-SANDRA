@@ -66,6 +66,11 @@ class MultimodalConversationService {
     this.onLipSyncFrame = null;
     this.onSessionState = null;
     this.onError = null;
+
+    // Bufferización de audio para Deepgram (reduce cierres por frames muy pequeños)
+    this._audioQueue = [];
+    this._audioFlushTimer = null;
+    this._audioFlushIntervalMs = 40; // ~25 fps de audio
     
     console.log('✅ Multimodal Conversation Service inicializado (Enterprise)');
   }
@@ -414,16 +419,24 @@ class MultimodalConversationService {
    */
   async _handlePotentialBargeIn(transcript) {
     const now = Date.now();
-    const cooldownMs = 1500;
+    const cooldownMs = 2000;  // 2 segundos de cooldown (tipo ChatGPT)
 
     if (this.bargeInInProgress) return;
     if (this.lastBargeInAt && now - this.lastBargeInAt < cooldownMs) return;
+
+    // Solo activar barge-in si el transcript tiene suficiente contenido
+    // (evita interrupciones por ruido o palabras sueltas)
+    const words = transcript.trim().split(/\s+/);
+    if (words.length < 3) {
+      // Menos de 3 palabras → probablemente ruido o inicio de frase
+      return;
+    }
 
     this.bargeInInProgress = true;
     this.lastBargeInAt = now;
 
     try {
-      console.log('🔄 Barge-in detectado. Interrumpiendo TTS/avatar…');
+      console.log(`🔄 Barge-in detectado (${words.length} palabras). Interrumpiendo TTS/avatar…`);
       await this.stopSpeaking(true);
     } catch (error) {
       this._emitError(error);
@@ -441,13 +454,29 @@ class MultimodalConversationService {
       return;
     }
 
+    // Aceptar múltiples formatos: Buffer/ArrayBuffer/View/Base64
     const buffer = this._normalizeAudioBuffer(audioData);
     if (!buffer) {
       console.warn('Formato de audio no soportado en sendAudioData');
       return;
     }
 
-    this.deepgram.sendAudioToLive(buffer);
+    // Encolar y enviar en lotes para mayor estabilidad
+    this._audioQueue.push(buffer);
+    if (!this._audioFlushTimer) {
+      this._audioFlushTimer = setTimeout(() => {
+        try {
+          const totalLen = this._audioQueue.reduce((acc, b) => acc + b.length, 0);
+          const merged = Buffer.concat(this._audioQueue, totalLen);
+          this._audioQueue = [];
+          this.deepgram.sendAudioToLive(merged);
+        } catch (e) {
+          console.warn('Error al enviar lote de audio:', e.message);
+        } finally {
+          this._audioFlushTimer = null;
+        }
+      }, this._audioFlushIntervalMs);
+    }
   }
 
   /**
@@ -488,13 +517,11 @@ class MultimodalConversationService {
     this._emitSessionState();
 
     try {
-      // En modo continuo mantenemos Deepgram vivo
-      if (!this.continuousMode) {
-        try {
-          await this.deepgram.stopLiveTranscription();
-        } catch (e) {
-          console.warn('Deepgram stopLiveTranscription error:', e.message);
-        }
+      // Siempre detener Deepgram Live
+      try {
+        await this.deepgram.stopLiveTranscription();
+      } catch (e) {
+        console.warn('Deepgram stopLiveTranscription error:', e.message);
       }
 
       try {
@@ -589,10 +616,18 @@ class MultimodalConversationService {
    */
   async _ensureDeepgramLive() {
     if (this.deepgram.isLiveConnected()) return;
+    // Emitir estado cuando Deepgram cambie
+    if (typeof this.deepgram.setStatusCallback === 'function') {
+      this.deepgram.setStatusCallback(() => {
+        this._emitSessionState();
+      });
+    }
     await this.deepgram.startLiveTranscription(
       this.handleTranscript.bind(this),
       this.handleError.bind(this)
     );
+    // Estado inicial tras iniciar
+    this._emitSessionState();
   }
 
   /**
@@ -653,6 +688,10 @@ class MultimodalConversationService {
    */
   _normalizeAudioBuffer(audioData) {
     if (!audioData) return null;
+    // Caso: objeto Buffer serializado { type: 'Buffer', data: [...] }
+    if (audioData && audioData.type === 'Buffer' && Array.isArray(audioData.data)) {
+      try { return Buffer.from(audioData.data); } catch { /* ignore */ }
+    }
     if (Buffer.isBuffer(audioData)) return audioData;
     if (audioData instanceof ArrayBuffer) return Buffer.from(audioData);
     if (ArrayBuffer.isView(audioData)) {

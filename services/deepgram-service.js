@@ -8,6 +8,7 @@ class DeepgramService {
     this.client = null;
     this.liveConnection = null;
     this.isConnected = false;
+    this.statusCallback = null;
     
     if (this.apiKey) {
       this.client = createClient(this.apiKey);
@@ -120,15 +121,23 @@ class DeepgramService {
         language: 'es',
         smart_format: true,
         punctuate: true,
+        encoding: 'linear16',
+        sample_rate: 16000,
+        channels: 1,
         interim_results: true,
-        endpointing: 300,
-        vad_events: true
+        // Configuración tipo ChatGPT: espera más silencio antes de finalizar
+        endpointing: 1500,  // 1.5 segundos de silencio (antes: 300ms)
+        vad_turnoff: 1200,  // Tiempo para detectar fin de turno (1.2s)
+        utterance_end_ms: 1500  // Tiempo para finalizar utterance (1.5s)
       });
 
       // Evento: Conexión abierta
       this.liveConnection.on(LiveTranscriptionEvents.Open, () => {
         console.log('✅ Conexión Deepgram Live abierta');
         this.isConnected = true;
+        if (typeof this.statusCallback === 'function') {
+          try { this.statusCallback({ connected: true }); } catch {}
+        }
       });
 
       // Evento: Transcripción recibida
@@ -154,12 +163,18 @@ class DeepgramService {
       this.liveConnection.on(LiveTranscriptionEvents.Error, (error) => {
         console.error('Error en Deepgram Live:', error);
         if (onError) onError(error);
+        if (typeof this.statusCallback === 'function') {
+          try { this.statusCallback({ connected: false, error: error?.message || String(error) }); } catch {}
+        }
       });
 
       // Evento: Conexión cerrada
       this.liveConnection.on(LiveTranscriptionEvents.Close, () => {
         console.log('Conexión Deepgram Live cerrada');
         this.isConnected = false;
+        if (typeof this.statusCallback === 'function') {
+          try { this.statusCallback({ connected: false }); } catch {}
+        }
       });
 
       return {
@@ -202,6 +217,13 @@ class DeepgramService {
    */
   isLiveConnected() {
     return this.isConnected;
+  }
+
+  /**
+   * Registrar callback de estado live
+   */
+  setStatusCallback(cb) {
+    this.statusCallback = typeof cb === 'function' ? cb : null;
   }
 }
 

@@ -322,14 +322,18 @@ ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) =
     const isAccommodationQuery = /alojamiento|apartamento|hotel|hostal|dónde.*quedar|dónde.*alojar|disponible|reserva|habitación/i.test(message);
     const isHospitalityRole = ['concierge', 'tourism'].includes(role);
     
+    console.log(`🔍 [Bright Data Check] Rol: ${role}, isHospitalityRole: ${isHospitalityRole}, isAccommodationQuery: ${isAccommodationQuery}`);
+    
     if (brightData && isHospitalityRole && isAccommodationQuery) {
       try {
         // Extraer número de personas del mensaje (si existe)
         const guestsMatch = message.match(/(\d+)\s*(persona|gente|adulto)/i);
         const guests = guestsMatch ? parseInt(guestsMatch[1]) : 2;
         
-        console.log(`🏨 Consultando alojamientos de Guests-Valencia para ${guests} personas...`);
+        console.log(`🏨 [Bright Data] Consultando alojamientos de Guests-Valencia para ${guests} personas...`);
         const accommodationsData = await brightData.getMyAccommodations(null, null, guests);
+        
+        console.log(`📊 [Bright Data] Resultado:`, accommodationsData);
         
         if (accommodationsData.success && accommodationsData.accommodations.length > 0) {
           // Inyectar los datos reales en el prompt
@@ -340,12 +344,16 @@ ${JSON.stringify(accommodationsData, null, 2)}
 
 INSTRUCCIONES: Usa EXCLUSIVAMENTE estos datos reales para responder. Presenta los alojamientos disponibles de forma profesional y personalizada.`;
           
-          console.log('✅ Datos de alojamientos inyectados en el prompt');
+          console.log(`✅ [Bright Data] ${accommodationsData.accommodations.length} alojamientos inyectados en el prompt`);
+        } else {
+          console.warn('⚠️ [Bright Data] No se encontraron alojamientos o falló la consulta');
         }
       } catch (error) {
-        console.error('Error consultando Bright Data:', error);
+        console.error('❌ [Bright Data] Error consultando:', error);
         // Continuar sin los datos en tiempo real
       }
+    } else {
+      if (!brightData) console.warn('⚠️ [Bright Data] Servicio no disponible');
     }
 
     // Ejecutar con el rol específico y modo (text/voice/video) para tareas.
