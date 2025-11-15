@@ -74,6 +74,8 @@ class AIOrchestrator {
     let selectedProvider = provider || this.defaultProvider;
     if (model && typeof model === 'string' && model.startsWith('gpt-4o')) {
       selectedProvider = 'openai';
+    } else if (model && typeof model === 'string' && model.startsWith('claude')) {
+      selectedProvider = 'claude';
     }
 
     const config = this.providers[selectedProvider];
@@ -324,9 +326,17 @@ Tarea: ${taskString}
 
 Ejecuta esta tarea de forma PRÁCTICA y REAL. No teoría, solo ejecución.`;
 
+    // Seleccionar proveedor correcto según el modelo elegido
+    let providerForCall = agent.provider || this.defaultProvider;
+    if (useModel && String(useModel).startsWith('gpt-4o')) {
+      providerForCall = 'openai';
+    } else if (useModel && String(useModel).startsWith('claude')) {
+      providerForCall = 'claude';
+    }
+
     const response = await this.generateResponse(
       fullPrompt,
-      agent.provider || this.defaultProvider,
+      providerForCall,
       useModel,
       { 
         systemPrompt: agent.systemPrompt,

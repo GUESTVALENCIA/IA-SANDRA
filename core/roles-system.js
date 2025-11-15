@@ -1653,9 +1653,15 @@ Cuéntame brevemente qué quieres conseguir y empezaré directamente con un plan
       activeRole = this.activeRoles.get(roleName);
     }
 
-    // Determinar modo (voz/texto) y modelo apropiado
+    // Determinar modo (voz/texto) y modelo/proveedor apropiado
     const mode = options.mode || 'text'; // 'text', 'voice', 'video'
-    const useModel = mode === 'voice' || mode === 'video' ? 'gpt-4o' : 'gpt-4o-mini';
+    // Roles que preferimos ejecutar con razonamiento profundo (Claude)
+    const deepRoles = new Set(['ceo', 'product_ceo', 'ai_monetization_expert', 'security', 'orchestrator']);
+    let useModel = mode === 'voice' || mode === 'video' ? 'gpt-4o' : 'gpt-4o-mini';
+    // Forzar razonamiento profundo cuando aplique
+    if (mode === 'text' && (options.reasoning === 'deep' || deepRoles.has(roleName))) {
+      useModel = 'claude-3-5-sonnet-20241022';
+    }
     
     // Ejecutar con el modelo apropiado
     const result = await this.ai.executeWithSubagent(activeRole.agent.id, task, {
