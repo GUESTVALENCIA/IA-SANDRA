@@ -199,16 +199,22 @@ class AIOrchestrator {
 
   async generateWithOllama(prompt, model, options) {
     const config = this.providers.ollama;
-    
-    const response = await axios.post(config.url, {
+    const body = {
       model,
-      prompt,
+      // Inyectar systemPrompt si está disponible para mantener estilo/gramática
+      ...(options && options.systemPrompt ? { system: options.systemPrompt } : {}),
+      // Asegurar que las reglas globales entren en el prompt si el backend no soporta 'system'
+      prompt: options && options.systemPrompt
+        ? `${options.systemPrompt}\n\n${prompt}`
+        : prompt,
       stream: false,
       options: {
         temperature: options.temperature || 0.7,
         num_predict: options.maxTokens || 4000
       }
-    }, {
+    };
+
+    const response = await axios.post(config.url, body, {
       timeout: options.timeout || 120000
     });
 
