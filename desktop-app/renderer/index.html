@@ -693,19 +693,11 @@
           </label>
           <span id="voice-state" class="voice-badge">Mic: Inactivo</span>
         </div>
-        <div class="ai-provider" id="ai-provider" onclick="toggleProviderSelector()">
-          <span id="provider-name">Ollama</span>
-          <span>▼</span>
-        </div>
+        <!-- Selector de proveedor eliminado -->
       </div>
     </div>
 
-    <!-- SELECTOR DE PROVEEDOR LLM -->
-    <div class="provider-selector" id="provider-selector">
-      <div id="provider-options">
-        <!-- Se llenará dinámicamente -->
-      </div>
-    </div>
+    <!-- Selector de proveedor eliminado -->
 
     <!-- SIDEBAR -->
     <div class="sidebar">
@@ -1263,8 +1255,8 @@
     }
 
     // ==================== SELECTOR DE PROVEEDOR LLM ====================
-    // Por defecto asumimos Ollama como proveedor principal (backend local)
-    let currentProvider = 'ollama';
+    // UI eliminada; mantener valor por defecto sin mostrar
+    let currentProvider = 'openai';
 
     async function loadAvailableProviders() {
       try {
@@ -1286,6 +1278,7 @@
 
     function renderProviderOptions(providers) {
       const container = document.getElementById('provider-options');
+      if (!container) return;
       container.innerHTML = '';
       
       providers.forEach(provider => {
@@ -1333,12 +1326,15 @@
     }
 
     function updateProviderDisplay(providerId) {
+      const el = document.getElementById('provider-name');
+      if (!el) return;
       const providerName = providerId.charAt(0).toUpperCase() + providerId.slice(1);
-      document.getElementById('provider-name').textContent = providerName;
+      el.textContent = providerName;
     }
 
     function toggleProviderSelector() {
       const selector = document.getElementById('provider-selector');
+      if (!selector) return;
       selector.classList.toggle('active');
     }
 
@@ -1346,7 +1342,7 @@
     document.addEventListener('click', (e) => {
       const selector = document.getElementById('provider-selector');
       const providerBtn = document.getElementById('ai-provider');
-      
+      if (!selector || !providerBtn) return;
       if (!selector.contains(e.target) && !providerBtn.contains(e.target)) {
         selector.classList.remove('active');
       }
@@ -1750,6 +1746,11 @@
       if (!micApproved) await requestMicPermission();
       if (!window.sandraAPI) return showToast('❌ API no disponible', 'error');
       try {
+        // Fijar rol por defecto para llamadas iniciadas desde la app/web (conserje/turismo)
+        if (window.sandraAPI?.activateRole) {
+          try { await window.sandraAPI.activateRole('concierge'); } catch {}
+        }
+
         const res = await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: false });
         if (!res || !res.success) return showToast('❌ No se pudo iniciar la llamada conversacional', 'error');
         
@@ -2110,11 +2111,14 @@
           if (callStateEl && state) {
             callStateEl.textContent = state.sessionActive ? 'Llamada: Activa' : 'Llamada: Inactiva';
           }
+          // Auto-colgar UI si la sesión se desactiva desde backend
+          if (state && !state.sessionActive && typeof stopConversationalCall === 'function' && isCallActive) {
+            stopConversationalCall();
+          }
           
-          // Si ya hay conexión de voz, parar ringtone y saludar
+          // Si ya hay conexión de voz, no parar el tono: el saludo se disparará tras el 2º timbre
           if (state && state.sessionActive && state.deepgramConnected) {
-            stopRingtone();
-            maybePlayGreeting();
+            // no-op, dejamos sonar el tono hasta completar el ciclo
           }
         });
       }
@@ -2208,45 +2212,79 @@
       let ringCtx = null;
       let ringGain = null;
       let ringTimer = null;
+      let ringGreetTimer = null;
       let greetedThisCall = false;
+      let ringConnected = false;
 
       function startRingtone() {
         try {
           stopRingtone();
           ringCtx = new (window.AudioContext || window.webkitAudioContext)();
           ringGain = ringCtx.createGain();
-          ringGain.gain.value = 0.12;
+          ringGain.gain.value = 0.28; // volumen claro y cercano
           ringGain.connect(ringCtx.destination);
-          // Patrón simple: dos beeps cada 2s
-          const playBeep = () => {
+          // Tono de llamada tipo telefónico: 425 Hz, timbre largo con pausa
+          // Dos timbres y luego saludo
+          const ringOnce = (startAt) => {
             const osc = ringCtx.createOscillator();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, ringCtx.currentTime);
-            osc.connect(ringGain);
-            osc.start();
-            setTimeout(() => { try { osc.stop(); osc.disconnect(); } catch {} }, 250);
-            setTimeout(() => {
-              const o2 = ringCtx.createOscillator();
-              o2.type = 'sine';
-              o2.frequency.setValueAtTime(660, ringCtx.currentTime);
-              o2.connect(ringGain);
-              o2.start();
-              setTimeout(() => { try { o2.stop(); o2.disconnect(); } catch {} }, 250);
-            }, 350);
-          };
-          playBeep();
-          ringTimer = setInterval(playBeep, 2000);
+            osc.frequency.setValueAtTime(425, startAt);
+            const g = ringCtx.createGain();
+            g.gain.setValueAtTime(0.0001, startAt);
+            g.gain.linearRampToValueAtTime(0.18, startAt + 0.04); // ataque más rápido y cercano
+            g.gain.setValueAtTime(0.18, startAt + 1.9);          // sustain ~1.9s
+            g.gain.exponentialRampToValueAtTime(0.0001, startAt + 2.0); // release
+            osc.connect(g).connect(ringGain);
+            osc.start(startAt);
+            osc.stop(startAt + 2.05);
+          }
+          // Espera 2.5s antes del primer timbre
+          const RING_DELAY_MS = 2500;
+          const t0 = ringCtx.currentTime + (RING_DELAY_MS / 1000);
+          ringOnce(t0);           // 1er timbre ~2.0s
+          ringOnce(t0 + 3.2);     // pausa ~1.2s y 2º timbre
+          // Parar tono y saludar 1s después del 2º timbre
+          const totalBeforeGreetMs = RING_DELAY_MS + 2000 + 1200 + 2000 + 1000;
+          ringTimer = setTimeout(() => { stopRingtone(); }, totalBeforeGreetMs);
+          ringGreetTimer = setTimeout(() => {
+            stopRingtone();
+            playHookClick();
+            setTimeout(() => { maybePlayGreeting(); }, 180); // pequeño “click” de descolgar antes del saludo
+          }, totalBeforeGreetMs);
         } catch (e) {
           console.warn('No se pudo iniciar ringtone:', e);
         }
       }
 
       function stopRingtone() {
-        try { if (ringTimer) clearInterval(ringTimer); } catch {}
+        try { if (ringTimer) clearTimeout(ringTimer); } catch {}
+        try { if (ringGreetTimer) clearTimeout(ringGreetTimer); } catch {}
         ringTimer = null;
+        ringGreetTimer = null;
         try { if (ringCtx) ringCtx.close(); } catch {}
         ringCtx = null;
         ringGain = null;
+      }
+
+      // Sonido breve de “descolgar”
+      function playHookClick() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(1200, ctx.currentTime);
+          gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start();
+          setTimeout(() => {
+            try { osc.stop(); ctx.close(); } catch {}
+          }, 90);
+        } catch (e) {
+          console.warn('No se pudo reproducir click de descolgar:', e);
+        }
       }
 
       async function maybePlayGreeting() {
@@ -2254,7 +2292,7 @@
         greetedThisCall = true;
         try {
           if (window.sandraAPI?.multimodalGreet) {
-            const greeting = 'Hola, soy Sandra de Vives Valencia, tu concierge. ¿En qué puedo ayudarte?';
+            const greeting = 'Hola, soy Sandra, asistente de Guests‑Valencia. ¿En qué puedo servirte?';
             await window.sandraAPI.multimodalGreet(greeting);
           }
         } catch (e) {

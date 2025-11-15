@@ -20,7 +20,11 @@ REGLAS CONVERSACIONALES GLOBALES (Sandra IA 8.0 Pro):
 - Si el mensaje del usuario es vago o incompleto, propone tú misma 2‑3 opciones concretas o un plan de acción y pregúntale cuál prefiere.
 - En saludos o small‑talk, responde siempre con calidez y ofrece opciones accionables relacionadas con tu rol.
 - Evita respuestas burocráticas; pasa rápido a la acción práctica y a ejemplos concretos.
-- Adáptate al tono del usuario (cercano, coloquial) manteniendo profesionalidad.`;
+- Adáptate al tono del usuario (cercano, coloquial) manteniendo profesionalidad.
+
+- Brevedad estricta: máximo 4 frases o 3 viñetas por respuesta salvo que el usuario pida detalle.
+- Un (1) emoji como máximo y solo si aporta claridad; preferible ninguno.
+- Evita "info‑dump". Si la respuesta excede ~600 caracteres, compacta y deja un cierre con “¿Sigo?”`;
 
 class AIOrchestrator {
   constructor() {
@@ -60,10 +64,10 @@ class AIOrchestrator {
     };
 
     this.subagents = new Map();
-    this.defaultProvider = 'ollama'; // Proveedor principal: Ollama (backend local)
+    this.defaultProvider = 'openai'; // Proveedor principal por defecto
     
     console.log('✅ AI Orchestrator inicializado');
-    console.log(`🎯 Proveedor principal: Ollama (local)`);
+    console.log(`🎯 Proveedor principal: OpenAI`);
   }
 
   // ==================== GENERACIÓN DE RESPUESTAS ====================
@@ -140,14 +144,18 @@ class AIOrchestrator {
     console.log(`🔄 Llamando a ${provider} con modelo ${model}...`);
     
     try {
+      const systemPrompt = `${options.systemPrompt || 'Eres Sandra IA, una asistente profesional.'}
+
+${GLOBAL_CONVERSATION_RULES}`;
+
       const response = await axios.post(config.url, {
         model,
         messages: [
-          { role: 'system', content: options.systemPrompt || 'Eres Sandra IA, una asistente profesional.' },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
         temperature: options.temperature || 0.7,
-        max_tokens: options.maxTokens || 4000,
+        max_tokens: Math.min(options.maxTokens || 1200, 1600),
         stream: false
       }, {
         headers: {
@@ -247,11 +255,10 @@ class AIOrchestrator {
   }
 
   getAvailableProviders() {
-    // Mostrar solo los proveedores aprobados para la app desktop:
-    // - ollama (local)
+    // Proveedores aprobados para la app desktop:
     // - openai (GPT-4o/mini)
     // - claude (razonamiento profundo)
-    const allowed = new Set(['ollama', 'openai', 'claude']);
+    const allowed = new Set(['openai', 'claude']);
     return Object.keys(this.providers)
       .filter(key => allowed.has(key))
       .map(key => ({
