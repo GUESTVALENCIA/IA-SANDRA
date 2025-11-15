@@ -125,7 +125,7 @@ class DeepgramService {
         sample_rate: 16000,
         channels: 1,
         interim_results: true,
-        endpointing: 1000  // 1 segundo (más tolerante que 300ms, pero válido para Deepgram)
+        endpointing: 300  // Valor original - respuesta rápida
       });
 
       // Evento: Conexión abierta
