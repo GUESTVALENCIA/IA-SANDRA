@@ -1,0 +1,73 @@
+{
+  "cursor.ai.models": {
+    "gpt-5": {
+      "enabled": true,
+      "permissions": {
+        "read": true,
+        "write": true,
+        "execute": true,
+        "git": true,
+        "filesystem": true,
+        "network": true,
+        "mcp": true
+      },
+      "workspace": "C:\\Sandra-IA-8.0-Pro"
+    },
+    "gpt-5.1": {
+      "enabled": true,
+      "permissions": {
+        "read": true,
+        "write": true,
+        "execute": true,
+        "git": true,
+        "filesystem": true,
+        "network": true,
+        "mcp": true
+      },
+      "workspace": "C:\\Sandra-IA-8.0-Pro"
+    },
+    "gpt-4o": {
+      "enabled": true,
+      "permissions": {
+        "read": true,
+        "write": true,
+        "execute": true,
+        "git": true,
+        "filesystem": true,
+        "network": true,
+        "mcp": true
+      },
+      "workspace": "C:\\Sandra-IA-8.0-Pro"
+    },
+    "gpt-4.1": {
+      "enabled": true,
+      "permissions": {
+        "read": true,
+        "write": true,
+        "execute": true,
+        "git": true,
+        "filesystem": true,
+        "network": true,
+        "mcp": true
+      },
+      "workspace": "C:\\Sandra-IA-8.0-Pro"
+    }
+  },
+  "cursor.ai.workspace": {
+    "root": "C:\\Sandra-IA-8.0-Pro",
+    "allowAllFiles": true,
+    "allowGitOperations": true,
+    "allowCommandExecution": true,
+    "allowNetworkAccess": true,
+    "allowMCPAccess": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.git/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true
+  }
+}

@@ -2,62 +2,125 @@ const DeepgramService = require('./deepgram-service');
 const CartesiaService = require('./cartesia-service');
 const HeyGenService = require('./heygen-service');
 
+// WebRTC Manager opcional (para lip-sync avanzado)
+let WebRTCAvatarManager;
+try {
+  WebRTCAvatarManager = require('./webrtc-avatar-manager');
+} catch (e) {
+  WebRTCAvatarManager = null;
+  console.warn('⚠️ WebRTCAvatarManager no disponible (opcional)');
+}
+
+/**
+ * CORE MULTIMODAL CONVERSATIONAL SERVICE - Sandra IA 8.0 Pro
+ * Enterprise-level servicio multimodal con:
+ * - GPT-4o para voz/video/avatar (conversacional completo)
+ * - GPT-4o-mini para texto (rápido y eficiente)
+ * - Barge-in en tiempo real
+ * - Modo continuo (sin clicks)
+ * - Lip-sync avanzado (HeyGen + futuro Sora)
+ */
 class MultimodalConversationService {
   constructor(aiGateway, db) {
+    if (!aiGateway) {
+      throw new Error('MultimodalConversationService requiere aiGateway');
+    }
+
     this.deepgram = new DeepgramService();
     this.cartesia = new CartesiaService();
     this.heygen = new HeyGenService();
+    this.webrtcManager = WebRTCAvatarManager ? new WebRTCAvatarManager() : null;
+
     this.aiGateway = aiGateway;
     this.db = db;
     
-    // Estado de la conversación
+    // Estado de sesión
+    this.sessionId = null;
+    this.userId = null;
+    this.currentMode = 'text'; // 'text' | 'voice' | 'video' | 'avatar'
+    
+    // Estado de conversación
+    this.sessionActive = false;
     this.isListening = false;
+    this.isThinking = false;
     this.isSpeaking = false;
-    this.conversationActive = false;
+    
+    // Barge-in y continuous mode
     this.bargeInEnabled = true;
+    this.continuousMode = false;
+    this.lastBargeInAt = null;
+    this.bargeInInProgress = false;
+    
+    // Transcripts
     this.currentTranscript = '';
     this.interimTranscript = '';
     
-    // Callbacks
+    // Avatar / Lip-sync
+    this.avatarProvider = 'heygen'; // futuro: 'sora'
+    this.avatarLipSyncEnabled = true;
+    
+    // Callbacks para frontend
     this.onTranscriptUpdate = null;
     this.onResponseReady = null;
     this.onAvatarSpeaking = null;
+    this.onLipSyncFrame = null;
+    this.onSessionState = null;
     this.onError = null;
     
-    console.log('✅ Multimodal Conversation Service inicializado');
+    console.log('✅ Multimodal Conversation Service inicializado (Enterprise)');
   }
 
   /**
    * Iniciar conversación multimodal
+   * @param {Object} options
+   * @param {'text'|'voice'|'video'|'avatar'} [options.mode='text']
+   * @param {boolean} [options.continuous=false]
+   * @param {string} [options.userId]
+   * @param {Object} [options.callbacks]
    */
-  async startConversation(callbacks = {}) {
-    try {
-      this.onTranscriptUpdate = callbacks.onTranscriptUpdate;
-      this.onResponseReady = callbacks.onResponseReady;
-      this.onAvatarSpeaking = callbacks.onAvatarSpeaking;
-      this.onError = callbacks.onError;
+  async startConversation(options = {}) {
+    const {
+      mode = 'text',
+      continuous = false,
+      userId = null,
+      callbacks = {}
+    } = options;
 
-      // Iniciar sesión de HeyGen Avatar
-      const avatarSession = await this.heygen.createStreamingSession();
-      if (!avatarSession.success) {
-        throw new Error('No se pudo iniciar sesión de avatar');
+    try {
+      this.currentMode = mode;
+      this.continuousMode = !!continuous;
+      this.userId = userId || this.userId;
+      this.sessionId = this.sessionId || `session_${Date.now()}`;
+
+      this._bindCallbacks(callbacks);
+
+      this.sessionActive = true;
+      this.isListening = mode !== 'text';
+      this.isThinking = false;
+      this.isSpeaking = false;
+
+      this._emitSessionState();
+
+      // Deepgram Live para voz/video/avatar
+      if (mode === 'voice' || mode === 'video' || mode === 'avatar') {
+        await this._ensureDeepgramLive();
       }
 
-      // Iniciar transcripción en vivo de Deepgram
-      await this.deepgram.startLiveTranscription(
-        this.handleTranscript.bind(this),
-        this.handleError.bind(this)
-      );
-
-      this.conversationActive = true;
+      // Avatar/WebRTC para avatar o video
+      if ((mode === 'avatar' || mode === 'video') && this.avatarProvider === 'heygen') {
+        await this._initAvatarSession();
+      }
 
       return {
         success: true,
         message: 'Conversación multimodal iniciada',
-        avatarConfig: this.heygen.getWebRTCConfig()
+        mode: this.currentMode,
+        sessionId: this.sessionId,
+        avatarConfig: mode === 'avatar' || mode === 'video' ? this.heygen.getWebRTCConfig() : null
       };
     } catch (error) {
       console.error('Error iniciando conversación:', error);
+      this._emitError(error);
       return {
         success: false,
         error: error.message
@@ -66,39 +129,40 @@ class MultimodalConversationService {
   }
 
   /**
-   * Manejar transcripción de Deepgram
+   * Callback de Deepgram Live - Maneja transcripciones + barge-in + continuous mode
    */
   async handleTranscript(data) {
-    const { transcript, isFinal, confidence } = data;
+    const { transcript, isFinal, confidence } = data || {};
+    const normalized = (transcript || '').trim();
+    if (!normalized) return;
+
+    // Barge-in: detectar interrupciones incluso en transcripciones intermedias
+    if (!isFinal && this.isSpeaking && this.bargeInEnabled) {
+      await this._handlePotentialBargeIn(normalized);
+    }
 
     if (isFinal) {
-      // Transcripción final
-      this.currentTranscript = transcript;
-      
-      // Notificar actualización
+      this.currentTranscript = normalized;
+      this.interimTranscript = '';
+
       if (this.onTranscriptUpdate) {
         this.onTranscriptUpdate({
-          transcript,
+          transcript: normalized,
           isFinal: true,
           confidence
         });
       }
 
-      // Implementar Barge-in: Si el usuario habla mientras Sandra responde
-      if (this.isSpeaking && this.bargeInEnabled) {
-        console.log('🔄 Barge-in detectado - Interrumpiendo respuesta');
-        await this.stopSpeaking();
+      // Continuous mode: respuesta automática sin clicks
+      if (this.sessionActive && normalized) {
+        await this._processFinalTranscript(normalized);
       }
-
-      // Generar respuesta de IA
-      await this.generateAndSpeak(transcript);
     } else {
       // Transcripción intermedia
-      this.interimTranscript = transcript;
-      
+      this.interimTranscript = normalized;
       if (this.onTranscriptUpdate) {
         this.onTranscriptUpdate({
-          transcript,
+          transcript: normalized,
           isFinal: false,
           confidence
         });
@@ -107,45 +171,154 @@ class MultimodalConversationService {
   }
 
   /**
-   * Generar respuesta y hacer que el avatar hable
+   * Procesar transcripción final y generar respuesta
    */
-  async generateAndSpeak(userMessage) {
-    try {
-      this.isListening = false;
+  async _processFinalTranscript(transcript) {
+    this.isThinking = true;
+    this._emitSessionState();
 
-      // Generar respuesta con IA
-      const aiResponse = await this.aiGateway.generateResponse(
-        userMessage,
-        'groq'
+    try {
+      // Selección automática de modelo según modo
+      const model = (this.currentMode === 'text') ? 'gpt-4o-mini' : 'gpt-4o';
+
+      const response = await this.aiGateway.generateResponse(
+        transcript,
+        'openai',
+        model,
+        {
+          mode: this.currentMode,
+          sessionId: this.sessionId,
+          userId: this.userId
+        }
       );
 
-      if (this.onResponseReady) {
-        this.onResponseReady({
-          userMessage,
-          aiResponse
-        });
+      await this._logMessages(transcript, response);
+
+      // TTS solo si no es modo texto puro
+      let ttsAudio = null;
+      if (this.currentMode === 'voice' || this.currentMode === 'video' || this.currentMode === 'avatar') {
+        const ttsResult = await this.cartesia.generateSpeech(response);
+        ttsAudio = ttsResult?.audioBuffer || null;
       }
 
-      // Guardar en base de datos
-      if (this.db) {
-        const sessionId = `session_${Date.now()}`;
-        await this.db.logMessage(sessionId, userMessage, 'user');
-        await this.db.logMessage(sessionId, aiResponse, 'assistant');
+      this.isThinking = false;
+      this._emitSessionState();
+
+      this._emitResponse({ text: response, audioBuffer: ttsAudio });
+
+      // Lip-sync si hay audio y avatar activo
+      if (this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video')) {
+        await this.handleLipSyncFrame(ttsAudio);
       }
-
-      // Hacer que el avatar hable
-      await this.speak(aiResponse);
-
     } catch (error) {
-      console.error('Error generando y hablando:', error);
-      if (this.onError) {
-        this.onError(error);
-      }
+      this.isThinking = false;
+      this._emitSessionState();
+      this._emitError(error);
     }
   }
 
   /**
-   * Hacer que el avatar hable (TTS + Avatar)
+   * Enviar mensaje de texto → GPT-4o-mini
+   */
+  async sendText(text, { userId } = {}) {
+    if (!text || !text.trim()) return { success: false, error: 'Texto vacío' };
+
+    const clean = text.trim();
+    this.currentMode = 'text';
+    this.userId = userId || this.userId;
+    this.isThinking = true;
+    this._emitSessionState();
+
+    try {
+      const response = await this.aiGateway.generateResponse(
+        clean,
+        'openai',
+        'gpt-4o-mini',
+        {
+          mode: 'text',
+          sessionId: this.sessionId,
+          userId: this.userId
+        }
+      );
+
+      await this._logMessages(clean, response);
+
+      this.isThinking = false;
+      this._emitSessionState();
+
+      this._emitResponse({ text: response, audioBuffer: null });
+
+      return { success: true, text: response };
+    } catch (error) {
+      this.isThinking = false;
+      this._emitSessionState();
+      this._emitError(error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Enviar mensaje de voz (buffer ~30s) → Deepgram STT + GPT-4o + Cartesia TTS
+   */
+  async sendVoice(audioBuffer, { userId } = {}) {
+    if (!audioBuffer) return { success: false, error: 'audioBuffer vacío' };
+
+    this.currentMode = 'voice';
+    this.userId = userId || this.userId;
+    this.isThinking = true;
+    this._emitSessionState();
+
+    try {
+      // STT con Deepgram
+      const sttResult = await this.deepgram.transcribeBuffer(audioBuffer, 'audio/webm');
+      if (!sttResult || !sttResult.success) {
+        throw new Error(`Deepgram STT error: ${sttResult?.error || 'desconocido'}`);
+      }
+
+      const transcript = (sttResult.transcript || '').trim();
+      if (!transcript) {
+        throw new Error('Transcripción vacía');
+      }
+
+      // GPT-4o para voz
+      const response = await this.aiGateway.generateResponse(
+        transcript,
+        'openai',
+        'gpt-4o',
+        {
+          mode: 'voice',
+          sessionId: this.sessionId,
+          userId: this.userId
+        }
+      );
+
+      await this._logMessages(transcript, response);
+
+      // TTS con Cartesia
+      const ttsResult = await this.cartesia.generateSpeech(response);
+      const ttsAudio = ttsResult?.audioBuffer || null;
+
+      this.isThinking = false;
+      this._emitSessionState();
+
+      this._emitResponse({ text: response, audioBuffer: ttsAudio });
+
+      // Lip-sync si hay avatar
+      if (this.avatarLipSyncEnabled && ttsAudio) {
+        await this.handleLipSyncFrame(ttsAudio);
+      }
+
+      return { success: true, text: response };
+    } catch (error) {
+      this.isThinking = false;
+      this._emitSessionState();
+      this._emitError(error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Hacer que el avatar hable (TTS + Avatar + Lip-sync)
    */
   async speak(text) {
     try {
@@ -155,16 +328,19 @@ class MultimodalConversationService {
         this.onAvatarSpeaking({ speaking: true, text });
       }
 
-      // Opción 1: Usar HeyGen directamente (si tiene TTS integrado)
+      // Generar TTS con Cartesia
+      const ttsResult = await this.cartesia.generateSpeech(text);
+      const audioBuffer = ttsResult?.audioBuffer || null;
+
+      // HeyGen avatar
       const heygenResult = await this.heygen.speak(text);
 
-      // Opción 2: Usar Cartesia + HeyGen (para más control)
-      // const audioResult = await this.cartesia.generateSpeech(text);
-      // if (audioResult.success) {
-      //   await this.heygen.speak(text);
-      // }
+      // Lip-sync avanzado
+      if (this.avatarLipSyncEnabled && audioBuffer) {
+        await this.handleLipSyncFrame(audioBuffer);
+      }
 
-      // Esperar a que termine de hablar (estimación basada en duración)
+      // Esperar duración estimada
       if (heygenResult.success && heygenResult.duration) {
         await this.sleep(heygenResult.duration * 1000);
       }
@@ -183,6 +359,7 @@ class MultimodalConversationService {
     } catch (error) {
       console.error('Error al hacer hablar al avatar:', error);
       this.isSpeaking = false;
+      this._emitError(error);
       return {
         success: false,
         error: error.message
@@ -191,26 +368,40 @@ class MultimodalConversationService {
   }
 
   /**
-   * Detener la respuesta actual (Barge-in)
+   * Detener respuesta actual (Barge-in)
+   * @param {boolean} interrupted - Si es true, envía 'interrupt' en vez de 'stop'
    */
-  async stopSpeaking() {
+  async stopSpeaking(interrupted = false) {
+    if (!this.isSpeaking && !interrupted) {
+      return { success: true, message: 'No había respuesta activa' };
+    }
+
     try {
       this.isSpeaking = false;
-      
-      // Detener Cartesia
-      this.cartesia.stop();
-      
-      // Detener HeyGen (enviar comando de stop)
-      await this.heygen.speak('', 'stop');
 
-      console.log('✅ Respuesta interrumpida (Barge-in)');
+      // Detener Cartesia
+      if (this.cartesia && typeof this.cartesia.stop === 'function') {
+        this.cartesia.stop();
+      }
+
+      // Detener HeyGen (interrupt o stop)
+      try {
+        await this.heygen.speak('', interrupted ? 'interrupt' : 'stop');
+      } catch (e) {
+        console.warn('HeyGen speak(stop/interrupt) error:', e.message);
+      }
+
+      this.isListening = true;
+      this._emitSessionState();
+
+      console.log('✅ Respuesta detenida' + (interrupted ? ' por barge-in' : ''));
 
       return {
         success: true,
         message: 'Respuesta detenida'
       };
     } catch (error) {
-      console.error('Error deteniendo respuesta:', error);
+      this._emitError(error);
       return {
         success: false,
         error: error.message
@@ -219,46 +410,113 @@ class MultimodalConversationService {
   }
 
   /**
-   * Enviar audio al stream de Deepgram
+   * Manejar barge-in potencial en tiempo real
+   */
+  async _handlePotentialBargeIn(transcript) {
+    const now = Date.now();
+    const cooldownMs = 1500;
+
+    if (this.bargeInInProgress) return;
+    if (this.lastBargeInAt && now - this.lastBargeInAt < cooldownMs) return;
+
+    this.bargeInInProgress = true;
+    this.lastBargeInAt = now;
+
+    try {
+      console.log('🔄 Barge-in detectado. Interrumpiendo TTS/avatar…');
+      await this.stopSpeaking(true);
+    } catch (error) {
+      this._emitError(error);
+    } finally {
+      this.bargeInInProgress = false;
+    }
+  }
+
+  /**
+   * Enviar audio al stream de Deepgram Live
    */
   sendAudioData(audioData) {
-    if (this.deepgram.isLiveConnected()) {
-      this.deepgram.sendAudioToLive(audioData);
+    if (!this.deepgram.isLiveConnected()) {
+      console.warn('Deepgram no está conectado (live). Audio ignorado.');
+      return;
     }
+
+    const buffer = this._normalizeAudioBuffer(audioData);
+    if (!buffer) {
+      console.warn('Formato de audio no soportado en sendAudioData');
+      return;
+    }
+
+    this.deepgram.sendAudioToLive(buffer);
   }
 
   /**
    * Activar/desactivar Barge-in
    */
   setBargeIn(enabled) {
-    this.bargeInEnabled = enabled;
+    this.bargeInEnabled = !!enabled;
     console.log(`Barge-in ${enabled ? 'activado' : 'desactivado'}`);
+    this._emitSessionState();
   }
 
   /**
-   * Detener conversación
+   * Activar/desactivar modo continuo
+   */
+  setContinuousMode(enabled) {
+    this.continuousMode = !!enabled;
+    console.log(`Continuous mode ${enabled ? 'activado' : 'desactivado'}`);
+    this._emitSessionState();
+  }
+
+  /**
+   * Activar/desactivar lip-sync de avatar
+   */
+  setAvatarLipSyncEnabled(enabled) {
+    this.avatarLipSyncEnabled = !!enabled;
+    this._emitSessionState();
+  }
+
+  /**
+   * Detener conversación multimodal
    */
   async stopConversation() {
+    this.sessionActive = false;
+    this.isListening = false;
+    this.isThinking = false;
+    this.isSpeaking = false;
+
+    this._emitSessionState();
+
     try {
-      this.conversationActive = false;
-      this.isListening = false;
-      this.isSpeaking = false;
+      // En modo continuo mantenemos Deepgram vivo
+      if (!this.continuousMode) {
+        try {
+          await this.deepgram.stopLiveTranscription();
+        } catch (e) {
+          console.warn('Deepgram stopLiveTranscription error:', e.message);
+        }
+      }
 
-      // Detener Deepgram
-      this.deepgram.stopLiveTranscription();
+      try {
+        await this.heygen.stop();
+      } catch (e) {
+        console.warn('HeyGen stop error:', e.message);
+      }
 
-      // Detener HeyGen
-      await this.heygen.stop();
-
-      // Detener Cartesia
-      this.cartesia.stop();
+      if (this.webrtcManager) {
+        try {
+          this.webrtcManager.close();
+        } catch (e) {
+          console.warn('WebRTC manager close error:', e.message);
+        }
+      }
 
       return {
         success: true,
         message: 'Conversación detenida'
       };
     } catch (error) {
-      console.error('Error deteniendo conversación:', error);
+      this._emitError(error);
       return {
         success: false,
         error: error.message
@@ -267,27 +525,143 @@ class MultimodalConversationService {
   }
 
   /**
-   * Obtener estado de la conversación
+   * Obtener estado completo de la conversación
    */
   getStatus() {
     return {
-      conversationActive: this.conversationActive,
+      sessionId: this.sessionId,
+      userId: this.userId,
+      mode: this.currentMode,
+      sessionActive: this.sessionActive,
       isListening: this.isListening,
+      isThinking: this.isThinking,
       isSpeaking: this.isSpeaking,
       bargeInEnabled: this.bargeInEnabled,
+      continuousMode: this.continuousMode,
+      avatarLipSyncEnabled: this.avatarLipSyncEnabled,
       deepgramConnected: this.deepgram.isLiveConnected(),
       heygenStreaming: this.heygen.getIsStreaming()
     };
   }
 
   /**
-   * Manejar errores
+   * Manejar frame de lip-sync avanzado
+   */
+  async handleLipSyncFrame(audioBuffer) {
+    if (!audioBuffer || !this.avatarLipSyncEnabled) return;
+
+    if (this.avatarProvider === 'heygen' && this.webrtcManager && typeof this.webrtcManager.generateLipSyncFrames === 'function') {
+      this.webrtcManager.generateLipSyncFrames(audioBuffer, (frame) => {
+        if (this.onLipSyncFrame) this.onLipSyncFrame(frame);
+      });
+    }
+
+    // Futuro: provider === 'sora' → mapping audio→frames para vídeos Sora
+  }
+
+  /**
+   * Manejar errores de Deepgram
    */
   handleError(error) {
-    console.error('Error en conversación multimodal:', error);
+    this._emitError(new Error('Deepgram Live: ' + (error?.message || error)));
+  }
+
+  /**
+   * Inicializar sesión de avatar
+   */
+  async _initAvatarSession() {
+    const avatarSession = await this.heygen.createStreamingSession();
+    if (!avatarSession || !avatarSession.success) {
+      throw new Error('No se pudo iniciar sesión de avatar HeyGen');
+    }
+
+    if (this.webrtcManager && typeof this.webrtcManager.initializeConnection === 'function') {
+      const { sdp, iceServers, sessionId } = avatarSession.session || {};
+      await this.webrtcManager.initializeConnection(
+        { sdp, iceServers, sessionId },
+        'heygen-avatar-video' // id del <video> en la UI
+      );
+    }
+  }
+
+  /**
+   * Asegurar que Deepgram Live está activo
+   */
+  async _ensureDeepgramLive() {
+    if (this.deepgram.isLiveConnected()) return;
+    await this.deepgram.startLiveTranscription(
+      this.handleTranscript.bind(this),
+      this.handleError.bind(this)
+    );
+  }
+
+  /**
+   * Bind callbacks
+   */
+  _bindCallbacks(callbacks) {
+    this.onTranscriptUpdate = callbacks.onTranscriptUpdate || null;
+    this.onResponseReady = callbacks.onResponseReady || null;
+    this.onAvatarSpeaking = callbacks.onAvatarSpeaking || null;
+    this.onLipSyncFrame = callbacks.onLipSyncFrame || null;
+    this.onSessionState = callbacks.onSessionState || null;
+    this.onError = callbacks.onError || null;
+  }
+
+  /**
+   * Emitir estado de sesión
+   */
+  _emitSessionState() {
+    if (this.onSessionState) {
+      this.onSessionState(this.getStatus());
+    }
+  }
+
+  /**
+   * Emitir respuesta
+   */
+  _emitResponse({ text, audioBuffer }) {
+    if (this.onResponseReady) {
+      this.onResponseReady({ text, audioBuffer });
+    }
+  }
+
+  /**
+   * Emitir error
+   */
+  _emitError(error) {
+    console.error('[MultimodalConversationService] Error:', error);
     if (this.onError) {
       this.onError(error);
     }
+  }
+
+  /**
+   * Log mensajes en DB
+   */
+  async _logMessages(userText, assistantText) {
+    if (!this.db || typeof this.db.logMessage !== 'function') return;
+    try {
+      await this.db.logMessage(this.sessionId, userText, 'user');
+      await this.db.logMessage(this.sessionId, assistantText, 'assistant');
+    } catch (e) {
+      console.warn('Neon logMessage error:', e.message);
+    }
+  }
+
+  /**
+   * Normalizar audio buffer
+   */
+  _normalizeAudioBuffer(audioData) {
+    if (!audioData) return null;
+    if (Buffer.isBuffer(audioData)) return audioData;
+    if (audioData instanceof ArrayBuffer) return Buffer.from(audioData);
+    if (ArrayBuffer.isView(audioData)) {
+      return Buffer.from(audioData.buffer, audioData.byteOffset, audioData.byteLength);
+    }
+    if (typeof audioData === 'string') {
+      return Buffer.from(audioData, 'base64');
+    }
+    return null;
   }
 
   /**

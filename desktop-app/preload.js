@@ -51,11 +51,27 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   transcribeAudio: (audioPath) => ipcRenderer.invoke('transcribe-audio', { audioPath }),
   transcribeBuffer: (audioBuffer, mimeType) => ipcRenderer.invoke('transcribe-buffer', { audioBuffer, mimeType }),
   generateSpeech: (text, options) => ipcRenderer.invoke('generate-speech', { text, options }),
-  startMultimodalConversation: () => ipcRenderer.invoke('start-multimodal-conversation'),
+  
+  // Conversación multimodal completa
+  startMultimodalConversation: (options = {}) => ipcRenderer.invoke('start-multimodal-conversation', options),
   stopMultimodalConversation: () => ipcRenderer.invoke('stop-multimodal-conversation'),
+  
+  // Envío de mensajes
+  multimodalSendText: (text, userId) => ipcRenderer.invoke('multimodal-send-text', { text, userId }),
+  multimodalSendVoice: (audioBuffer, userId) => ipcRenderer.invoke('multimodal-send-voice', { audioBuffer, userId }),
+  
+  // Streaming de audio
   sendAudioStream: (audioData) => ipcRenderer.invoke('send-audio-stream', { audioData }),
+  
+  // Control de modos
   setBargeIn: (enabled) => ipcRenderer.invoke('set-barge-in', { enabled }),
+  setContinuousMode: (enabled) => ipcRenderer.invoke('set-continuous-mode', { enabled }),
   getMultimodalStatus: () => ipcRenderer.invoke('get-multimodal-status'),
+
+  // Sistema
+  getSystemStatus: () => ipcRenderer.invoke('get-system-status'),
+  
+  // Avatar
   avatarSpeak: (text) => ipcRenderer.invoke('avatar-speak', { text }),
   createAvatarSession: () => ipcRenderer.invoke('create-avatar-session'),
   stopAvatar: () => ipcRenderer.invoke('stop-avatar'),
@@ -63,10 +79,16 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   // ==================== EVENTOS ====================
   onServicesReady: (callback) => ipcRenderer.on('services-ready', (event, data) => callback(data)),
   onServicesError: (callback) => ipcRenderer.on('services-error', (event, data) => callback(data)),
+  
+  // Eventos multimodales
   onTranscriptUpdate: (callback) => ipcRenderer.on('transcript-update', (event, data) => callback(data)),
   onResponseReady: (callback) => ipcRenderer.on('response-ready', (event, data) => callback(data)),
   onAvatarSpeaking: (callback) => ipcRenderer.on('avatar-speaking', (event, data) => callback(data)),
+  onLipSyncFrame: (callback) => ipcRenderer.on('lip-sync-frame', (event, data) => callback(data)),
+  onMultimodalSessionState: (callback) => ipcRenderer.on('multimodal-session-state', (event, data) => callback(data)),
   onMultimodalError: (callback) => ipcRenderer.on('multimodal-error', (event, data) => callback(data)),
+  
+  // Eventos de actualización
   onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, data) => callback(data)),
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (event, data) => callback(data))
 });

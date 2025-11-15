@@ -1087,6 +1087,7 @@
     let isRecording = false;
     let mediaRecorder = null;
     let audioChunks = [];
+    let recordTimeoutId = null;
     let servicesReady = false;
     let audioVisualizer = null;
     let currentVoiceId = 'default';
@@ -1335,49 +1336,56 @@
     }
 
     // ==================== GRABACIÓN DE VOZ CON DEEPGRAM ====================
-    async function toggleVoiceRecording() {
-      if (!isRecording) {
-        // INICIAR GRABACIÓN
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              sampleRate: 44100
-            } 
-          });
+    async function startVoiceRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 44100
+          } 
+        });
+        
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm'
+        });
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          await processVoiceInput(audioBlob);
           
-          mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'audio/webm'
-          });
-          audioChunks = [];
+          // Detener el stream
+          stream.getTracks().forEach(track => track.stop());
+        };
 
-          mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-              audioChunks.push(event.data);
-            }
-          };
+        mediaRecorder.start(100); // Capturar cada 100ms
+        isRecording = true;
 
-          mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            await processVoiceInput(audioBlob);
-            
-            // Detener el stream
-            stream.getTracks().forEach(track => track.stop());
-          };
-
-          mediaRecorder.start(100); // Capturar cada 100ms
-          isRecording = true;
+        // Máximo 30s
+        clearTimeout(recordTimeoutId);
+        recordTimeoutId = setTimeout(() => {
+          if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+            stopVoiceRecording();
+            showToast('⏱️ Grabación detenida (30s máx)');
+          }
+        }, 30000);
+        
+        // Iniciar visualizador de audio
+        const visualizerCanvas = document.getElementById('audio-visualizer');
+        if (visualizerCanvas) {
+          visualizerCanvas.style.display = 'block';
           
-          // Iniciar visualizador de audio
-          const visualizerCanvas = document.getElementById('audio-visualizer');
-          if (visualizerCanvas) {
-            visualizerCanvas.style.display = 'block';
-            
-            // Crear visualizador
-            if (!audioVisualizer) {
-              // Cargar AudioVisualizer desde archivo
-              const AudioVisualizer = function(canvasId) {
+          // Crear visualizador
+          if (!audioVisualizer) {
+            // Cargar AudioVisualizer
+            const AudioVisualizer = function(canvasId) {
                 this.canvas = document.getElementById(canvasId);
                 this.canvasContext = this.canvas ? this.canvas.getContext('2d') : null;
                 this.audioContext = null;
@@ -1443,25 +1451,29 @@
                     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
                   }
                 };
-              };
-              
-              audioVisualizer = new AudioVisualizer('audio-visualizer');
-            }
+            };
             
-            audioVisualizer.startVisualization(stream);
+            audioVisualizer = new AudioVisualizer('audio-visualizer');
           }
           
-          // Actualizar UI
-          voiceBtn.classList.add('recording');
-          voiceBtn.textContent = '⏹️';
-          recordingIndicator.classList.add('active');
-          
-          showToast('🎤 Grabando... Click para detener');
-        } catch (error) {
-          console.error('Error al acceder al micrófono:', error);
-          showToast('❌ No se pudo acceder al micrófono', 'error');
+          audioVisualizer.startVisualization(stream);
         }
-      } else {
+        
+        // Actualizar UI
+        voiceBtn.classList.add('recording');
+        voiceBtn.textContent = '⏹️';
+        recordingIndicator.classList.add('active');
+        
+        showToast('🎤 Grabando... suelta para enviar');
+      } catch (error) {
+        console.error('Error al acceder al micrófono:', error);
+        showToast('❌ No se pudo acceder al micrófono', 'error');
+      }
+    }
+
+    function stopVoiceRecording() {
+      try {
+        clearTimeout(recordTimeoutId);
         // DETENER GRABACIÓN
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
           mediaRecorder.stop();
@@ -1483,7 +1495,17 @@
         voiceBtn.textContent = '🎤';
         recordingIndicator.classList.remove('active');
         
-        showToast('Procesando audio con Deepgram...');
+        showToast('Procesando audio...');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function toggleVoiceRecording() {
+      if (!isRecording) {
+        await startVoiceRecording();
+      } else {
+        stopVoiceRecording();
       }
     }
 
@@ -1494,26 +1516,19 @@
           return;
         }
 
-        showToast('🎤 Transcribiendo con Deepgram STT...');
-        
-        // Convertir blob a buffer
+        showToast('🎤 Enviando audio al servicio multimodal...');
+
+        // Convertir blob a buffer (Uint8Array)
         const arrayBuffer = await audioBlob.arrayBuffer();
         const buffer = new Uint8Array(arrayBuffer);
-        
-        // Transcribir con Deepgram
-        const result = await window.sandraAPI.transcribeBuffer(buffer, 'audio/webm');
-        
-        if (result.success) {
-          messageInput.value = result.transcript;
-          showToast(`✅ Transcrito (${Math.round(result.confidence * 100)}% confianza)`);
-          
-          // Auto-enviar si hay texto (modo voz)
-          if (result.transcript && result.transcript.trim().length > 0) {
-            setTimeout(() => sendMessage('voice'), 500);
-          }
-        } else {
-          showToast('❌ Error en transcripción: ' + result.error, 'error');
+
+        // Usar el flujo multimodal completo (STT + GPT-4o + TTS)
+        const result = await window.sandraAPI.multimodalSendVoice(buffer, null);
+        if (!result || !result.success) {
+          showToast('❌ Error procesando audio: ' + (result?.error || 'desconocido'), 'error');
+          return;
         }
+        showToast('✅ Audio procesado');
       } catch (error) {
         console.error('Error al procesar audio:', error);
         showToast('❌ Error al procesar el audio', 'error');
@@ -1621,30 +1636,20 @@
           showToast('📹 Iniciando videollamada con avatar...');
           
           if (window.sandraAPI) {
-            const result = await window.sandraAPI.startVideoCall();
+            // Iniciar conversación multimodal en modo 'avatar'
+            const result = await window.sandraAPI.startMultimodalConversation({ mode: 'avatar', continuous: continuousMode });
             if (result.success) {
               isVideoCallActive = true;
               videoBtn.classList.add('active');
               avatarPanel.style.display = 'block';
-              
-              if (avatarVideo && result.stream) {
-                avatarVideo.srcObject = result.stream;
+              if (avatarVideo) {
                 avatarVideo.style.display = 'block';
-                avatarVideo.play();
               }
-              
               showToast('✅ Videollamada activa - Habla para interactuar');
               addMessage('📹 Videollamada iniciada. El avatar está listo para conversar.', 'assistant');
             } else {
               showToast('❌ Error iniciando videollamada: ' + result.error, 'error');
             }
-          } else {
-            // Modo demo
-            isVideoCallActive = true;
-            videoBtn.classList.add('active');
-            avatarPanel.style.display = 'block';
-            showToast('✅ Videollamada activa (modo demo)');
-            addMessage('📹 Videollamada iniciada. El avatar está listo para conversar.', 'assistant');
           }
         } catch (error) {
           console.error('Error en videollamada:', error);
@@ -1654,7 +1659,8 @@
         // FINALIZAR VIDEOCALL
         try {
           if (window.sandraAPI) {
-            await window.sandraAPI.stopVideoCall();
+            await window.sandraAPI.stopMultimodalConversation();
+            await window.sandraAPI.stopAvatar();
           }
           
           isVideoCallActive = false;
@@ -1676,6 +1682,23 @@
     // ==================== EVENT LISTENERS ====================
     sendBtn.addEventListener('click', sendMessage);
     voiceBtn.addEventListener('click', toggleVoiceRecording);
+    // Push-to-talk: mantener pulsado graba, soltar envía
+    voiceBtn.addEventListener('mousedown', async (e) => {
+      e.preventDefault();
+      if (!isRecording) await startVoiceRecording();
+    });
+    voiceBtn.addEventListener('mouseup', (e) => {
+      e.preventDefault();
+      if (isRecording) stopVoiceRecording();
+    });
+    voiceBtn.addEventListener('touchstart', async (e) => {
+      e.preventDefault();
+      if (!isRecording) await startVoiceRecording();
+    }, { passive: false });
+    voiceBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      if (isRecording) stopVoiceRecording();
+    }, { passive: false });
     document.getElementById('video-btn').addEventListener('click', toggleVideoCall);
     
     messageInput.addEventListener('keypress', (e) => {
@@ -1692,7 +1715,7 @@
 
     // Selector de voz
     const voiceSelector = document.getElementById('voice-selector');
-    if (voiceSelector) {
+      if (voiceSelector) {
       voiceSelector.addEventListener('change', (e) => {
         currentVoiceId = e.target.value;
         showToast(`Voz cambiada a: ${e.target.options[e.target.selectedIndex].text}`);
@@ -1701,18 +1724,20 @@
 
     // Modo continuo
     const continuousModeToggle = document.getElementById('continuous-mode');
-    if (continuousModeToggle) {
+      if (continuousModeToggle) {
       continuousModeToggle.addEventListener('change', async (e) => {
         continuousMode = e.target.checked;
         
         if (continuousMode) {
           showToast('🔄 Modo continuo activado');
           if (window.sandraAPI) {
-            await window.sandraAPI.startMultimodalConversation();
+            await window.sandraAPI.setContinuousMode(true);
+            await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
           }
         } else {
           showToast('Modo continuo desactivado');
           if (window.sandraAPI) {
+            await window.sandraAPI.setContinuousMode(false);
             await window.sandraAPI.stopMultimodalConversation();
           }
         }
@@ -1784,8 +1809,8 @@
 
       // Respuesta de IA lista
       window.sandraAPI.onResponseReady((data) => {
-        console.log('Respuesta IA:', data.aiResponse);
-        addMessage(data.aiResponse, 'assistant');
+        console.log('Respuesta IA:', data.text);
+        addMessage(data.text, 'assistant');
       });
 
       // Avatar hablando

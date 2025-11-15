@@ -50,7 +50,13 @@ class AIOrchestrator {
   // ==================== GENERACIÓN DE RESPUESTAS ====================
   
   async generateResponse(prompt, provider = null, model = null, options = {}) {
-    const selectedProvider = provider || this.defaultProvider;
+    // Remapeo de proveedor según el modelo solicitado
+    // Los modelos GPT-4o/GPT-4o-mini pertenecen a OpenAI; forzamos provider=openai
+    let selectedProvider = provider || this.defaultProvider;
+    if (model && typeof model === 'string' && model.startsWith('gpt-4o')) {
+      selectedProvider = 'openai';
+    }
+
     const config = this.providers[selectedProvider];
     
     if (!config) {
@@ -63,7 +69,7 @@ class AIOrchestrator {
       } else if (selectedProvider === 'claude') {
         return await this.generateWithClaude(prompt, model || config.defaultModel, options);
       } else {
-        // Por defecto: Groq (y DeepSeek) con formato OpenAI
+        // Ruta genérica con formato OpenAI-compatible
         return await this.generateWithOpenAIFormat(
           prompt,
           selectedProvider,
@@ -81,9 +87,14 @@ class AIOrchestrator {
 
   async generateWithOpenAIFormat(prompt, provider, model, options) {
     const config = this.providers[provider];
-    
+
+    // Siempre tomar la API Key fresca del entorno si existe
+    const apiKeyFresh = provider === 'openai'
+      ? (process.env.OPENAI_API_KEY || config.apiKey)
+      : config.apiKey;
+
     // Validar API key
-    if (!config.apiKey || config.apiKey === 'undefined' || config.apiKey.trim() === '') {
+    if (!apiKeyFresh || apiKeyFresh === 'undefined' || String(apiKeyFresh).trim() === '') {
       throw new Error(`API key para ${provider} no configurada o inválida`);
     }
     
@@ -101,7 +112,7 @@ class AIOrchestrator {
         stream: false
       }, {
         headers: {
-          'Authorization': `Bearer ${config.apiKey}`,
+          'Authorization': `Bearer ${apiKeyFresh}`,
           'Content-Type': 'application/json'
         },
         timeout: options.timeout || 60000

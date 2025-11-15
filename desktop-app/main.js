@@ -266,6 +266,7 @@ ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) =
     const rolesSystem = serviceManager?.get('roles-system');
     const optimizer = serviceManager?.get('optimizer');
     const db = serviceManager?.get('neon-db');
+    const aiOrchestrator = serviceManager?.get('ai-orchestrator');
 
     if (!rolesSystem) {
       return { success: false, error: 'Sistema de roles no disponible' };
@@ -278,7 +279,31 @@ ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) =
       ? optimizer.optimizePromptForRole(message, role)
       : message;
     
-    // Ejecutar con el rol específico y modo (text/voice/video)
+    // Detección de small-talk/saludo: enrutar al chat directo (OpenAI)
+    const isSmallTalk = /^\s*(hola|buenas|hello|hey|qué tal|que tal|cómo te llamas|como te llamas|quién eres|quien eres)\b/i.test(optimizedPrompt);
+    if (isSmallTalk && aiOrchestrator) {
+      const model = mode === 'text' ? 'gpt-4o-mini' : 'gpt-4o';
+      const response = await aiOrchestrator.generateResponse(
+        optimizedPrompt,
+        'openai',
+        model,
+        { mode }
+      );
+
+      if (db?.logMessage) {
+        await db.logMessage(sessionId, message, 'user');
+        await db.logMessage(sessionId, response, 'assistant');
+      }
+
+      return {
+        success: true,
+        response,
+        role: role || 'general',
+        icon: '💬'
+      };
+    }
+
+    // Ejecutar con el rol específico y modo (text/voice/video) para tareas
     const result = await rolesSystem.executeWithRole(role || 'general', optimizedPrompt, { mode });
     
     // Guardar en base de datos (si disponible)
@@ -626,20 +651,48 @@ ipcMain.handle('generate-speech', async (event, { text, options }) => {
   }
 });
 
-ipcMain.handle('start-multimodal-conversation', async (event) => {
+ipcMain.handle('start-multimodal-conversation', async (event, { mode = 'text', continuous = false, userId = null } = {}) => {
   try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
+
     const result = await multimodal.startConversation({
-      onTranscriptUpdate: (data) => {
-        mainWindow.webContents.send('transcript-update', data);
-      },
-      onResponseReady: (data) => {
-        mainWindow.webContents.send('response-ready', data);
-      },
-      onAvatarSpeaking: (data) => {
-        mainWindow.webContents.send('avatar-speaking', data);
-      },
-      onError: (error) => {
-        mainWindow.webContents.send('multimodal-error', { error: error.message });
+      mode,
+      continuous,
+      userId,
+      callbacks: {
+        onTranscriptUpdate: (data) => {
+          if (mainWindow?.webContents) {
+            mainWindow.webContents.send('transcript-update', data);
+          }
+        },
+        onResponseReady: (data) => {
+          if (mainWindow?.webContents) {
+            mainWindow.webContents.send('response-ready', data);
+          }
+        },
+        onAvatarSpeaking: (data) => {
+          if (mainWindow?.webContents) {
+            mainWindow.webContents.send('avatar-speaking', data);
+          }
+        },
+        onLipSyncFrame: (frame) => {
+          if (mainWindow?.webContents) {
+            mainWindow.webContents.send('lip-sync-frame', frame);
+          }
+        },
+        onSessionState: (state) => {
+          if (mainWindow?.webContents) {
+            mainWindow.webContents.send('multimodal-session-state', state);
+          }
+        },
+        onError: (error) => {
+          if (mainWindow?.webContents) {
+            mainWindow.webContents.send('multimodal-error', { error: error.message || error });
+          }
+        }
       }
     });
     return result;
@@ -651,6 +704,10 @@ ipcMain.handle('start-multimodal-conversation', async (event) => {
 
 ipcMain.handle('stop-multimodal-conversation', async (event) => {
   try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
     const result = await multimodal.stopConversation();
     return result;
   } catch (error) {
@@ -661,6 +718,10 @@ ipcMain.handle('stop-multimodal-conversation', async (event) => {
 
 ipcMain.handle('send-audio-stream', async (event, { audioData }) => {
   try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
     multimodal.sendAudioData(audioData);
     return { success: true };
   } catch (error) {
@@ -669,8 +730,41 @@ ipcMain.handle('send-audio-stream', async (event, { audioData }) => {
   }
 });
 
+// Nuevos handlers para sendText y sendVoice
+ipcMain.handle('multimodal-send-text', async (event, { text, userId } = {}) => {
+  try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
+    const result = await multimodal.sendText(text, { userId });
+    return result;
+  } catch (error) {
+    console.error('Error en multimodal-send-text:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('multimodal-send-voice', async (event, { audioBuffer, userId } = {}) => {
+  try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
+    const result = await multimodal.sendVoice(audioBuffer, { userId });
+    return result;
+  } catch (error) {
+    console.error('Error en multimodal-send-voice:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.handle('set-barge-in', async (event, { enabled }) => {
   try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
     multimodal.setBargeIn(enabled);
     return { success: true, enabled };
   } catch (error) {
@@ -679,8 +773,26 @@ ipcMain.handle('set-barge-in', async (event, { enabled }) => {
   }
 });
 
+ipcMain.handle('set-continuous-mode', async (event, { enabled }) => {
+  try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
+    multimodal.setContinuousMode(enabled);
+    return { success: true, enabled };
+  } catch (error) {
+    console.error('Error en set-continuous-mode:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.handle('get-multimodal-status', async (event) => {
   try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) {
+      return { success: false, error: 'Servicio multimodal no disponible' };
+    }
     const status = multimodal.getStatus();
     return { success: true, status };
   } catch (error) {
@@ -689,9 +801,35 @@ ipcMain.handle('get-multimodal-status', async (event) => {
   }
 });
 
+// Estado general del sistema para UI
+ipcMain.handle('get-system-status', async (event) => {
+  try {
+    const orchestrator = serviceManager?.get('ai-orchestrator');
+    const availableProviders = orchestrator?.getAvailableProviders?.() || [];
+    const currentProvider = orchestrator?.getCurrentProvider?.() || null;
+    const names = [
+      'ai-orchestrator','roles-system','neon-db','mcp-server',
+      'deepgram','cartesia','heygen','multimodal',
+      'bright-data','negotiation','pef','optimizer','live-updater'
+    ];
+    const services = names.map(name => ({
+      name,
+      ready: !!serviceManager?.get(name)
+    }));
+    return { success: true, data: { providers: availableProviders, currentProvider, services } };
+  } catch (error) {
+    console.error('Error en get-system-status:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.handle('avatar-speak', async (event, { text }) => {
   try {
-    const result = await heygen.speak(text);
+    const heygenService = serviceManager?.get('heygen');
+    if (!heygenService) {
+      return { success: false, error: 'Servicio HeyGen no disponible' };
+    }
+    const result = await heygenService.speak(text);
     return result;
   } catch (error) {
     console.error('Error en avatar-speak:', error);
@@ -701,7 +839,11 @@ ipcMain.handle('avatar-speak', async (event, { text }) => {
 
 ipcMain.handle('create-avatar-session', async (event) => {
   try {
-    const result = await heygen.createStreamingSession();
+    const heygenService = serviceManager?.get('heygen');
+    if (!heygenService) {
+      return { success: false, error: 'Servicio HeyGen no disponible' };
+    }
+    const result = await heygenService.createStreamingSession();
     return result;
   } catch (error) {
     console.error('Error en create-avatar-session:', error);
@@ -711,7 +853,11 @@ ipcMain.handle('create-avatar-session', async (event) => {
 
 ipcMain.handle('stop-avatar', async (event) => {
   try {
-    const result = await heygen.stop();
+    const heygenService = serviceManager?.get('heygen');
+    if (!heygenService) {
+      return { success: false, error: 'Servicio HeyGen no disponible' };
+    }
+    const result = await heygenService.stop();
     return result;
   } catch (error) {
     console.error('Error en stop-avatar:', error);

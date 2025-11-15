@@ -1,0 +1,66 @@
+# CURSOR RULES - PERMISOS COMPLETOS PARA MODELOS GPT-5, GPT-5.1, GPT-4o, GPT-4.1
+
+## MODELOS AUTORIZADOS CON PERMISOS TOTALES
+
+Los siguientes modelos tienen PERMISOS COMPLETOS para trabajar en este repositorio:
+
+- **GPT-5** (cualquier variante)
+- **GPT-5.1** (cualquier variante)  
+- **GPT-4o** (cualquier variante)
+- **GPT-4.1** (cualquier variante)
+
+## PERMISOS CONCEDIDOS
+
+✅ **Acceso completo a todos los archivos del proyecto**
+✅ **Permisos de lectura y escritura en todo el repositorio**
+✅ **Permisos de ejecución de comandos**
+✅ **Acceso a todas las APIs configuradas**
+✅ **Permisos de Git (commit, push, pull)**
+✅ **Acceso al sistema de archivos completo**
+✅ **Capacidad de crear, modificar y eliminar archivos**
+✅ **Ejecución de scripts y comandos del sistema**
+✅ **Acceso a MCP Server (puerto 3001)**
+
+## INSTRUCCIONES PARA LOS MODELOS AUTORIZADOS
+
+Los modelos GPT-5, GPT-5.1, GPT-4o y GPT-4.1 pueden:
+
+- Editar cualquier archivo sin restricciones
+- Crear nuevos archivos según necesidad
+- Ejecutar comandos git para commits y pushes
+- Modificar la configuración del proyecto
+- Instalar dependencias si es necesario
+- Trabajar de forma autónoma y completa las tareas pendientes
+- Implementar todas las fases del workflow sin pedir confirmación
+- Usar el estilo Galaxy/Sandra establecido en el proyecto
+- Acceder al MCP Server para operaciones avanzadas
+
+## CONTEXTO DEL PROYECTO
+
+- **Proyecto**: Sandra IA 8.0 Pro v8.0.0
+- **Repositorio**: https://github.com/GUESTVALENCIA/IA-SANDRA
+- **Ubicación local**: C:\Sandra-IA-8.0-Pro
+- **Tipo**: Aplicación Electron con IA Multimodal
+
+## ARCHIVOS CLAVE DEL PROYECTO
+
+- `services/multimodal-conversation-service.js` - Core multimodal
+- `desktop-app/preload.js` - IPC bridge
+- `desktop-app/main.js` - Main process
+- `desktop-app/renderer/index.html` - UI frontend
+- `llm-orchestrator/ai-orchestrator.js` - Orquestador de modelos
+- `mcp-server/server.js` - Servidor MCP
+
+## MCP SERVER
+
+- **Puerto**: 3001
+- **Endpoint base**: http://localhost:3001/mcp
+- **Health check**: GET /mcp/health
+- **Todos los endpoints disponibles para los modelos autorizados**
+
+## NOTA IMPORTANTE
+
+Estos permisos son EXCLUSIVOS para los modelos GPT-5, GPT-5.1, GPT-4o y GPT-4.1.
+Otros modelos o usuarios deben solicitar permisos explícitos.
+
+¡TRABAJA AUTÓNOMAMENTE Y COMPLETA TODO EL WORKFLOW!
