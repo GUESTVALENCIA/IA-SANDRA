@@ -999,6 +999,20 @@ ipcMain.handle('avatar-speak', async (event, { text }) => {
   }
 });
 
+// Hablar por el pipeline multimodal (Cartesia + avatar)
+ipcMain.handle('multimodal-greet', async (event, { text }) => {
+  try {
+    const multimodal = serviceManager?.get('multimodal');
+    if (!multimodal) return { success: false, error: 'Servicio multimodal no disponible' };
+    if (!text || !text.trim()) return { success: false, error: 'Texto vacío' };
+    const res = await multimodal.speak(text.trim());
+    return { success: true, result: res };
+  } catch (error) {
+    console.error('Error en multimodal-greet:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.handle('create-avatar-session', async (event) => {
   try {
     const heygenService = serviceManager?.get('heygen');

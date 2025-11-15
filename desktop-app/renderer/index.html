@@ -1752,6 +1752,10 @@
       try {
         const res = await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: false });
         if (!res || !res.success) return showToast('❌ No se pudo iniciar la llamada conversacional', 'error');
+        
+        // Iniciar tono de llamada hasta que se conecte
+        startRingtone();
+        
         await startVoiceStreaming();
         isCallActive = true;
         btnConvoCall.textContent = '⛔ Finalizar llamada';
@@ -2106,6 +2110,12 @@
           if (callStateEl && state) {
             callStateEl.textContent = state.sessionActive ? 'Llamada: Activa' : 'Llamada: Inactiva';
           }
+          
+          // Si ya hay conexión de voz, parar ringtone y saludar
+          if (state && state.sessionActive && state.deepgramConnected) {
+            stopRingtone();
+            maybePlayGreeting();
+          }
         });
       }
 
@@ -2193,6 +2203,64 @@
       });
 
       } // end guard listeners
+
+      // ==================== RINGTONE Y SALUDO ====================
+      let ringCtx = null;
+      let ringGain = null;
+      let ringTimer = null;
+      let greetedThisCall = false;
+
+      function startRingtone() {
+        try {
+          stopRingtone();
+          ringCtx = new (window.AudioContext || window.webkitAudioContext)();
+          ringGain = ringCtx.createGain();
+          ringGain.gain.value = 0.12;
+          ringGain.connect(ringCtx.destination);
+          // Patrón simple: dos beeps cada 2s
+          const playBeep = () => {
+            const osc = ringCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ringCtx.currentTime);
+            osc.connect(ringGain);
+            osc.start();
+            setTimeout(() => { try { osc.stop(); osc.disconnect(); } catch {} }, 250);
+            setTimeout(() => {
+              const o2 = ringCtx.createOscillator();
+              o2.type = 'sine';
+              o2.frequency.setValueAtTime(660, ringCtx.currentTime);
+              o2.connect(ringGain);
+              o2.start();
+              setTimeout(() => { try { o2.stop(); o2.disconnect(); } catch {} }, 250);
+            }, 350);
+          };
+          playBeep();
+          ringTimer = setInterval(playBeep, 2000);
+        } catch (e) {
+          console.warn('No se pudo iniciar ringtone:', e);
+        }
+      }
+
+      function stopRingtone() {
+        try { if (ringTimer) clearInterval(ringTimer); } catch {}
+        ringTimer = null;
+        try { if (ringCtx) ringCtx.close(); } catch {}
+        ringCtx = null;
+        ringGain = null;
+      }
+
+      async function maybePlayGreeting() {
+        if (greetedThisCall) return;
+        greetedThisCall = true;
+        try {
+          if (window.sandraAPI?.multimodalGreet) {
+            const greeting = 'Hola, soy Sandra de Vives Valencia, tu concierge. ¿En qué puedo ayudarte?';
+            await window.sandraAPI.multimodalGreet(greeting);
+          }
+        } catch (e) {
+          console.warn('No se pudo reproducir saludo:', e);
+        }
+      }
     }
 
     // Inicializar avatar

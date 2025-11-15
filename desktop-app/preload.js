@@ -99,7 +99,10 @@ contextBridge.exposeInMainWorld('sandraAPI', {
 
   // ==================== LIPSYNC SOURCE ====================
   setLipSyncSourceVideo: (filePath) => ipcRenderer.invoke('set-lipsync-source-video', { filePath }),
-  registerLipSyncSourceVideo: (name, base64) => ipcRenderer.invoke('register-lipsync-source-video', { name, base64 })
+  registerLipSyncSourceVideo: (name, base64) => ipcRenderer.invoke('register-lipsync-source-video', { name, base64 }),
+
+  // ==================== GREETING ====================
+  multimodalGreet: (text) => ipcRenderer.invoke('multimodal-greet', { text })
 });
 
 console.log('✅ Sandra API completa expuesta correctamente');
