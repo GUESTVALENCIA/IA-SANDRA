@@ -1,7 +1,6 @@
 const DeepgramService = require('./deepgram-service');
 const CartesiaService = require('./cartesia-service');
 const HeyGenService = require('./heygen-service');
-const EmoreLipSyncService = require('./emore-lipsync-service');
 
 // WebRTC Manager opcional (para lip-sync avanzado)
 let WebRTCAvatarManager;
@@ -30,7 +29,6 @@ class MultimodalConversationService {
     this.deepgram = new DeepgramService();
     this.cartesia = new CartesiaService();
     this.heygen = new HeyGenService();
-    this.emoreLipSync = new EmoreLipSyncService();
     this.webrtcManager = WebRTCAvatarManager ? new WebRTCAvatarManager() : null;
 
     this.aiGateway = aiGateway;
