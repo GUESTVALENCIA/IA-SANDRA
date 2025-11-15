@@ -1584,7 +1584,8 @@ class RolesSystem {
 
     // Spawn subagent con el rol
     const agent = await this.ai.spawnSubagent(roleName, {
-      provider: config.provider || 'groq',
+      // Usar provider del config si viene; en otro caso, delegar al default del orquestador (Ollama)
+      provider: config.provider || null,
       model: config.model || null,
       // Usar el systemPrompt optimizado definido en este RolesSystem
       systemPrompt: role.systemPrompt

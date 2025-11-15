@@ -600,7 +600,7 @@
       </h1>
       <div class="header-controls">
         <div class="ai-provider" id="ai-provider" onclick="toggleProviderSelector()">
-          <span id="provider-name">OpenAI</span>
+          <span id="provider-name">Ollama</span>
           <span>▼</span>
         </div>
       </div>
@@ -1129,8 +1129,8 @@
     }
 
     // ==================== SELECTOR DE PROVEEDOR LLM ====================
-    // Por defecto asumimos OpenAI como proveedor principal (GPT-4o / GPT-4o-mini)
-    let currentProvider = 'openai';
+    // Por defecto asumimos Ollama como proveedor principal (backend local)
+    let currentProvider = 'ollama';
 
     async function loadAvailableProviders() {
       try {

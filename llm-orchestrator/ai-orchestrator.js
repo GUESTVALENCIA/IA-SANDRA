@@ -60,10 +60,10 @@ class AIOrchestrator {
     };
 
     this.subagents = new Map();
-    this.defaultProvider = 'openai'; // CAMBIO: OpenAI como proveedor principal
+    this.defaultProvider = 'ollama'; // Proveedor principal: Ollama (backend local)
     
     console.log('✅ AI Orchestrator inicializado');
-    console.log(`🎯 Proveedor principal: OpenAI (GPT-4o-mini)`);
+    console.log(`🎯 Proveedor principal: Ollama (local)`);
   }
 
   // ==================== GENERACIÓN DE RESPUESTAS ====================
@@ -245,15 +245,22 @@ class AIOrchestrator {
   }
 
   getAvailableProviders() {
-    return Object.keys(this.providers).map(key => ({
-      id: key,
-      name: key.charAt(0).toUpperCase() + key.slice(1),
-      models: this.providers[key].models || [],
-      isLocal: this.providers[key].local || false,
-      hasApiKey: !!(this.providers[key].apiKey || this.providers[key].local),
-      note: this.providers[key].note || '',
-      defaultModel: this.providers[key].defaultModel
-    }));
+    // Mostrar solo los proveedores aprobados para la app desktop:
+    // - ollama (local)
+    // - openai (GPT-4o/mini)
+    // - claude (razonamiento profundo)
+    const allowed = new Set(['ollama', 'openai', 'claude']);
+    return Object.keys(this.providers)
+      .filter(key => allowed.has(key))
+      .map(key => ({
+        id: key,
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        models: this.providers[key].models || [],
+        isLocal: this.providers[key].local || false,
+        hasApiKey: !!(this.providers[key].apiKey || this.providers[key].local),
+        note: this.providers[key].note || '',
+        defaultModel: this.providers[key].defaultModel
+      }));
   }
 
   // ==================== SISTEMA DE SUBAGENTES ====================
