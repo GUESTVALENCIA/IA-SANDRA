@@ -102,11 +102,11 @@ class EmoreLipSyncService {
   }
 
   /**
-   * Sincronizar video con audio usando EMORE
+   * Sincronizar video con audio usando Wav2Lip
    */
   async syncLipSync(videoPath, audioPath, outputPath) {
     if (!this.isInitialized) {
-      throw new Error('EMORE no está instalado. Usar pseudo-lipsync básico.');
+      throw new Error('Wav2Lip no está instalado. Usar pseudo-lipsync básico.');
     }
 
     if (this.isProcessing) {
@@ -120,15 +120,18 @@ class EmoreLipSyncService {
       
       const args = [
         pythonScript,
-        '--video_path', videoPath,
-        '--audio_path', audioPath,
-        '--checkpoint_path', this.checkpointPath,
-        '--output_path', outputPath,
-        '--pad', '0,20,0,0',
-        '--fps', '25'
+        '--checkpoint_path', path.join(this.emorePath, 'checkpoints', 'wav2lip_gan.pth'),
+        '--face', videoPath,
+        '--audio', audioPath,
+        '--outfile', outputPath,
+        '--fps', '25',
+        '--pads', '0', '20', '0', '0',
+        '--face_det_batch_size', '4',
+        '--wav2lip_batch_size', '128',
+        '--resize_factor', '1'
       ];
 
-      console.log('🎬 Ejecutando EMORE lip-sync...');
+      console.log('🎬 Ejecutando Wav2Lip lip-sync...');
       const process = spawn('python', args, {
         cwd: this.emorePath,
         env: { ...process.env, PYTHONUNBUFFERED: '1' }
@@ -139,12 +142,12 @@ class EmoreLipSyncService {
 
       process.stdout.on('data', (data) => {
         stdout += data.toString();
-        console.log('[EMORE]', data.toString().trim());
+        console.log('[Wav2Lip]', data.toString().trim());
       });
 
       process.stderr.on('data', (data) => {
         stderr += data.toString();
-        console.warn('[EMORE Error]', data.toString().trim());
+        console.warn('[Wav2Lip Error]', data.toString().trim());
       });
 
       process.on('close', (code) => {
@@ -154,14 +157,14 @@ class EmoreLipSyncService {
           console.log('✅ Lip-sync completado:', outputPath);
           resolve(outputPath);
         } else {
-          console.error('❌ EMORE falló con código:', code);
-          reject(new Error(`EMORE process exited with code ${code}\n${stderr}`));
+          console.error('❌ Wav2Lip falló con código:', code);
+          reject(new Error(`Wav2Lip process exited with code ${code}\n${stderr}`));
         }
       });
 
       process.on('error', (err) => {
         this.isProcessing = false;
-        console.error('❌ Error ejecutando EMORE:', err);
+        console.error('❌ Error ejecutando Wav2Lip:', err);
         reject(err);
       });
     });
