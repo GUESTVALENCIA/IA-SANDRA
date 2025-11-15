@@ -1819,22 +1819,37 @@
       console.log('✅ [CallCenter] Llamada finalizada correctamente');
     }
     
-    // Sonido de colgado (estilo call center)
+    // Sonido de colgado (estilo call center - más realista)
     function playHangupSound() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.value = 600;
-        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start();
+        const gainMaster = ctx.createGain();
+        gainMaster.connect(ctx.destination);
+        
+        // Simular "clack" de colgar con múltiples componentes
+        const makeHangupClick = (freq, startTime, duration, volume) => {
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, startTime);
+          g.gain.linearRampToValueAtTime(volume, startTime + 0.003);
+          g.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+          osc.connect(g).connect(gainMaster);
+          osc.start(startTime);
+          osc.stop(startTime + duration + 0.01);
+        };
+        
+        const now = ctx.currentTime;
+        // Sonido de colgado: dos clicks rápidos (más grave que el de descolgar)
+        makeHangupClick(600, now, 0.05, 0.1);        // Click principal
+        makeHangupClick(400, now + 0.025, 0.04, 0.08); // Click secundario (overlap)
+        makeHangupClick(300, now + 0.04, 0.03, 0.05);  // Resonancia final
+        
         setTimeout(() => {
-          try { osc.stop(); ctx.close().catch(() => {}); } catch {}
-        }, 130);
+          try { ctx.close().catch(() => {}); } catch {}
+        }, 120);
+        
         console.log('🔊 [CallCenter] Sonido de colgado');
       } catch (e) {
         console.warn('⚠️ [CallCenter] Error reproduciendo sonido de colgado:', e);
@@ -2257,51 +2272,56 @@
 
       } // end guard listeners
 
-      // ==================== RINGTONE Y SALUDO ====================
+      // ==================== CALL CENTER PROFESIONAL ====================
       let ringCtx = null;
       let ringGain = null;
       let ringTimer = null;
       let ringGreetTimer = null;
       let greetedThisCall = false;
-      let ringConnected = false;
 
       function startRingtone() {
         try {
           stopRingtone();
+          greetedThisCall = false; // Reset para nueva llamada
+          console.log('📞 [CallCenter] Iniciando ringtone...');
+          
           ringCtx = new (window.AudioContext || window.webkitAudioContext)();
           ringGain = ringCtx.createGain();
-          ringGain.gain.value = 0.28; // volumen claro y cercano
+          ringGain.gain.value = 0.32; // Volumen profesional
           ringGain.connect(ringCtx.destination);
-          // Tono de llamada tipo telefónico: 425 Hz, timbre largo con pausa
-          // Dos timbres y luego saludo
-          const ringOnce = (startAt) => {
+          
+          // Tono de llamada estándar: 425 Hz (tono telefónico europeo)
+          const ringOnce = (startAt, duration = 1.0) => {
             const osc = ringCtx.createOscillator();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(425, startAt);
             const g = ringCtx.createGain();
             g.gain.setValueAtTime(0.0001, startAt);
-            g.gain.linearRampToValueAtTime(0.18, startAt + 0.04); // ataque más rápido y cercano
-            g.gain.setValueAtTime(0.18, startAt + 1.9);          // sustain ~1.9s
-            g.gain.exponentialRampToValueAtTime(0.0001, startAt + 2.0); // release
+            g.gain.linearRampToValueAtTime(0.22, startAt + 0.05);
+            g.gain.setValueAtTime(0.22, startAt + duration);
+            g.gain.exponentialRampToValueAtTime(0.0001, startAt + duration + 0.1);
             osc.connect(g).connect(ringGain);
             osc.start(startAt);
-            osc.stop(startAt + 2.05);
-          }
-          // Espera 2.5s antes del primer timbre
-          const RING_DELAY_MS = 2500;
-          const t0 = ringCtx.currentTime + (RING_DELAY_MS / 1000);
-          ringOnce(t0);           // 1er timbre ~2.0s
-          ringOnce(t0 + 3.2);     // pausa ~1.2s y 2º timbre
-          // Parar tono y saludar 1s después del 2º timbre
-          const totalBeforeGreetMs = RING_DELAY_MS + 2000 + 1200 + 2000 + 1000;
-          ringTimer = setTimeout(() => { stopRingtone(); }, totalBeforeGreetMs);
+            osc.stop(startAt + duration + 0.15);
+          };
+
+          // Secuencia profesional: silencio → timbre → pausa → timbre → descolgado
+          const t0 = ringCtx.currentTime + 0.8;
+          ringOnce(t0, 1.0);           // Primer timbre
+          ringOnce(t0 + 1.4, 1.0);     // Segundo timbre (tras 0.4s pausa)
+          
+          // Total: 0.8 + 1.0 + 0.4 + 1.0 + 0.3 = 3.5s
+          const totalBeforeAnswerMs = 3500;
+          
+          ringTimer = setTimeout(() => { stopRingtone(); }, totalBeforeAnswerMs);
           ringGreetTimer = setTimeout(() => {
+            console.log('📞 [CallCenter] Timbres completados, descolgando...');
             stopRingtone();
-            playHookClick();
-            setTimeout(() => { maybePlayGreeting(); }, 180); // pequeño “click” de descolgar antes del saludo
-          }, totalBeforeGreetMs);
+            playCallCenterAnswer(); // Descolgar + saludo
+          }, totalBeforeAnswerMs);
+          
         } catch (e) {
-          console.warn('No se pudo iniciar ringtone:', e);
+          console.error('❌ [CallCenter] Error iniciando ringtone:', e);
         }
       }
 
@@ -2310,48 +2330,76 @@
         try { if (ringGreetTimer) clearTimeout(ringGreetTimer); } catch {}
         ringTimer = null;
         ringGreetTimer = null;
-        try { if (ringCtx) ringCtx.close(); } catch {}
+        try { 
+          if (ringCtx && ringCtx.state !== 'closed') {
+            ringCtx.close().catch(() => {});
+          }
+        } catch {}
         ringCtx = null;
         ringGain = null;
       }
 
-      // Sonido breve de “descolgar”
-      function playHookClick() {
+      // Descolgar + saludo (estilo call center real)
+      async function playCallCenterAnswer() {
         try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(1200, ctx.currentTime);
-          gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.01);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
-          osc.connect(gain).connect(ctx.destination);
-          osc.start();
+          // 1. Sonido de descolgado (clack suave)
+          const clickCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const clickGain = clickCtx.createGain();
+          clickGain.connect(clickCtx.destination);
+          
+          // Simular "clack" con dos tonos rápidos
+          const makeClick = (freq, startTime, duration) => {
+            const osc = clickCtx.createOscillator();
+            const g = clickCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            g.gain.setValueAtTime(0.0001, startTime);
+            g.gain.linearRampToValueAtTime(0.08, startTime + 0.005);
+            g.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+            osc.connect(g).connect(clickGain);
+            osc.start(startTime);
+            osc.stop(startTime + duration + 0.01);
+          };
+          
+          const now = clickCtx.currentTime;
+          makeClick(800, now, 0.04);      // Tono bajo
+          makeClick(1200, now + 0.02, 0.03); // Tono alto (overlap)
+          
           setTimeout(() => {
-            try { osc.stop(); ctx.close(); } catch {}
-          }, 90);
+            try { clickCtx.close().catch(() => {}); } catch {}
+          }, 100);
+          
+          console.log('🔊 [CallCenter] Click de descolgado');
+          
+          // 2. Saludo INMEDIATO (150ms después del click)
+          setTimeout(async () => {
+            await playGreetingDirect();
+          }, 150);
+          
         } catch (e) {
-          console.warn('No se pudo reproducir click de descolgar:', e);
+          console.error('❌ [CallCenter] Error en descolgado:', e);
+          // Fallback: intentar saludo de todas formas
+          setTimeout(() => playGreetingDirect(), 200);
         }
       }
 
-      async function maybePlayGreeting() {
-        if (greetedThisCall) return;
+      // Saludo directo con TTS garantizado
+      async function playGreetingDirect() {
+        if (greetedThisCall) {
+          console.warn('⚠️ [CallCenter] Saludo ya reproducido, saltando...');
+          return;
+        }
         greetedThisCall = true;
         
         const greeting = 'Hola, soy Sandra, asistente de Guests Valencia. ¿En qué puedo servirte?';
         console.log('👋 [CallCenter] Iniciando saludo...');
         
         try {
-          // ESTRATEGIA DIRECTA: generar TTS inmediatamente y reproducir
-          // No depender del pipeline multimodal complejo que puede fallar
           const res = await window.sandraAPI.generateSpeech(greeting, {});
           
           if (res && res.success && res.audioBuffer) {
             console.log('✅ [CallCenter] TTS generado correctamente');
             
-            // Normalizar buffer
             let u8;
             if (res.audioBuffer.data && Array.isArray(res.audioBuffer.data)) {
               u8 = new Uint8Array(res.audioBuffer.data);
