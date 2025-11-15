@@ -2109,6 +2109,10 @@
         });
       }
 
+      // Evitar registrar múltiples veces los mismos listeners (causaba respuestas duplicadas)
+      if (!window._sandraEventsBound) {
+        window._sandraEventsBound = true;
+
       // Respuesta de IA lista
       window.sandraAPI.onResponseReady((data) => {
         console.log('Respuesta IA:', data.text);
@@ -2187,6 +2191,8 @@
         console.error('Error multimodal:', data.error);
         showToast('❌ ' + data.error, 'error');
       });
+
+      } // end guard listeners
     }
 
     // Inicializar avatar
