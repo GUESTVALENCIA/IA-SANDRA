@@ -4,7 +4,6 @@
 const path = require('path');
 const fs = require('fs').promises;
 const { spawn } = require('child_process');
-const ffmpeg = require('fluent-ffmpeg');
 
 class LipSyncService {
   constructor() {
@@ -13,6 +12,33 @@ class LipSyncService {
     this.engineRoot = path.join(__dirname, '../emore-engine'); // reusamos carpeta estándar
     this.tempDir = path.join(__dirname, '../temp-lipsync');
     this.isProcessing = false;
+    this.ffmpeg = null;
+    this.ffmpegOk = false;
+
+    // Cargar ffmpeg/fluent-ffmpeg de forma segura; si no existe, desactivar lip-sync
+    try {
+      // Lazy require para no romper el arranque si falta el módulo
+      // Estos módulos se instalarán con npm: fluent-ffmpeg, ffmpeg-static, ffprobe-static
+      // Si no están, simplemente se desactiva el lip-sync y la app sigue funcionando.
+      // eslint-disable-next-line global-require
+      const ffmpegLib = require('fluent-ffmpeg');
+      // eslint-disable-next-line global-require
+      const ffmpegPath = require('ffmpeg-static');
+      // eslint-disable-next-line global-require
+      const ffprobe = require('ffprobe-static');
+      if (ffmpegPath) {
+        ffmpegLib.setFfmpegPath(ffmpegPath);
+      }
+      if (ffprobe && ffprobe.path) {
+        ffmpegLib.setFfprobePath(ffprobe.path);
+      }
+      this.ffmpeg = ffmpegLib;
+      this.ffmpegOk = true;
+    } catch (e) {
+      console.warn('⚠️ FFmpeg/fluent-ffmpeg no disponible. Lip-sync desactivado. Motivo:', e.message);
+      this.enabled = false;
+      this.ffmpegOk = false;
+    }
   }
 
   async ensureTemp() {
@@ -34,8 +60,9 @@ class LipSyncService {
   }
 
   async prepareVideoBase(inputVideoPath, outputPath) {
+    if (!this.ffmpegOk) throw new Error('ffmpeg no disponible');
     return new Promise((resolve, reject) => {
-      ffmpeg(inputVideoPath)
+      this.ffmpeg(inputVideoPath)
         .noAudio()
         .videoFilters('fps=25,scale=720:1280')
         .output(outputPath)
@@ -46,10 +73,11 @@ class LipSyncService {
   }
 
   async prepareAudioPcm16k(inputBuffer, outputPath) {
+    if (!this.ffmpegOk) throw new Error('ffmpeg no disponible');
     const tempIn = path.join(this.tempDir, `in_${Date.now()}.wav`);
     await fs.writeFile(tempIn, inputBuffer);
     return new Promise((resolve, reject) => {
-      ffmpeg(tempIn)
+      this.ffmpeg(tempIn)
         .audioFrequency(16000)
         .audioChannels(1)
         .audioCodec('pcm_s16le')
@@ -88,8 +116,9 @@ class LipSyncService {
   }
 
   async combineSimple(videoPath, audioPath, outputPath) {
+    if (!this.ffmpegOk) throw new Error('ffmpeg no disponible');
     return new Promise((resolve, reject) => {
-      ffmpeg(videoPath)
+      this.ffmpeg(videoPath)
         .input(audioPath)
         .outputOptions(['-c:v libx264', '-c:a aac', '-shortest'])
         .output(outputPath)
@@ -101,6 +130,9 @@ class LipSyncService {
 
   async generateSyncedVideo(sourceVideoPath, ttsAudioBuffer) {
     try {
+      if (!this.ffmpegOk) {
+        return { success: false, error: 'ffmpeg no disponible' };
+      }
       await this.ensureTemp();
       const ts = Date.now();
       const videoBase = path.join(this.tempDir, `base_${ts}.mp4`);
