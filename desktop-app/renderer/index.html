@@ -1725,7 +1725,7 @@
           window.sandraAPI.sendAudioStream(b64);
         };
 
-        mediaRecorder = { stop: () => { try { processor.disconnect(); source.disconnect(); audioCtx.close(); stream.getTracks().forEach(t => t.stop()); } catch {} } };
+        mediaRecorder = { stop: () => { try { processor.disconnect(); source.disconnect(); const p = audioCtx.close(); if (p && typeof p.catch === 'function') { p.catch(() => {}); } stream.getTracks().forEach(t => t.stop()); } catch {} } };
         isRecording = true;
         showToast('🎤 Streaming de voz activo');
       } catch (e) {
@@ -1755,6 +1755,7 @@
         if (!res || !res.success) return showToast('❌ No se pudo iniciar la llamada conversacional', 'error');
         
         // Iniciar tono de llamada hasta que se conecte
+        greetedThisCall = false;
         startRingtone();
         
         await startVoiceStreaming();
@@ -1779,6 +1780,11 @@
       try {
         if (window.sandraAPI) await window.sandraAPI.stopMultimodalConversation();
       } catch {}
+      // Detener tono y saludo programado
+      try { stopRingtone(); } catch {}
+      // Parar cualquier TTS en reproducción
+      try { if (currentTtsAudio) { currentTtsAudio.pause(); currentTtsAudio.currentTime = 0; currentTtsAudio = null; } } catch {}
+      greetedThisCall = false;
       isCallActive = false;
       btnConvoCall.textContent = '📞 Llamada conversacional';
       callState.textContent = 'Llamada: Inactiva';
@@ -2294,6 +2300,31 @@
           if (window.sandraAPI?.multimodalGreet) {
             const greeting = 'Hola, soy Sandra, asistente de Guests‑Valencia. ¿En qué puedo servirte?';
             await window.sandraAPI.multimodalGreet(greeting);
+            // Fallback: si en ~1.2s no hay audio reproduciéndose, generar TTS directo y reproducir aquí
+            setTimeout(async () => {
+              try {
+                if (!currentTtsAudio || currentTtsAudio.paused) {
+                  const res = await window.sandraAPI.generateSpeech(greeting, {});
+                  if (res && res.success && res.audioBuffer) {
+                    let u8;
+                    if (res.audioBuffer.data && Array.isArray(res.audioBuffer.data)) {
+                      u8 = new Uint8Array(res.audioBuffer.data);
+                    } else if (res.audioBuffer.buffer) {
+                      u8 = new Uint8Array(res.audioBuffer.buffer);
+                    } else {
+                      u8 = new Uint8Array(res.audioBuffer);
+                    }
+                    const blob = new Blob([u8], { type: 'audio/wav' });
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+                    currentTtsAudio = audio;
+                    audio.play().catch(() => {});
+                  }
+                }
+              } catch (e) {
+                console.warn('Fallback greeting TTS error:', e);
+              }
+            }, 1200);
           }
         } catch (e) {
           console.warn('No se pudo reproducir saludo:', e);
