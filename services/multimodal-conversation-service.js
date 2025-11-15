@@ -410,6 +410,11 @@ class MultimodalConversationService {
       // HeyGen avatar
       const heygenResult = await this.heygen.speak(text);
 
+      // Emitir hacia el frontend para reproducción inmediata del saludo
+      if (audioBuffer) {
+        this._emitResponse({ text, audioBuffer, syncedVideoPath: null });
+      }
+
       // Lip-sync avanzado
       if (this.avatarLipSyncEnabled && audioBuffer) {
         await this.handleLipSyncFrame(audioBuffer);
