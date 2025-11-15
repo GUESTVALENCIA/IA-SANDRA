@@ -270,6 +270,7 @@
       background: rgba(255,255,255,0.1);
       backdrop-filter: blur(10px);
       line-height: 1.6;
+      white-space: pre-wrap;
     }
 
     .message.user .message-content {
@@ -599,7 +600,7 @@
       </h1>
       <div class="header-controls">
         <div class="ai-provider" id="ai-provider" onclick="toggleProviderSelector()">
-          <span id="provider-name">Groq</span>
+          <span id="provider-name">OpenAI</span>
           <span>▼</span>
         </div>
       </div>
@@ -1128,7 +1129,8 @@
     }
 
     // ==================== SELECTOR DE PROVEEDOR LLM ====================
-    let currentProvider = 'groq';
+    // Por defecto asumimos OpenAI como proveedor principal (GPT-4o / GPT-4o-mini)
+    let currentProvider = 'openai';
 
     async function loadAvailableProviders() {
       try {

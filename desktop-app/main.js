@@ -278,33 +278,14 @@ ipcMain.handle('send-message', async (event, { message, role, mode = 'text' }) =
     const optimizedPrompt = optimizer?.optimizePromptForRole 
       ? optimizer.optimizePromptForRole(message, role)
       : message;
-    
-    // Detección de small-talk/saludo: enrutar al chat directo (OpenAI)
-    const isSmallTalk = /^\s*(hola|buenas|hello|hey|qué tal|que tal|cómo te llamas|como te llamas|quién eres|quien eres)\b/i.test(optimizedPrompt);
-    if (isSmallTalk && aiOrchestrator) {
-      const model = mode === 'text' ? 'gpt-4o-mini' : 'gpt-4o';
-      const response = await aiOrchestrator.generateResponse(
-        optimizedPrompt,
-        'openai',
-        model,
-        { mode }
-      );
 
-      if (db?.logMessage) {
-        await db.logMessage(sessionId, message, 'user');
-        await db.logMessage(sessionId, response, 'assistant');
-      }
-
-      return {
-        success: true,
-        response,
-        role: role || 'general',
-        icon: '💬'
-      };
-    }
-
-    // Ejecutar con el rol específico y modo (text/voice/video) para tareas
-    const result = await rolesSystem.executeWithRole(role || 'general', optimizedPrompt, { mode });
+    // Ejecutar con el rol específico y modo (text/voice/video) para tareas.
+    // Se pasa también el mensaje original para que el sistema de roles pueda
+    // detectar saludos y small-talk sin que el optimizer lo distorsione.
+    const result = await rolesSystem.executeWithRole(role || 'general', optimizedPrompt, { 
+      mode,
+      rawMessage: message
+    });
     
     // Guardar en base de datos (si disponible)
     if (db?.logMessage) {

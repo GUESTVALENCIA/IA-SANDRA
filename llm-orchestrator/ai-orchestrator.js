@@ -3,6 +3,25 @@ const { exec } = require('child_process');
 const { promisify } = require('util');
 const execAsync = promisify(exec);
 
+// Reglas globales de conversación aplicadas a TODOS los subagentes/roles
+const GLOBAL_CONVERSATION_RULES = `
+REGLAS CONVERSACIONALES GLOBALES (Sandra IA 8.0 Pro):
+
+- Responde SIEMPRE en español neutro, con buena ortografía y gramática.
+- Usa párrafos cortos y bien separados (líneas en blanco entre bloques de texto).
+- Para listas u opciones, usa formato numerado o con viñetas claras (1., 2., 3. o -).
+- Evita bloques de texto enormes sin saltos de línea.
+
+- Si el usuario ya expresa una intención clara (ej: "quiero mover la comunidad con un vídeo de inteligencia artificial"), responde de forma directa y específica a esa intención.
+- No satures al usuario con demasiadas opciones cuando su petición es clara; prioriza ejecutar un camino principal bien explicado.
+- Solo ofrece múltiples opciones cuando el usuario pide "ideas", "opciones" o muestra confusión/incertidumbre.
+
+- Nunca digas frases como "no hay tarea específica", "no hay tarea asignada", "indícame la tarea", "define la tarea" o similares.
+- Si el mensaje del usuario es vago o incompleto, propone tú misma 2‑3 opciones concretas o un plan de acción y pregúntale cuál prefiere.
+- En saludos o small‑talk, responde siempre con calidez y ofrece opciones accionables relacionadas con tu rol.
+- Evita respuestas burocráticas; pasa rápido a la acción práctica y a ejemplos concretos.
+- Adáptate al tono del usuario (cercano, coloquial) manteniendo profesionalidad.`;
+
 class AIOrchestrator {
   constructor() {
     this.providers = {
@@ -79,9 +98,27 @@ class AIOrchestrator {
       }
     } catch (error) {
       console.error(`❌ Error con ${selectedProvider}:`, error.message);
-      
-      // En vez de lanzar excepción, devolvemos un mensaje legible
-      return `⚠️ Error al usar ${selectedProvider}: ${error.message}\n\n💡 Sugerencia: Cambia de proveedor LLM usando el selector en la parte superior.`;
+
+      // Mensajes de error legibles y útiles según el caso
+      const msg = String(error.message || '');
+
+      // Caso especial: API key inválida de OpenAI
+      if (
+        selectedProvider === 'openai' &&
+        msg.includes('401') &&
+        (msg.includes('invalid_api_key') || msg.toLowerCase().includes('incorrect api key'))
+      ) {
+        return (
+          '⚠️ Error al usar OpenAI: API key inválida o revocada.\n\n' +
+          '1) Abre tu panel de OpenAI y crea una nueva API key.\n' +
+          '2) Copia EXACTAMENTE la clave en la variable OPENAI_API_KEY de tu archivo .env.pro (sin espacios ni comillas).\n' +
+          '3) Guarda el archivo y REINICIA completamente la aplicación de escritorio.\n\n' +
+          'Hasta que no se actualice la clave, cualquier llamada a GPT‑4o / GPT‑4o‑mini fallará.'
+        );
+      }
+
+      // Resto de errores: sugerencia genérica de cambiar proveedor
+      return `⚠️ Error al usar ${selectedProvider}: ${msg}\n\n💡 Sugerencia: Cambia de proveedor LLM usando el selector en la parte superior o revisa la configuración de API keys en .env.pro.`;
     }
   }
 
@@ -217,13 +254,19 @@ class AIOrchestrator {
 
   async spawnSubagent(role, config = {}) {
     const agentId = `agent_${Date.now()}_${role}`;
-    
+
+    // Permitir que el caller inyecte prompts/ajustes específicos de rol
+    const baseSystemPrompt = config.systemPrompt || this.getRoleSystemPrompt(role);
+    const mergedSystemPrompt = `${baseSystemPrompt}
+
+${GLOBAL_CONVERSATION_RULES}`;
+
     const agent = {
       id: agentId,
       role,
       provider: config.provider || this.defaultProvider,
       model: config.model || null,
-      systemPrompt: this.getRoleSystemPrompt(role),
+      systemPrompt: mergedSystemPrompt,
       tools: this.getRoleTools(role),
       memory: [],
       status: 'active',

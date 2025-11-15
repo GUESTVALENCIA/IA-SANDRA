@@ -1577,7 +1577,7 @@ class RolesSystem {
 
   async activateRole(roleName, config = {}) {
     const role = this.roles[roleName];
-    
+
     if (!role) {
       throw new Error(`Rol ${roleName} no existe`);
     }
@@ -1585,7 +1585,9 @@ class RolesSystem {
     // Spawn subagent con el rol
     const agent = await this.ai.spawnSubagent(roleName, {
       provider: config.provider || 'groq',
-      model: config.model || null
+      model: config.model || null,
+      // Usar el systemPrompt optimizado definido en este RolesSystem
+      systemPrompt: role.systemPrompt
     });
 
     this.activeRoles.set(roleName, {
@@ -1600,13 +1602,16 @@ class RolesSystem {
   }
 
   async executeWithRole(roleName, task, options = {}) {
-    // Detectar si es un saludo simple
-    const taskString = typeof task === 'string' ? task.toLowerCase().trim() : String(task).toLowerCase().trim();
-    const isGreeting = /^(hola|hi|hello|buenos días|buenas tardes|buenas noches|hey|saludos)$/i.test(taskString);
-    
-    // Si es saludo y es el rol general, usar prompt especial
-    if (isGreeting && (roleName === 'general' || !roleName)) {
-      const greetingResponse = `¡Hola! 👋 Soy Sandra IA 8.0 Pro. ¿En qué puedo ayudarte hoy?
+    // Usar el mensaje original (si viene) para detectar saludos, no el prompt optimizado
+    const raw = options.rawMessage != null ? String(options.rawMessage) : String(task || '');
+    const taskString = raw.toLowerCase().trim();
+    const isGreeting = /^(hola+|holaa+|hi|hello|buenas|buenos días|buenas tardes|buenas noches|hey|saludos)$/i.test(taskString);
+    const currentRole = this.roles[roleName] || this.roles.general;
+
+    // Respuesta especial para saludos según rol
+    if (isGreeting) {
+      if (!roleName || roleName === 'general') {
+        const greetingResponse = `¡Hola! 👋 Soy Sandra IA 8.0 Pro. ¿En qué puedo ayudarte hoy?
 
 Puedo asistirte con:
 1. 🚀 Verificar estado del sistema y servicios
@@ -1617,14 +1622,28 @@ Puedo asistirte con:
 6. 🏨 Buscar y negociar alojamientos
 
 ¿Cuál prefieres? O dime directamente qué necesitas.`;
-      
+
+        return {
+          response: greetingResponse,
+          role: 'General',
+          icon: '💬'
+        };
+      }
+
+      const greetingResponse = `¡Hola! ${currentRole.icon} Soy ${currentRole.name} de Sandra IA 8.0 Pro.
+
+Puedo ayudarte con:
+- ${currentRole.description}.
+
+Cuéntame brevemente qué quieres conseguir y empezaré directamente con un plan concreto para ayudarte.`;
+
       return {
         response: greetingResponse,
-        role: 'General',
-        icon: '💬'
+        role: currentRole.name,
+        icon: currentRole.icon
       };
     }
-    
+
     let activeRole = this.activeRoles.get(roleName);
     
     // Si el rol no está activo, activarlo
