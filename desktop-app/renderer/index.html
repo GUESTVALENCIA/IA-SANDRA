@@ -929,37 +929,10 @@
         <div id="heygen-avatar" style="margin-top:10px;"></div>
       </div>
       
-      <!-- Selector de Voz -->
-      <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
-        <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 5px;">🎙️ Voz del Avatar:</label>
-        <select id="voice-selector" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #fff; font-size: 12px;">
-          <option value="default">Sandra (Español)</option>
-          <option value="voice-2">María (Formal)</option>
-          <option value="voice-3">Carmen (Amigable)</option>
-          <option value="voice-4">Laura (Profesional)</option>
-        </select>
-      </div>
-
-      <!-- Modo Conversación -->
-      <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-          <input type="checkbox" id="continuous-mode" style="width: 16px; height: 16px;">
-          <span style="font-size: 12px; color: #fff;">🔄 Modo Continuo</span>
-        </label>
-        <div style="font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 5px; margin-left: 24px;">
-          Conversación sin clicks
-        </div>
-      </div>
-
-      <!-- Barge-in -->
-      <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-          <input type="checkbox" id="barge-in-toggle" checked style="width: 16px; height: 16px;">
-          <span style="font-size: 12px; color: #fff;">⚡ Barge-in</span>
-        </label>
-        <div style="font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 5px; margin-left: 24px;">
-          Interrumpir respuestas
-        </div>
+      <!-- Controles de llamada conversacional -->
+      <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px; display:flex; align-items:center; gap:10px;">
+        <button id="btn-convo-call" class="role-btn" style="padding:10px 14px;">📞 Llamada conversacional</button>
+        <span id="call-state" class="voice-badge">Llamada: Inactiva</span>
       </div>
 
       <div class="avatar-status">
@@ -995,12 +968,7 @@
           placeholder="Escribe tu mensaje, usa el micrófono o inicia videollamada..."
           autocomplete="off"
         />
-        <button class="input-btn btn-video" id="video-btn" title="Iniciar videollamada con avatar">
-          📹
-        </button>
-        <button class="input-btn btn-voice" id="voice-btn" title="Grabar voz">
-          🎤
-        </button>
+        <!-- Botones de videollamada y grabación manual eliminados en favor de llamada conversacional continua -->
         <button class="input-btn btn-send" id="send-btn" title="Enviar mensaje">
           ➤
         </button>
@@ -1660,6 +1628,80 @@
       }
     }
 
+    // ==================== LLAMADA CONVERSACIONAL (CONTINUA + STREAM) ====================
+    let isCallActive = false;
+    const btnConvoCall = document.getElementById('btn-convo-call');
+    const callState = document.getElementById('call-state');
+
+    async function startVoiceStreaming() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 44100
+          } 
+        });
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0 && window.sandraAPI && isCallActive) {
+            event.data.arrayBuffer().then((ab) => {
+              const buffer = new Uint8Array(ab);
+              window.sandraAPI.sendAudioStream({ audioData: { buffer, mimeType: 'audio/webm' } });
+            });
+          }
+        };
+        mediaRecorder.onstop = () => {
+          try { stream.getTracks().forEach(t => t.stop()); } catch {}
+        };
+        mediaRecorder.start(100);
+        isRecording = true;
+        recordingIndicator.classList.add('active');
+        showToast('🎤 Streaming de voz activo');
+      } catch (e) {
+        console.error(e);
+        showToast('❌ No se pudo iniciar el streaming de voz', 'error');
+      }
+    }
+
+    function stopVoiceStreaming() {
+      try {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      } catch {}
+      isRecording = false;
+      recordingIndicator.classList.remove('active');
+      showToast('🔇 Streaming detenido');
+    }
+
+    async function startConversationalCall() {
+      if (!micApproved) await requestMicPermission();
+      if (!window.sandraAPI) return showToast('❌ API no disponible', 'error');
+      try {
+        await window.sandraAPI.setContinuousMode(true);
+        const res = await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
+        if (!res || !res.success) return showToast('❌ No se pudo iniciar la llamada conversacional', 'error');
+        await startVoiceStreaming();
+        isCallActive = true;
+        btnConvoCall.textContent = '⛔ Finalizar llamada';
+        callState.textContent = 'Llamada: Activa';
+        showToast('📞 Llamada conversacional activa');
+      } catch (e) {
+        console.error(e);
+        showToast('❌ Error iniciando llamada', 'error');
+      }
+    }
+
+    async function stopConversationalCall() {
+      stopVoiceStreaming();
+      try {
+        if (window.sandraAPI) await window.sandraAPI.stopMultimodalConversation();
+      } catch {}
+      isCallActive = false;
+      btnConvoCall.textContent = '📞 Llamada conversacional';
+      callState.textContent = 'Llamada: Inactiva';
+      showToast('📴 Llamada finalizada');
+    }
+
     // ==================== AGREGAR MENSAJE ====================
     function addMessage(text, sender) {
       const messageDiv = document.createElement('div');
@@ -1806,25 +1848,14 @@
 
     // ==================== EVENT LISTENERS ====================
     sendBtn.addEventListener('click', sendMessage);
-    voiceBtn.addEventListener('click', toggleVoiceRecording);
-    // Push-to-talk: mantener pulsado graba, soltar envía
-    voiceBtn.addEventListener('mousedown', async (e) => {
-      e.preventDefault();
-      if (!isRecording) await startVoiceRecording();
-    });
-    voiceBtn.addEventListener('mouseup', (e) => {
-      e.preventDefault();
-      if (isRecording) stopVoiceRecording();
-    });
-    voiceBtn.addEventListener('touchstart', async (e) => {
-      e.preventDefault();
-      if (!isRecording) await startVoiceRecording();
-    }, { passive: false });
-    voiceBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      if (isRecording) stopVoiceRecording();
-    }, { passive: false });
-    document.getElementById('video-btn').addEventListener('click', toggleVideoCall);
+    // Evento para llamada conversacional (toggle)
+    const btnConvoCall2 = document.getElementById('btn-convo-call');
+    if (btnConvoCall2) {
+      btnConvoCall2.addEventListener('click', async () => {
+        if (!isCallActive) await startConversationalCall();
+        else await stopConversationalCall();
+      });
+    }
     
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -1833,10 +1864,7 @@
       }
     });
 
-    // Prevenir que el input pierda foco al grabar
-    voiceBtn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-    });
+    // Prevenir que el input pierda foco (no necesario para voz ahora)
 
     // Selector de voz
     const voiceSelector = document.getElementById('voice-selector');
