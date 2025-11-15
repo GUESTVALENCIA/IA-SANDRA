@@ -597,38 +597,71 @@
       transform: translateX(-50%) scaleY(1.25);
     }
 
-    /* Controles de avatar */
-    .avatar-control-btn {
-      padding: 6px 10px;
-      font-size: 11px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.8);
-      border-radius: 6px;
+    /* Controles flotantes del avatar */
+    .avatar-controls-overlay {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+    .avatar-stage:hover .avatar-controls-overlay {
+      opacity: 1;
+    }
+    .avatar-control-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 18px;
       cursor: pointer;
       transition: all 0.2s ease;
-      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .avatar-control-btn:hover {
-      background: rgba(255,255,255,0.15);
-      border-color: rgba(255,255,255,0.3);
-      color: #fff;
-    }
-    .avatar-control-btn.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .avatar-control-icon:hover {
+      background: rgba(102,126,234,0.9);
       border-color: #667eea;
+      transform: scale(1.1);
+    }
+
+    /* Botón de salir de pantalla completa */
+    .exit-fullscreen-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.3);
       color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10000;
+    }
+    .exit-fullscreen-btn:hover {
+      background: rgba(220,38,38,0.9);
+      border-color: #dc2626;
+      transform: scale(1.05);
     }
 
     /* Tamaños de avatar */
     .avatar-stage {
       transition: all 0.3s ease;
+      position: relative;
     }
     .avatar-stage.size-normal {
       height: 300px;
-    }
-    .avatar-stage.size-medium {
-      height: 500px;
     }
     .avatar-stage.size-full {
       position: fixed;
@@ -920,17 +953,19 @@
     <!-- AVATAR PANEL -->
     <div class="avatar-panel">
       <div class="avatar-container">
-        <!-- Controles de avatar (PiP, tamaño) -->
-        <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
-          <button id="btn-pip" class="avatar-control-btn" title="Picture-in-Picture (flotante)">🖼️ PiP</button>
-          <button id="btn-size-normal" class="avatar-control-btn active" title="Tamaño normal">📱 Normal</button>
-          <button id="btn-size-medium" class="avatar-control-btn" title="Tamaño medio">📺 Medio</button>
-          <button id="btn-size-full" class="avatar-control-btn" title="Pantalla completa">🖥️ Completo</button>
-        </div>
-        
         <div class="avatar-stage size-normal" id="avatar-stage">
           <video id="sora-video" autoplay loop muted playsinline style="width:100%; height:100%; object-fit: cover; display:block; background:#000;"></video>
           <div id="sora-mouth" class="sora-mouth-overlay"></div>
+          
+          <!-- Controles flotantes (aparecen al pasar el ratón) -->
+          <div class="avatar-controls-overlay" id="avatar-controls">
+            <button class="avatar-control-icon" id="btn-pip" title="Picture-in-Picture (flotante)">🖼️</button>
+            <button class="avatar-control-icon" id="btn-cast" title="Compartir en TV/dispositivo">📺</button>
+            <button class="avatar-control-icon" id="btn-fullscreen" title="Pantalla completa">⛶</button>
+          </div>
+          
+          <!-- Botón de salir de pantalla completa (solo visible en fullscreen) -->
+          <button class="exit-fullscreen-btn" id="btn-exit-fullscreen" style="display:none;">✕ Salir</button>
         </div>
         <div id="heygen-avatar" style="margin-top:10px;"></div>
       </div>
@@ -2369,13 +2404,13 @@
 
     console.log('🛠️ MCP Panel - Listo');
 
-    // ==================== CONTROLES DE AVATAR (PiP, TAMAÑO) ====================
+    // ==================== CONTROLES DE AVATAR (PiP, PANTALLA COMPLETA, CAST) ====================
     const btnPip = document.getElementById('btn-pip');
-    const btnSizeNormal = document.getElementById('btn-size-normal');
-    const btnSizeMedium = document.getElementById('btn-size-medium');
-    const btnSizeFull = document.getElementById('btn-size-full');
+    const btnCast = document.getElementById('btn-cast');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const btnExitFullscreen = document.getElementById('btn-exit-fullscreen');
     const avatarStage = document.getElementById('avatar-stage');
-    let currentSize = 'normal';
+    let isFullscreen = false;
 
     // Picture-in-Picture
     btnPip.addEventListener('click', async () => {
@@ -2397,55 +2432,50 @@
       }
     });
 
-    // Tamaño Normal
-    btnSizeNormal.addEventListener('click', () => {
-      avatarStage.classList.remove('size-medium', 'size-full');
-      avatarStage.classList.add('size-normal');
-      currentSize = 'normal';
-      [btnSizeNormal, btnSizeMedium, btnSizeFull].forEach(b => b.classList.remove('active'));
-      btnSizeNormal.classList.add('active');
-      showToast('📱 Tamaño normal');
-    });
-
-    // Tamaño Medio
-    btnSizeMedium.addEventListener('click', () => {
-      avatarStage.classList.remove('size-normal', 'size-full');
-      avatarStage.classList.add('size-medium');
-      currentSize = 'medium';
-      [btnSizeNormal, btnSizeMedium, btnSizeFull].forEach(b => b.classList.remove('active'));
-      btnSizeMedium.classList.add('active');
-      showToast('📺 Tamaño medio');
+    // Cast a TV/dispositivo (Google Cast / AirPlay)
+    btnCast.addEventListener('click', async () => {
+      try {
+        // Intentar Google Cast si está disponible
+        if ('RemotePlayback' in HTMLMediaElement.prototype) {
+          const remotePlayback = soraVideo.remote;
+          if (remotePlayback.state === 'disconnected') {
+            await remotePlayback.prompt();
+            showToast('📺 Conectando a dispositivo...');
+          } else {
+            await remotePlayback.cancelWatchAvailability();
+            showToast('📺 Desconectado del dispositivo');
+          }
+        } else {
+          showToast('ℹ️ Compartir pantalla: Usa extensión de Chrome Cast o AirPlay desde el navegador', 'info');
+        }
+      } catch (e) {
+        console.error('Error Cast:', e);
+        showToast('ℹ️ Para compartir en TV: Usa Chrome Cast o AirPlay desde tu navegador', 'info');
+      }
     });
 
     // Pantalla Completa
-    btnSizeFull.addEventListener('click', () => {
-      if (currentSize === 'full') {
-        // Volver a normal
-        avatarStage.classList.remove('size-full');
-        avatarStage.classList.add('size-normal');
-        currentSize = 'normal';
-        btnSizeFull.classList.remove('active');
-        btnSizeNormal.classList.add('active');
-        showToast('📱 Tamaño normal');
-      } else {
-        // Activar pantalla completa
-        avatarStage.classList.remove('size-normal', 'size-medium');
-        avatarStage.classList.add('size-full');
-        currentSize = 'full';
-        [btnSizeNormal, btnSizeMedium, btnSizeFull].forEach(b => b.classList.remove('active'));
-        btnSizeFull.classList.add('active');
-        showToast('🖥️ Pantalla completa (ESC para salir)');
-      }
+    btnFullscreen.addEventListener('click', () => {
+      avatarStage.classList.add('size-full');
+      btnExitFullscreen.style.display = 'block';
+      isFullscreen = true;
+      showToast('🖥️ Pantalla completa');
+    });
+
+    // Salir de pantalla completa
+    btnExitFullscreen.addEventListener('click', () => {
+      avatarStage.classList.remove('size-full');
+      btnExitFullscreen.style.display = 'none';
+      isFullscreen = false;
+      showToast('📱 Modo normal');
     });
 
     // Salir de pantalla completa con ESC
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && currentSize === 'full') {
+      if (e.key === 'Escape' && isFullscreen) {
         avatarStage.classList.remove('size-full');
-        avatarStage.classList.add('size-normal');
-        currentSize = 'normal';
-        btnSizeFull.classList.remove('active');
-        btnSizeNormal.classList.add('active');
+        btnExitFullscreen.style.display = 'none';
+        isFullscreen = false;
       }
     });
 
