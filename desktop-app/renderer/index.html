@@ -1227,7 +1227,7 @@
     let mouthAudioCtx = null;
     let mouthAnalyser = null;
     let mouthRAF = null;
-    let browserSpeaker = null;
+    // browserSpeaker eliminado - Solo se usa Cartesia
     let currentTtsAudio = null;
 
     // ==================== ELEMENTOS DOM ====================
@@ -2060,15 +2060,11 @@
         // Barge-in en frontend: si Sandra está hablando y el usuario habla, cortar audio al instante
         if (raw && raw.trim()) {
           try {
-            // Cortar audio TTS basado en Cartesia (Audio element)
+            // Cortar audio TTS de Cartesia (Audio element)
             if (currentTtsAudio && !currentTtsAudio.paused) {
               currentTtsAudio.pause();
               currentTtsAudio.currentTime = currentTtsAudio.duration || currentTtsAudio.currentTime;
               currentTtsAudio = null;
-            }
-            // Cortar TTS del navegador si está activo
-            if (window.speechSynthesis && window.speechSynthesis.speaking) {
-              window.speechSynthesis.cancel();
             }
           } catch (e) {
             console.warn('Error aplicando barge-in en frontend:', e);
@@ -2479,43 +2475,7 @@
       }
     });
 
-    // ==================== TTS FALLBACK (NAVEGADOR) ====================
-    function speakWithBrowserTTS(text) {
-      try {
-        if (!('speechSynthesis' in window)) return;
-        if (!text || !text.trim()) return;
-
-        // Cancelar cualquier utterance anterior
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'es-ES';
-
-        // Elegir voz española si está disponible
-        const voices = window.speechSynthesis.getVoices();
-        const esVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('es'));
-        if (esVoice) utter.voice = esVoice;
-
-        utter.onstart = () => {
-          if (mouthAnimTimer) clearInterval(mouthAnimTimer);
-          soraMouth.classList.add('mouth-talking');
-          mouthAnimTimer = setInterval(() => {
-            soraMouth.classList.toggle('mouth-talking');
-          }, 150);
-        };
-        const stopAnim = () => {
-          if (mouthAnimTimer) clearInterval(mouthAnimTimer);
-          mouthAnimTimer = null;
-          soraMouth.classList.remove('mouth-talking');
-        };
-        utter.onend = stopAnim;
-        utter.onerror = stopAnim;
-
-        window.speechSynthesis.speak(utter);
-        browserSpeaker = utter;
-      } catch (e) {
-        console.warn('Error en TTS de navegador:', e);
-      }
-    }
+    // TTS del navegador ELIMINADO - Solo se usa Cartesia desde el backend
 
     // ==================== LIP-SYNC AVANZADO (analizador de audio) ====================
     function startMouthSyncForAudio(audioEl) {
