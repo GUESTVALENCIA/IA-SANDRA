@@ -1668,6 +1668,12 @@
         isCallActive = true;
         btnConvoCall.textContent = '⛔ Finalizar llamada';
         callState.textContent = 'Llamada: Activa';
+        
+        // Activar avatar Sora al iniciar llamada
+        if (soraVideo && soraVideo.src) {
+          soraVideo.play().catch(e => console.warn('No se pudo reproducir video Sora:', e));
+        }
+        
         showToast('📞 Llamada conversacional activa');
       } catch (e) {
         console.error(e);
@@ -1683,6 +1689,13 @@
       isCallActive = false;
       btnConvoCall.textContent = '📞 Llamada conversacional';
       callState.textContent = 'Llamada: Inactiva';
+      
+      // Pausar avatar Sora al finalizar llamada
+      if (soraVideo) {
+        soraVideo.pause();
+      }
+      stopMouthSync();
+      
       showToast('📴 Llamada finalizada');
     }
 

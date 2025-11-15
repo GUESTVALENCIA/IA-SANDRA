@@ -41,7 +41,7 @@ class CartesiaService {
             success: true,
             audioBuffer: cached.audioBuffer,
             format: 'wav',
-            sampleRate: 44100,
+            sampleRate: 22050,
             cached: true
           };
         }
@@ -55,7 +55,7 @@ class CartesiaService {
       const { data } = await axios.post(
         `${this.baseUrl}/tts/bytes`,
         {
-          model_id: 'sonic-english',
+          model_id: 'sonic-multilingual',
           transcript: text,
           voice: {
             mode: 'id',
@@ -64,9 +64,11 @@ class CartesiaService {
           output_format: {
             container: 'wav',
             encoding: 'pcm_s16le',
-            sample_rate: 44100
+            sample_rate: 22050
           },
-          language: 'es'
+          language: 'es',
+          speed: 1.0,
+          emotion: []
         },
         {
           headers: {
@@ -84,8 +86,8 @@ class CartesiaService {
       // Guardar en caché
       if (this.cacheEnabled) {
         await this.cache.saveToCache(text, audioBuffer, voiceId, {
-          model: 'sonic-english',
-          sampleRate: 44100
+          model: 'sonic-multilingual',
+          sampleRate: 22050
         });
       }
 
@@ -93,7 +95,7 @@ class CartesiaService {
         success: true,
         audioBuffer,
         format: 'wav',
-        sampleRate: 44100,
+        sampleRate: 22050,
         cached: false
       };
     } catch (error) {
