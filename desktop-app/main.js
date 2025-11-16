@@ -1041,8 +1041,11 @@ ipcMain.handle('start-tts-stream', async (event, { text, options }) => {
       } catch {}
     }, options || {});
 
+    if (!ctrl?.success) {
+      return { success: false, error: ctrl?.error || 'No se pudo iniciar stream' };
+    }
     __ttsStreamController = ctrl;
-    return ctrl;
+    return { success: true };
   } catch (error) {
     console.error('Error en start-tts-stream:', error);
     return { success: false, error: error.message };

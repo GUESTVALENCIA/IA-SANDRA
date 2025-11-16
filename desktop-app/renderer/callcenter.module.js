@@ -140,6 +140,9 @@
       // Desactivar barge-in temporalmente
       try { window.sandraAPI?.setBargeIn?.(false); } catch {}
 
+      // Asegurar reproductor listo para minimizar latencia
+      try { window.voiceStream?.ensure?.(); } catch {}
+
       if (!window.sandraAPI || !window.sandraAPI.startTTSStream) {
         console.warn('startTTSStream no disponible');
         return;
