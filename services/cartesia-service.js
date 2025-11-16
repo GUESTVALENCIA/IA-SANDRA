@@ -51,25 +51,26 @@ class CartesiaService {
         throw new Error('Cartesia API Key no configurada');
       }
 
-      // Endpoint /tts/bytes para obtener audio completo en una respuesta
+      const payload = {
+        model_id: 'sonic-multilingual',
+        transcript: text,
+        voice: {
+          mode: 'id',
+          id: voiceId
+        },
+        output_format: {
+          container: 'wav',
+          encoding: 'pcm_s16le',
+          sample_rate: 22050
+        },
+        language: 'es',
+        speed: typeof options.speed === 'number' ? options.speed : 0.92,
+        emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.6 }]
+      };
+
       const { data } = await axios.post(
         `${this.baseUrl}/tts/bytes`,
-        {
-          model_id: 'sonic-multilingual',
-          transcript: text,
-          voice: {
-            mode: 'id',
-            id: voiceId
-          },
-          output_format: {
-            container: 'wav',
-            encoding: 'pcm_s16le',
-            sample_rate: 22050
-          },
-          language: 'es',
-          speed: 1.0,
-          emotion: []
-        },
+        payload,
         {
           headers: {
             'X-API-Key': this.apiKey,
@@ -148,7 +149,7 @@ class CartesiaService {
       const response = await axios.post(
         `${this.baseUrl}/tts/sse`,
         {
-          model_id: 'sonic-english',
+          model_id: 'sonic-multilingual',
           transcript: text,
           voice: {
             mode: 'id',
@@ -157,9 +158,11 @@ class CartesiaService {
           output_format: {
             container: 'wav',
             encoding: 'pcm_s16le',
-            sample_rate: 44100
+            sample_rate: 22050
           },
-          language: 'es'
+          language: 'es',
+          speed: typeof options.speed === 'number' ? options.speed : 0.92,
+          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.7 }]
         },
         {
           headers: {
@@ -194,6 +197,71 @@ class CartesiaService {
     }
   }
 
+  /**
+   * Streaming dúplex: igual a streamSpeech pero devolviendo un controlador para poder detener.
+   */
+  async streamSpeechDuplex(text, onAudioChunk, options = {}) {
+    const controller = new AbortController();
+    try {
+      if (!this.apiKey) {
+        throw new Error('Cartesia API Key no configurada');
+      }
+
+      const req = await axios.post(
+        `${this.baseUrl}/tts/sse`,
+        {
+          model_id: 'sonic-multilingual',
+          transcript: text,
+          voice: {
+            mode: 'id',
+            id: options.voiceId || this.voiceId
+          },
+          output_format: {
+            container: 'wav',
+            encoding: 'pcm_s16le',
+            sample_rate: 22050
+          },
+          language: 'es',
+          speed: typeof options.speed === 'number' ? options.speed : 0.92,
+          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.7 }]
+        },
+        {
+          headers: {
+            'X-API-Key': this.apiKey,
+            'Cartesia-Version': this.apiVersion,
+            'Content-Type': 'application/json'
+          },
+          responseType: 'stream',
+          signal: controller.signal
+        }
+      );
+
+      req.data.on('data', (chunk) => {
+        if (onAudioChunk) {
+          onAudioChunk(chunk);
+        }
+      });
+      req.data.on('end', () => {
+        // fin normal
+      });
+      req.data.on('error', () => {
+        // fin por error
+      });
+
+      return {
+        success: true,
+        stop: () => {
+          try { controller.abort(); } catch {}
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        stop: () => { try { controller.abort(); } catch {} }
+      };
+    }
+  }
   /**
    * Obtener voces disponibles
    */

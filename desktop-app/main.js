@@ -751,6 +751,10 @@ ipcMain.handle('transcribe-buffer', async (event, { audioBuffer, mimeType }) => 
 
 ipcMain.handle('generate-speech', async (event, { text, options }) => {
   try {
+    const cartesia = serviceManager?.get('cartesia');
+    if (!cartesia) {
+      return { success: false, error: 'Servicio Cartesia no disponible' };
+    }
     const result = await cartesia.generateSpeech(text, options);
     return result;
   } catch (error) {
@@ -1009,6 +1013,50 @@ ipcMain.handle('multimodal-greet', async (event, { text }) => {
     return { success: true, result: res };
   } catch (error) {
     console.error('Error en multimodal-greet:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// ==================== TTS STREAM (DÚPLEX) ====================
+let __ttsStreamController = null;
+ipcMain.handle('start-tts-stream', async (event, { text, options }) => {
+  try {
+    const cartesia = serviceManager?.get('cartesia');
+    if (!cartesia) return { success: false, error: 'Servicio Cartesia no disponible' };
+    if (!text || !text.trim()) return { success: false, error: 'Texto vacío' };
+
+    // Si hay un stream activo, detenerlo primero
+    if (__ttsStreamController?.stop) {
+      try { __ttsStreamController.stop(); } catch {}
+      __ttsStreamController = null;
+    }
+
+    const ctrl = await cartesia.streamSpeechDuplex(text.trim(), (chunk) => {
+      try {
+        // Enviar base64 al renderer para evitar problemas binarios por IPC
+        const b64 = Buffer.from(chunk).toString('base64');
+        if (mainWindow?.webContents) {
+          mainWindow.webContents.send('audio-chunk', { type: 'wav', sampleRate: 22050, data: b64 });
+        }
+      } catch {}
+    }, options || {});
+
+    __ttsStreamController = ctrl;
+    return ctrl;
+  } catch (error) {
+    console.error('Error en start-tts-stream:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('stop-tts-stream', async () => {
+  try {
+    if (__ttsStreamController?.stop) {
+      try { __ttsStreamController.stop(); } catch {}
+      __ttsStreamController = null;
+    }
+    return { success: true };
+  } catch (error) {
     return { success: false, error: error.message };
   }
 });

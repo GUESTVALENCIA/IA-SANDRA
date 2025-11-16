@@ -102,7 +102,12 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   registerLipSyncSourceVideo: (name, base64) => ipcRenderer.invoke('register-lipsync-source-video', { name, base64 }),
 
   // ==================== GREETING ====================
-  multimodalGreet: (text) => ipcRenderer.invoke('multimodal-greet', { text })
+  multimodalGreet: (text) => ipcRenderer.invoke('multimodal-greet', { text }),
+
+  // ==================== TTS STREAM (DÚPLEX) ====================
+  startTTSStream: (text, options) => ipcRenderer.invoke('start-tts-stream', { text, options }),
+  stopTTSStream: () => ipcRenderer.invoke('stop-tts-stream'),
+  onAudioChunk: (callback) => ipcRenderer.on('audio-chunk', (event, data) => callback(data))
 });
 
 console.log('✅ Sandra API completa expuesta correctamente');
