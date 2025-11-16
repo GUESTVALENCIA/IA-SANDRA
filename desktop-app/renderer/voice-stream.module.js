@@ -60,7 +60,7 @@
 
   // Cola de reproducción por trozos WAV
   let playQueue = Promise.resolve();
-  let currentVolume = 0.6;
+  let currentVolume = 0.45;
   function playWavChunkBase64(b64) {
     ensureContext();
     const arrayBuffer = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;

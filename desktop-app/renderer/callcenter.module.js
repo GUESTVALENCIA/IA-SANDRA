@@ -164,8 +164,8 @@
         const blob = new Blob([u8], { type: 'audio/wav' });
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
-        // Volumen más bajo y constante para evitar sustos
-        audio.volume = 0.30;
+        // Volumen ideal recuperado del saludo original
+        audio.volume = 0.45;
         audio.addEventListener('play', () => {
           if (typeof window.startMouthSyncForAudio === 'function') {
             try { window.startMouthSyncForAudio(audio); } catch {}
