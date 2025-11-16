@@ -25,7 +25,8 @@
 
     // Pink noise de fondo muy bajo para evitar vacío (≈ -55 dB)
     pinkNoiseGain = audioCtx.createGain();
-    pinkNoiseGain.gain.value = 0.003;
+    // Desactivado por defecto para evitar sensación de "viento"
+    pinkNoiseGain.gain.value = 0.0;
     const noiseSrc = createPinkNoise(audioCtx);
     noiseSrc.connect(pinkNoiseGain).connect(compressor);
 

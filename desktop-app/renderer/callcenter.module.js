@@ -140,31 +140,41 @@
       // Desactivar barge-in temporalmente
       try { window.sandraAPI?.setBargeIn?.(false); } catch {}
 
-      // Asegurar reproductor listo para minimizar latencia
-      try { window.voiceStream?.ensure?.(); } catch {}
-
-      if (!window.sandraAPI || !window.sandraAPI.startTTSStream) {
-        console.warn('startTTSStream no disponible');
+      if (!window.sandraAPI || !window.sandraAPI.generateSpeech) {
+        console.warn('generateSpeech no disponible');
         return;
       }
-      // Iniciar streaming dúplex (voice-stream reproducirá automáticamente)
-      await window.sandraAPI.startTTSStream(greeting, {
+      // Volver a TTS fiable para el saludo inmediato
+      const res = await window.sandraAPI.generateSpeech(greeting, {
         speed: 0.92,
         emotion: [{ id: 'warm', strength: 0.6 }]
       });
-
-      // Mantener contexto abierto con tono base muy bajo (para evitar click)
-      try {
-        const silentCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const silence = silentCtx.createConstantSource();
-        silence.offset.value = 0;
-        const g = silentCtx.createGain();
-        g.gain.value = 0.00001;
-        silence.connect(g).connect(silentCtx.destination);
-        silence.start();
-        // Cerrarlo al colgar
-        window.__callCenterSilenceCtx = silentCtx;
-      } catch {}
+      if (res && res.success && res.audioBuffer) {
+        let u8;
+        if (res.audioBuffer.data && Array.isArray(res.audioBuffer.data)) {
+          u8 = new Uint8Array(res.audioBuffer.data);
+        } else if (res.audioBuffer.buffer) {
+          u8 = new Uint8Array(res.audioBuffer.buffer);
+        } else {
+          u8 = new Uint8Array(res.audioBuffer);
+        }
+        const blob = new Blob([u8], { type: 'audio/wav' });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.addEventListener('play', () => {
+          if (typeof window.startMouthSyncForAudio === 'function') {
+            try { window.startMouthSyncForAudio(audio); } catch {}
+          }
+        });
+        audio.addEventListener('ended', () => {
+          if (typeof window.stopMouthSync === 'function') {
+            try { window.stopMouthSync(); } catch {}
+          }
+        });
+        await audio.play();
+      } else {
+        console.warn('TTS sin audio:', res);
+      }
       // Reactivar barge-in un poco después de empezar el audio
       setTimeout(() => { try { window.sandraAPI?.setBargeIn?.(true); } catch {} }, 1200);
     } catch (e) {
@@ -209,6 +219,13 @@
       stopRingtone();
       playHangupClunk();
       try { window.sandraAPI?.stopTTSStream?.(); } catch {}
+      try {
+        if (window.__callCenterSilenceCtx && window.__callCenterSilenceCtx.state !== 'closed') {
+          window.__callCenterSilenceCtx.close().catch(() => {});
+        }
+      } catch {}
+      window.__callCenterSilenceCtx = null;
+      try { window.voiceStream?.suspend?.(); } catch {}
       try { clearTimeout(idleTimeoutId); } catch {}
     }
     // Actividad durante la llamada
