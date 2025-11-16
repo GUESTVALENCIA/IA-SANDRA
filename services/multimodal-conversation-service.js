@@ -126,6 +126,9 @@ class MultimodalConversationService {
         await this._initAvatarSession();
       }
 
+      // Inactividad: colgar llamada si no hay actividad
+      this._resetIdleTimer();
+
       return {
         success: true,
         message: 'Conversación multimodal iniciada',
@@ -150,6 +153,9 @@ class MultimodalConversationService {
     const { transcript, isFinal, confidence } = data || {};
     const normalized = (transcript || '').trim();
     if (!normalized) return;
+
+    // actividad detectada → resetear temporizador
+    this._resetIdleTimer();
 
     // Barge-in: detectar interrupciones incluso en transcripciones intermedias
     if (!isFinal && this.isSpeaking && this.bargeInEnabled) {
@@ -230,12 +236,43 @@ class MultimodalConversationService {
 
       await this._logMessages(transcript, finalText);
 
-      // TTS solo si no es modo texto puro (con saneado para voz)
+      // TTS en streaming dúplex (preferred) o fallback a generateSpeech
       let ttsAudio = null;
+      this._ttsController = null;
       if (this.currentMode === 'voice' || this.currentMode === 'video' || this.currentMode === 'avatar') {
         const spoken = this._sanitizeForSpeech(finalText);
-        const ttsResult = await this.cartesia.generateSpeech(spoken);
-        ttsAudio = ttsResult?.audioBuffer || null;
+        try {
+          // Intentar streaming dúplex: cartesia.streamSpeechDuplex(text, onChunk, options)
+          const ctrl = await this.cartesia.streamSpeechDuplex(spoken, (chunk) => {
+            // chunk es Buffer; emitir al frontend vía callback onResponseReady con streaming flag
+            try {
+              const b64 = Buffer.from(chunk).toString('base64');
+              if (this.onResponseReady) {
+                this.onResponseReady({ text: finalText, audioChunk: b64, streaming: true });
+              }
+            } catch (e) { /* ignore */ }
+          }, { voiceId: this.cartesia.voiceId });
+          if (ctrl && ctrl.success) {
+            this._ttsController = ctrl;
+            // Mark speaking state while streaming
+            this.isSpeaking = true;
+            this._emitSessionState();
+            // Wait until controller ends - controller.stop will be called by stopSpeaking or on finish by cartesia stream end
+            // Note: cartesia stream signals handled via callback; we don't block here.
+          } else {
+            // Fallback: synchronous generateSpeech
+            const ttsResult = await this.cartesia.generateSpeech(spoken);
+            ttsAudio = ttsResult?.audioBuffer || null;
+          }
+        } catch (e) {
+          // Fallback robusto
+          try {
+            const ttsResult = await this.cartesia.generateSpeech(spoken);
+            ttsAudio = ttsResult?.audioBuffer || null;
+          } catch (err) {
+            console.warn('TTS fallback failed:', err.message);
+          }
+        }
       }
 
       this.isThinking = false;
@@ -263,6 +300,9 @@ class MultimodalConversationService {
       if (!syncedVideoPath && this.avatarLipSyncEnabled && ttsAudio && (this.currentMode === 'avatar' || this.currentMode === 'video')) {
         await this.handleLipSyncFrame(ttsAudio);
       }
+
+      // actividad de salida (voz) → resetear temporizador
+      this._resetIdleTimer();
     } catch (error) {
       this.isThinking = false;
       this._emitSessionState();
@@ -407,12 +447,17 @@ class MultimodalConversationService {
       const ttsResult = await this.cartesia.generateSpeech(this._sanitizeForSpeech(text));
       const audioBuffer = ttsResult?.audioBuffer || null;
 
-      // HeyGen avatar
-      const heygenResult = await this.heygen.speak(text);
-
-      // Emitir hacia el frontend para reproducción inmediata del saludo
+      // Emitir hacia el frontend para reproducción inmediata del saludo (independiente de HeyGen)
       if (audioBuffer) {
         this._emitResponse({ text, audioBuffer, syncedVideoPath: null });
+      }
+
+      // HeyGen avatar (no bloquear si falla)
+      let heygenResult = { success: false };
+      try {
+        heygenResult = await this.heygen.speak(text);
+      } catch (e) {
+        console.warn('HeyGen speak error (saludo):', e.message);
       }
 
       // Lip-sync avanzado
@@ -458,11 +503,10 @@ class MultimodalConversationService {
 
     try {
       this.isSpeaking = false;
-      
-      // Detener Cartesia
-      if (this.cartesia && typeof this.cartesia.stop === 'function') {
-      this.cartesia.stop();
-      }
+      // Detener controlador de stream si existe
+      try { if (this._ttsController && typeof this._ttsController.stop === 'function') this._ttsController.stop(); } catch {}
+      // Detener Cartesia (por seguridad)
+      try { if (this.cartesia && typeof this.cartesia.stop === 'function') this.cartesia.stop(); } catch {}
 
       // Detener HeyGen (interrupt o stop)
       try {
@@ -812,6 +856,25 @@ class MultimodalConversationService {
    */
   setLipSyncSourceVideo(filePath) {
     this.lipsyncSourceVideo = filePath;
+  }
+
+  /**
+   * Temporizador de inactividad para colgar llamada
+   * - No cierra permisos de micrófono; solo detiene sesión STT/LLM/TTS
+   */
+  _resetIdleTimer() {
+    const idleMs = Number(process.env.CALL_IDLE_TIMEOUT_MS || 45000); // 45s por defecto
+    try { if (this._idleTimer) clearTimeout(this._idleTimer); } catch {}
+    this._idleTimer = setTimeout(async () => {
+      try {
+        if (this.sessionActive) {
+          console.log(`⏱️ Llamada colgada por inactividad (${idleMs}ms)`);
+          await this.stopConversation();
+        }
+      } catch (e) {
+        this._emitError(e);
+      }
+    }, idleMs);
   }
 
   /**
