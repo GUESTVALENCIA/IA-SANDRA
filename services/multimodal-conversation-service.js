@@ -251,7 +251,7 @@ class MultimodalConversationService {
                 this.onResponseReady({ text: finalText, audioChunk: b64, streaming: true });
               }
             } catch (e) { /* ignore */ }
-          }, { voiceId: this.cartesia.voiceId });
+          }, { voiceId: this.cartesia.voiceId, speed: 0.75, emotion: [{ id: 'warm', strength: 0.5 }] });
           if (ctrl && ctrl.success) {
             this._ttsController = ctrl;
             // Mark speaking state while streaming
@@ -261,13 +261,13 @@ class MultimodalConversationService {
             // Note: cartesia stream signals handled via callback; we don't block here.
           } else {
             // Fallback: synchronous generateSpeech
-            const ttsResult = await this.cartesia.generateSpeech(spoken);
+            const ttsResult = await this.cartesia.generateSpeech(spoken, { voiceId: this.cartesia.voiceId, speed: 0.75, emotion: [{ id: 'warm', strength: 0.5 }] });
             ttsAudio = ttsResult?.audioBuffer || null;
           }
         } catch (e) {
           // Fallback robusto
           try {
-            const ttsResult = await this.cartesia.generateSpeech(spoken);
+            const ttsResult = await this.cartesia.generateSpeech(spoken, { voiceId: this.cartesia.voiceId, speed: 0.75, emotion: [{ id: 'warm', strength: 0.5 }] });
             ttsAudio = ttsResult?.audioBuffer || null;
           } catch (err) {
             console.warn('TTS fallback failed:', err.message);
@@ -410,7 +410,7 @@ class MultimodalConversationService {
 
       // TTS con Cartesia (saneado para voz)
       const spoken = this._sanitizeForSpeech(finalText);
-      const ttsResult = await this.cartesia.generateSpeech(spoken);
+      const ttsResult = await this.cartesia.generateSpeech(spoken, { voiceId: this.cartesia.voiceId, speed: 0.75, emotion: [{ id: 'warm', strength: 0.5 }] });
       const ttsAudio = ttsResult?.audioBuffer || null;
 
       this.isThinking = false;
