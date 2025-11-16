@@ -146,8 +146,8 @@
       }
       // Volver a TTS fiable para el saludo inmediato
       const res = await window.sandraAPI.generateSpeech(greeting, {
-        speed: 0.92,
-        emotion: [{ id: 'warm', strength: 0.6 }]
+        speed: 0.8,
+        emotion: [{ id: 'warm', strength: 0.5 }]
       });
       if (res && res.success && res.audioBuffer) {
         let u8;
@@ -161,6 +161,8 @@
         const blob = new Blob([u8], { type: 'audio/wav' });
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
+        // Volumen más bajo y constante
+        audio.volume = 0.6;
         audio.addEventListener('play', () => {
           if (typeof window.startMouthSyncForAudio === 'function') {
             try { window.startMouthSyncForAudio(audio); } catch {}
@@ -176,7 +178,7 @@
         console.warn('TTS sin audio:', res);
       }
       // Reactivar barge-in un poco después de empezar el audio
-      setTimeout(() => { try { window.sandraAPI?.setBargeIn?.(true); } catch {} }, 1200);
+      setTimeout(() => { try { window.sandraAPI?.setBargeIn?.(true); } catch {} }, 900);
     } catch (e) {
       console.error('Error generando/reproduciendo saludo (stream):', e);
       try { window.sandraAPI?.setBargeIn?.(true); } catch {}

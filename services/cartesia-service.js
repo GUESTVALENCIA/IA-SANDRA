@@ -64,8 +64,8 @@ class CartesiaService {
           sample_rate: 22050
         },
         language: 'es',
-        speed: typeof options.speed === 'number' ? options.speed : 0.92,
-        emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.6 }]
+        speed: typeof options.speed === 'number' ? options.speed : 0.8,
+        emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.5 }]
       };
 
       const { data } = await axios.post(
@@ -161,8 +161,8 @@ class CartesiaService {
             sample_rate: 22050
           },
           language: 'es',
-          speed: typeof options.speed === 'number' ? options.speed : 0.92,
-          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.7 }]
+          speed: typeof options.speed === 'number' ? options.speed : 0.8,
+          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.5 }]
         },
         {
           headers: {
@@ -222,8 +222,8 @@ class CartesiaService {
             sample_rate: 22050
           },
           language: 'es',
-          speed: typeof options.speed === 'number' ? options.speed : 0.92,
-          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.7 }]
+          speed: typeof options.speed === 'number' ? options.speed : 0.8,
+          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.5 }]
         },
         {
           headers: {

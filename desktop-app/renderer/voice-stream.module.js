@@ -60,6 +60,7 @@
 
   // Cola de reproducción por trozos WAV
   let playQueue = Promise.resolve();
+  let currentVolume = 0.6;
   function playWavChunkBase64(b64) {
     ensureContext();
     const arrayBuffer = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
@@ -69,7 +70,7 @@
     playQueue = playQueue.then(() => {
       return new Promise((resolve) => {
         const el = new Audio(url);
-        el.volume = 1.0;
+        el.volume = currentVolume;
         el.addEventListener('ended', () => {
           URL.revokeObjectURL(url);
           resolve();
@@ -97,6 +98,7 @@
     ensure: ensureContext,
     setMasterGain: (v) => { try { ensureContext(); masterGain.gain.value = v; } catch {} },
     setPinkGain: (v) => { try { ensureContext(); pinkNoiseGain.gain.value = v; } catch {} },
+    setVolume: (v) => { currentVolume = Math.max(0, Math.min(1, Number(v) || 0)); },
     resume: () => { try { ensureContext(); audioCtx.resume(); } catch {} },
     suspend: () => { try { audioCtx?.suspend(); } catch {} }
   };
