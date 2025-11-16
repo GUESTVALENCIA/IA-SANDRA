@@ -60,6 +60,7 @@
 
   // Cola de reproducción por trozos WAV
   let playQueue = Promise.resolve();
+  // Volumen base validado en el workflow (voz clara pero sin agresividad)
   let currentVolume = 0.45;
   function playWavChunkBase64(b64) {
     ensureContext();

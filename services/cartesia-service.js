@@ -64,8 +64,9 @@ class CartesiaService {
           sample_rate: 22050
         },
         language: 'es',
-        speed: typeof options.speed === 'number' ? options.speed : 0.8,
-        emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.5 }]
+        // Parámetros validados en el workflow (voz calma de Sandra)
+        speed: typeof options.speed === 'number' ? options.speed : 0.78,
+        emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.6 }]
       };
 
       const { data } = await axios.post(
@@ -161,8 +162,9 @@ class CartesiaService {
             sample_rate: 22050
           },
           language: 'es',
-          speed: typeof options.speed === 'number' ? options.speed : 0.8,
-          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.5 }]
+          // Misma voz que en generateSpeech (workflow aprobado)
+          speed: typeof options.speed === 'number' ? options.speed : 0.78,
+          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.6 }]
         },
         {
           headers: {
@@ -222,8 +224,8 @@ class CartesiaService {
             sample_rate: 22050
           },
           language: 'es',
-          speed: typeof options.speed === 'number' ? options.speed : 0.8,
-          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.5 }]
+          speed: typeof options.speed === 'number' ? options.speed : 0.78,
+          emotion: Array.isArray(options.emotion) ? options.emotion : [{ id: 'warm', strength: 0.6 }]
         },
         {
           headers: {

@@ -247,7 +247,7 @@ class MultimodalConversationService {
             // chunk es Buffer; emitir al frontend vía callback onResponseReady con streaming flag
             try {
               const b64 = Buffer.from(chunk).toString('base64');
-              if (this.onResponseReady) {
+      if (this.onResponseReady) {
                 this.onResponseReady({ text: finalText, audioChunk: b64, streaming: true });
               }
             } catch (e) { /* ignore */ }

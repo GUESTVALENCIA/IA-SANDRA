@@ -964,14 +964,14 @@
             <button class="avatar-control-icon" id="btn-pip" title="Picture-in-Picture (flotante)">🖼️</button>
             <button class="avatar-control-icon" id="btn-cast" title="Compartir en TV/dispositivo">📺</button>
             <button class="avatar-control-icon" id="btn-fullscreen" title="Pantalla completa">⛶</button>
-          </div>
-          
+      </div>
+
           <!-- Botón de salir de pantalla completa (solo visible en fullscreen) -->
           <button class="exit-fullscreen-btn" id="btn-exit-fullscreen" style="display:none;">✕ Salir</button>
         </div>
         <div id="heygen-avatar" style="margin-top:10px;"></div>
       </div>
-      
+
       <!-- Controles de llamada conversacional -->
       <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px; display:flex; align-items:center; gap:10px;">
         <button id="btn-convo-call" class="role-btn" style="padding:10px 14px;">📞 Llamada conversacional</button>
@@ -997,7 +997,7 @@
     <!-- MULTIMODAL INPUT BAR -->
     <div class="input-bar">
       <!-- Indicador de grabación eliminado -->
-
+      
       <!-- Audio Visualizer Canvas -->
       <canvas id="audio-visualizer" style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 400px; height: 50px; border-radius: 8px; background: rgba(0,0,0,0.3); display: none;"></canvas>
       
@@ -1479,36 +1479,36 @@
 
     // ==================== GRABACIÓN DE VOZ CON DEEPGRAM ====================
     async function startVoiceRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 44100
-          } 
-        });
-        
-        mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'audio/webm'
-        });
-        audioChunks = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          await processVoiceInput(audioBlob);
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              sampleRate: 44100
+            } 
+          });
           
-          // Detener el stream
-          stream.getTracks().forEach(track => track.stop());
-        };
+          mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'audio/webm'
+          });
+          audioChunks = [];
 
-        mediaRecorder.start(100); // Capturar cada 100ms
-        isRecording = true;
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            await processVoiceInput(audioBlob);
+            
+            // Detener el stream
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start(100); // Capturar cada 100ms
+          isRecording = true;
 
         // Máximo 30s
         clearTimeout(recordTimeoutId);
@@ -1518,16 +1518,16 @@
             showToast('⏱️ Grabación detenida (30s máx)');
           }
         }, 30000);
-        
-        // Iniciar visualizador de audio
-        const visualizerCanvas = document.getElementById('audio-visualizer');
-        if (visualizerCanvas) {
-          visualizerCanvas.style.display = 'block';
           
-          // Crear visualizador
-          if (!audioVisualizer) {
+          // Iniciar visualizador de audio
+          const visualizerCanvas = document.getElementById('audio-visualizer');
+          if (visualizerCanvas) {
+            visualizerCanvas.style.display = 'block';
+            
+            // Crear visualizador
+            if (!audioVisualizer) {
             // Cargar AudioVisualizer
-            const AudioVisualizer = function(canvasId) {
+              const AudioVisualizer = function(canvasId) {
                 this.canvas = document.getElementById(canvasId);
                 this.canvasContext = this.canvas ? this.canvas.getContext('2d') : null;
                 this.audioContext = null;
@@ -1593,23 +1593,23 @@
                     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
                   }
                 };
-            };
+              };
+              
+              audioVisualizer = new AudioVisualizer('audio-visualizer');
+            }
             
-            audioVisualizer = new AudioVisualizer('audio-visualizer');
+            audioVisualizer.startVisualization(stream);
           }
           
-          audioVisualizer.startVisualization(stream);
-        }
-        
-        // Actualizar UI
+          // Actualizar UI
         if (voiceBtn) voiceBtn.classList.add('recording');
         if (voiceBtn) voiceBtn.textContent = '⏹️';
-        
+          
         showToast('🎤 Grabando... suelta para enviar');
-      } catch (error) {
-        console.error('Error al acceder al micrófono:', error);
-        showToast('❌ No se pudo acceder al micrófono', 'error');
-      }
+        } catch (error) {
+          console.error('Error al acceder al micrófono:', error);
+          showToast('❌ No se pudo acceder al micrófono', 'error');
+        }
     }
 
     function stopVoiceRecording() {
@@ -1657,11 +1657,11 @@
         }
 
         showToast('🎤 Enviando audio al servicio multimodal...');
-
+        
         // Convertir blob a buffer (Uint8Array)
         const arrayBuffer = await audioBlob.arrayBuffer();
         const buffer = new Uint8Array(arrayBuffer);
-
+        
         // Usar el flujo multimodal completo (STT + GPT-4o + TTS)
         const result = await window.sandraAPI.multimodalSendVoice(buffer, null);
         if (!result || !result.success) {
@@ -2032,7 +2032,7 @@
 
     // Selector de voz
     const voiceSelector = document.getElementById('voice-selector');
-      if (voiceSelector) {
+    if (voiceSelector) {
       voiceSelector.addEventListener('change', (e) => {
         currentVoiceId = e.target.value;
         showToast(`Voz cambiada a: ${e.target.options[e.target.selectedIndex].text}`);
@@ -2041,7 +2041,7 @@
 
     // Modo continuo
     const continuousModeToggle = document.getElementById('continuous-mode');
-      if (continuousModeToggle) {
+    if (continuousModeToggle) {
       continuousModeToggle.addEventListener('change', async (e) => {
         continuousMode = e.target.checked;
         
@@ -2236,6 +2236,8 @@
             const blob = new Blob([u8], { type: 'audio/wav' });
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
+            // Volumen aprobado en el workflow para respuestas de Sandra
+            audio.volume = 0.45;
 
             // Guardar referencia global para barge-in
             currentTtsAudio = audio;
@@ -2405,20 +2407,69 @@
         osc.stop(ctx.currentTime + 0.05);
       }
 
-      function playGreeting() {
+      async function playGreeting() {
         if (!isRinging) return;
         
         stopRingtone();
         updateCallStatus('Conectado', true);
         
-        const greeting = "¡Hola! Gracias por contactar con Sandra IA. ¿En qué puedo ayudarte hoy?";
-        
-        // Usar TTS del navegador como fallback
-        const utterance = new SpeechSynthesisUtterance(greeting);
-        utterance.lang = 'es-ES';
-        utterance.rate = 0.9;
-        utterance.pitch = 1.1;
-        speechSynthesis.speak(utterance);
+        const greeting = "Hola, soy Sandra, asistente de Guests Valencia. ¿En qué puedo ayudarte?";
+
+        // Intentar primero TTS profesional de Cartesia vía backend
+        try {
+          if (window.sandraAPI && typeof window.sandraAPI.generateSpeech === 'function') {
+            const res = await window.sandraAPI.generateSpeech(greeting, {
+              speed: 0.78,
+              emotion: [{ id: 'warm', strength: 0.6 }]
+            });
+
+            if (res && res.success && res.audioBuffer) {
+              let u8;
+              if (res.audioBuffer.data && Array.isArray(res.audioBuffer.data)) {
+                u8 = new Uint8Array(res.audioBuffer.data);
+              } else if (res.audioBuffer.buffer) {
+                u8 = new Uint8Array(res.audioBuffer.buffer);
+              } else {
+                u8 = new Uint8Array(res.audioBuffer);
+              }
+
+              const blob = new Blob([u8], { type: 'audio/wav' });
+              const url = URL.createObjectURL(blob);
+              const audio = new Audio(url);
+              // Mismo volumen aprobado en el workflow
+              audio.volume = 0.45;
+
+              // Referencia global para posibles integraciones de barge-in
+              currentTtsAudio = audio;
+
+              audio.addEventListener('play', () => {
+                if (typeof startMouthSyncForAudio === 'function') {
+                  try { startMouthSyncForAudio(audio); } catch {}
+                }
+              });
+              audio.addEventListener('ended', () => {
+                if (currentTtsAudio === audio) currentTtsAudio = null;
+                if (typeof stopMouthSync === 'function') {
+                  try { stopMouthSync(); } catch {}
+                }
+              });
+
+              await audio.play().catch(() => {});
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('Error generando/reproduciendo saludo Cartesia:', e);
+        }
+
+        // Fallback de emergencia: TTS del navegador si Cartesia falla
+        try {
+          const utterance = new SpeechSynthesisUtterance(greeting);
+          utterance.lang = 'es-ES';
+          utterance.rate = 0.9;
+          utterance.pitch = 1.0;
+          speechSynthesis.speak(utterance);
+        } catch {}
       }
 
       // Función de colgado
