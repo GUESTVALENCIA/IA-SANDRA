@@ -17,6 +17,7 @@
   let greetingHasPlayed = false;
   let idleTimeoutId = null;
   let flowRunning = false;
+  let noBargeUntilTs = 0;
 
   function scheduleRingtoneFlow() {
     if (flowRunning) return;
@@ -139,6 +140,8 @@
     try {
       // Desactivar barge-in temporalmente
       try { window.sandraAPI?.setBargeIn?.(false); } catch {}
+      // Ventana mínima para evitar que se re-habilite barge-in demasiado pronto
+      noBargeUntilTs = Date.now() + 6000;
 
       if (!window.sandraAPI || !window.sandraAPI.generateSpeech) {
         console.warn('generateSpeech no disponible');
@@ -146,7 +149,7 @@
       }
       // Volver a TTS fiable para el saludo inmediato
       const res = await window.sandraAPI.generateSpeech(greeting, {
-        speed: 0.78,
+        speed: 0.75,
         emotion: [{ id: 'warm', strength: 0.5 }]
       });
       if (res && res.success && res.audioBuffer) {
@@ -162,7 +165,7 @@
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         // Volumen más bajo y constante para evitar sustos
-        audio.volume = 0.45;
+        audio.volume = 0.30;
         audio.addEventListener('play', () => {
           if (typeof window.startMouthSyncForAudio === 'function') {
             try { window.startMouthSyncForAudio(audio); } catch {}
@@ -172,12 +175,26 @@
           if (typeof window.stopMouthSync === 'function') {
             try { window.stopMouthSync(); } catch {}
           }
-          // Reactivar barge-in al finalizar el saludo
-          try { window.sandraAPI?.setBargeIn?.(true); } catch {}
+          // Reactivar barge-in respetando ventana mínima
+          try {
+            const now = Date.now();
+            const delay = Math.max(0, noBargeUntilTs - now);
+            if (delay === 0) {
+              window.sandraAPI?.setBargeIn?.(true);
+            } else {
+              setTimeout(() => { try { window.sandraAPI?.setBargeIn?.(true); } catch {} }, delay);
+            }
+          } catch {}
         });
         await audio.play();
         // Fallback: si por alguna razón no llega 'ended', reactivar barge-in tras 3s
-        setTimeout(() => { try { window.sandraAPI?.setBargeIn?.(true); } catch {} }, 3000);
+        setTimeout(() => {
+          try {
+            if (Date.now() >= noBargeUntilTs) {
+              window.sandraAPI?.setBargeIn?.(true);
+            }
+          } catch {}
+        }, 3000);
       } else {
         console.warn('TTS sin audio:', res);
       }
@@ -232,6 +249,7 @@
       window.__callCenterSilenceCtx = null;
       try { window.voiceStream?.suspend?.(); } catch {}
       try { clearTimeout(idleTimeoutId); } catch {}
+      noBargeUntilTs = 0;
     }
     // Actividad durante la llamada
     if (s.sessionActive) {
