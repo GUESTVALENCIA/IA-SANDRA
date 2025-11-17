@@ -91,3 +91,37 @@
   root.playPickup      = playPickup;
   root.playHangup      = playHangup;
 })(window);
+
+// Minimal ES module bridge to global helpers (ensures file exists where HTML expects it)
+export function initCallAudio() {
+  if (!window.__sandraCallAudio) {
+    window.__sandraCallAudio = {};
+  }
+  if (typeof window.initCallAudio === 'function') {
+    try { window.initCallAudio(); } catch(e) { console.warn('initCallAudio bridge error', e); }
+  }
+}
+
+export function startRingtone() {
+  if (typeof window.startRingtone === 'function') {
+    try { window.startRingtone(); } catch(e) { console.warn('startRingtone bridge error', e); }
+  }
+}
+
+export function stopRingtone() {
+  if (typeof window.stopRingtone === 'function') {
+    try { window.stopRingtone(); } catch(e) { console.warn('stopRingtone bridge error', e); }
+  }
+}
+
+export function playPickup() {
+  if (typeof window.playPickup === 'function') {
+    try { window.playPickup(); } catch(e) { console.warn('playPickup bridge error', e); }
+  }
+}
+
+export function playHangup() {
+  if (typeof window.playHangup === 'function') {
+    try { window.playHangup(); } catch(e) { console.warn('playHangup bridge error', e); }
+  }
+}
