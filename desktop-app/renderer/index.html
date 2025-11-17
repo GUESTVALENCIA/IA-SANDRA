@@ -1372,7 +1372,12 @@
         window._sandra_master = master;
       } catch(e){ console.warn('ensureGraph error:', e && e.message); }
     }
+    // Funciones locales que usan las globales si existen, sino fallback local
     function startRingtone(){
+      if (typeof window.startRingtone === 'function') {
+        window.startRingtone();
+        return;
+      }
       if (ringActive) return;
       ensureGraph();
       try{
@@ -1386,7 +1391,13 @@
         console.log('▶ ringback');
       }catch(e){ console.warn('startRingtone err', e && e.message); }
     }
-    function stopRingtone(){ ringActive=false; try{ ringAudio && ringAudio.pause(); }catch{} console.log('⏹ ringback'); }
+    function stopRingtone(){ 
+      if (typeof window.stopRingtone === 'function') {
+        window.stopRingtone();
+        return;
+      }
+      ringActive=false; try{ ringAudio && ringAudio.pause(); }catch{} console.log('⏹ ringback'); 
+    }
 
     // ==================== ELEMENTOS DOM ====================
     const messagesContainer = document.getElementById('messages');
@@ -2453,6 +2464,11 @@
       let isRinging = false;
 
       async function startRingtone() {
+        // Usar función global si existe
+        if (typeof window.startRingtone === 'function') {
+          window.startRingtone();
+          return;
+        }
         if (isRinging) return;
         isRinging = true;
         
@@ -2485,6 +2501,11 @@
       }
 
       function stopRingtone() {
+        // Usar función global si existe
+        if (typeof window.stopRingtone === 'function') {
+          window.stopRingtone();
+          return;
+        }
         if (!isRinging) return;
         isRinging = false;
         
@@ -2566,7 +2587,7 @@
       async function playGreeting() {
         if (!isRinging) return;
         
-        stopRingtone();
+        safeStopRingtone();
         updateCallStatus('Conectado', true);
         
         const greeting = "Hola, soy Sandra, asistente de Guests Valencia. ¿En qué puedo ayudarte?";
@@ -2632,7 +2653,7 @@
       async function stopConversationalCall() {
         console.log('📴 [CallCenter] Finalizando llamada...');
         
-        stopRingtone();
+        safeStopRingtone();
         updateCallStatus('Llamada finalizada', false);
         
         await playHangupSound();
@@ -3510,7 +3531,6 @@
 
   <script src="enterprise.js"></script>
   <script src="voice-stream.module.js"></script>
-  <script src="callcenter.module.js"></script>
 </body>
 </html>
 

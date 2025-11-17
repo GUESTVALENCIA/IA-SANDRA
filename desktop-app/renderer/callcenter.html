@@ -1,0 +1,123 @@
+<!DOCTYPE html><meta charset="utf-8">
+<title>Sandra · CallCenter por Rol</title>
+<body style="margin:0;background:#0b0e12;color:#e7ecf3;font:14px system-ui">
+<main style="max-width:1080px;margin:20px auto;padding:0 16px">
+  <h2 style="margin:0 0 10px">CallCenter por Rol</h2>
+  <div style="display:flex;gap:10px;align-items:center;margin:6px 0 14px">
+    <input id="q" placeholder="Filtrar roles..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #1b222c;background:#0a0d11;color:#e7ecf3">
+    <button id="snap" class="secondary">Snapshot rápido</button>
+    <span id="stt" style="margin-left:8px">STT: off</span>
+    <span id="vc"  style="margin-left:8px;color:#9aa6b2">Cmd: off</span>
+  </div>
+  <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px"></div>
+  <div style="margin-top:14px">
+    <button id="colgar" class="secondary" disabled>Colgar</button>
+  </div>
+  <pre id="log" style="margin-top:16px;background:#0a0d11;border:1px solid #19202a;border-radius:8px;padding:10px;height:180px;overflow:auto"></pre>
+</main>
+<script>
+const logEl = document.getElementById('log');
+function log(s){ const t=new Date().toLocaleTimeString(); logEl.textContent += `[${t}] ${s}\n`; logEl.scrollTop=logEl.scrollHeight; }
+
+// --- Ringback global (evita ReferenceError) ---
+window.__ringEl = window.__ringEl || null;
+window.startRingtone = window.startRingtone || function(){
+  try {
+    if (!window.__ringEl) { const a=new Audio('assets/audio/ringback.ogg'); a.loop=true; a.volume=0.18; window.__ringEl=a; }
+    window.__ringEl.currentTime=0; window.__ringEl.play().catch(()=>{});
+    log('▶ ringback');
+  }catch(e){ log('ringback err '+e.message); }
+};
+window.stopRingtone = window.stopRingtone || function(){ try{ window.__ringEl&&window.__ringEl.pause(); log('⏹ ringback'); }catch{} };
+
+// --- Estado ---
+let routes=null, isCall=false, curSession=null;
+const grid = document.getElementById('grid');
+const q = document.getElementById('q');
+const stt = document.getElementById('stt');
+const btnSnap = document.getElementById('snap');
+const btnColgar = document.getElementById('colgar');
+
+function match(text,needle){ return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(needle); }
+function renderRoles(){
+  const needle = (q.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  grid.innerHTML='';
+  Object.entries(routes.roles).forEach(([id,meta])=>{
+    const title = meta.title||id;
+    const hay = (title+' '+id).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if (needle && !hay.includes(needle)) return;
+    const el = document.createElement('button');
+    el.textContent = `${title} ${meta.pipeline==='avatar_sora'?'· Sora':''}`;
+    el.style = 'text-align:left;padding:10px;border-radius:10px;border:1px solid #1b222c;background:#0a0d11;color:#e7ecf3';
+    el.onclick = async ()=>{
+      if (isCall) return;
+      try {
+        startRingtone();
+        const r = await window.sandraAPI.ccStartByRole(id);
+        if (!r?.success) { stopRingtone(); return alert('Error: '+(r?.error||'start')); }
+        isCall=true; curSession=r.sessionId; btnColgar.disabled=false; log(`Llamada → rol=${id} · pipeline=${r.pipeline}`);
+      }catch(e){ stopRingtone(); alert('Error: '+e.message); }
+    };
+    grid.appendChild(el);
+  });
+}
+
+// STT estado (para cortar ringback al conectar)
+window.sandraAPI?.onSTTConnectionChange?.(({connected})=>{
+  stt.textContent = 'STT: ' + (connected?'on':'off');
+  if (connected) stopRingtone();
+});
+
+// Colgar
+btnColgar.onclick = async ()=>{
+  if (!isCall) return;
+  try { await window.sandraAPI.ccEnd(curSession); } catch {}
+  isCall=false; curSession=null; btnColgar.disabled=true; stopRingtone(); log('Colgado');
+};
+
+// Snapshot
+btnSnap.onclick = async ()=>{
+  const r = await window.sandraAPI.restoreCreate('quick');
+  if (!r?.success) return alert('Error creando snapshot: '+(r?.error||'')); 
+  alert(`Snapshot creado: ${r.tag}`);
+};
+
+// Comandos de voz (wake-word "hola sandra")
+let vcArmed=false, vcTimer=null;
+function setVC(on){ vcArmed=on; document.getElementById('vc').textContent = 'Cmd: ' + (on?'ON':'off'); }
+function normalize(t){ return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+async function execVoiceCommand(text){
+  const t = normalize(text);
+  if (/^hola sandra\b/.test(t)) { setVC(true); clearTimeout(vcTimer); vcTimer=setTimeout(()=>setVC(false), 8000); return; }
+  if (!vcArmed) return;
+  if (/llama(r)?\b/.test(t)) {
+    const role = Object.keys(routes.roles).find(id => t.includes(normalize(id)) || t.includes(normalize(routes.roles[id].title||'')));
+    if (role){ document.querySelectorAll('#grid button')[0]?.focus(); /* noop */ }
+    if (role && !isCall){ startRingtone(); const r = await window.sandraAPI.ccStartByRole(role); if (r?.success){ isCall=true; curSession=r.sessionId; btnColgar.disabled=false; stopRingtone(); log(`Voz → rol=${role}`); } else { stopRingtone(); alert('Error'); } setVC(false); return; }
+  }
+  if (/(finaliza|termina|corta|cuelga)/.test(t)) { btnColgar.click(); setVC(false); return; }
+}
+window.sandraAPI?.onTranscriptUpdate?.(({raw})=>{ if(raw) execVoiceCommand(String(raw)); });
+
+// Auto-campaña vía querystring (?campaign=guarderias)
+function qs(name){ return new URLSearchParams(location.search).get(name); }
+async function autoStartCampaign(){
+  const c = qs('campaign'); if (!c) return;
+  if (!routes.campaigns[c]) return log(`Campaña no encontrada: ${c}`);
+  startRingtone();
+  const r = await window.sandraAPI.ccStartByCampaign(c);
+  if (!r?.success) { stopRingtone(); return alert('Error campaña: '+(r?.error||'')); }
+  isCall=true; curSession=r.sessionId; btnColgar.disabled=false; log(`Llamada (campaña) → ${c} · rol=${r.roleId}`);
+}
+
+(async function init(){
+  try{
+    const res = await window.sandraAPI.ccListRoutes();
+    if (!res?.success) return alert('Dialplan error: '+(res?.error||'')); 
+    routes = res.data; renderRoles(); q.oninput = renderRoles;
+    await autoStartCampaign();
+  }catch(e){ alert('Init error: '+e.message); }
+})();
+</script>
+</body>
+

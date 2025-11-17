@@ -1,0 +1,21 @@
+{
+  "defaultPipeline": "voice_only",
+  "roles": {
+    "general":            { "title": "General",              "pipeline": "voice_only" },
+    "concierge":          { "title": "Concierge",            "pipeline": "voice_only" },
+    "community_manager":  { "title": "Community Manager",    "pipeline": "voice_only" },
+    "voice_telephony":    { "title": "Telephony",            "pipeline": "voice_only" },
+    "sales":              { "title": "Ventas",               "pipeline": "voice_only" },
+    "listings_manager":   { "title": "Listings Manager",     "pipeline": "voice_only" },
+    "pricing_revenue":    { "title": "Pricing & Revenue",    "pipeline": "voice_only" },
+    "language_teacher":   { "title": "Profesora Idiomas",    "pipeline": "avatar_sora" },
+    "animadora":          { "title": "Animadora Infantil",   "pipeline": "avatar_sora" },
+    "content_seo":        { "title": "Content SEO",          "pipeline": "voice_only" },
+    "dev_support":        { "title": "Dev Support",          "pipeline": "voice_only" }
+  },
+  "campaigns": {
+    "guarderias": { "title": "Guarderías", "roleId": "language_teacher", "pipeline": "avatar_sora" },
+    "captacion":  { "title": "Captación",  "roleId": "sales",            "pipeline": "voice_only" }
+  }
+}
+

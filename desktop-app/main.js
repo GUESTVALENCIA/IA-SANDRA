@@ -5,6 +5,10 @@ const fs = require('fs');
 const crypto = require('crypto');
 const { existsSync } = require('fs');
 
+// ==== CallCenter ====
+const CallCenter = require('../callcenter/service');
+let callCenter;
+
 // --- Utils git ---
 function sh(cmd, cwd) {
   return execSync(cmd, { cwd, stdio: 'pipe', encoding: 'utf8' }).trim();
@@ -39,6 +43,18 @@ app.whenReady().then(() => {
   // Arrancar vigilancia y eventos de API al inicializar
   try { watchCritical(); } catch (e) { console.warn('watchCritical failed:', e.message); }
   try { tapServiceApiEvents(); } catch (e) { console.warn('tapServiceApiEvents failed:', e.message); }
+  // Inicializar CallCenter
+  try {
+    // Si tienes un serviceManager global, pásalo; si no, este ctor funciona igual
+    const mm = global.serviceManager?.get?.('multimodal');
+    const rs = global.serviceManager?.get?.('roles-system');
+    callCenter = new CallCenter({ 
+      serviceManager: global.serviceManager, 
+      multimodal: mm,
+      rolesSystem: rs
+    });
+    console.log('✅ CallCenter inicializado');
+  } catch (e) { console.warn('CallCenter init failed:', e.message); }
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -61,7 +77,7 @@ ipcMain.handle('restore:list', async () => {
       return { tag: tag.replace(/^rp\//,''), sha, date, meta };
     });
     return { success: true, items };
-  } catch (e) {
+      } catch (e) {
     return { success: false, error: e.message };
   }
 });
@@ -323,6 +339,40 @@ ipcMain.handle('send-audio-stream', async (_e, b64) => {
     }
     return { success: false, error: 'Deepgram not available' };
   } catch (e) { return { success: false, error: e.message }; }
+});
+
+// ---- IPC CallCenter ----
+ipcMain.handle('cc:listRoutes', async () => {
+  try { 
+    if (!callCenter) return { success: false, error: 'CallCenter not initialized' };
+    return { success: true, data: callCenter.listRoutes() }; 
+  } catch(e){ return { success: false, error: e.message }; }
+});
+
+ipcMain.handle('cc:startByRole', async (_evt, { roleId, sessionId }) => {
+  try {
+    if (!callCenter) return { success: false, error: 'CallCenter not initialized' };
+    const sid = sessionId || `cc_${Date.now()}`;
+    const r = await callCenter.startByRole({ sessionId: sid, roleId });
+    return { success: true, ...r };
+  } catch(e){ return { success: false, error: e.message }; }
+});
+
+ipcMain.handle('cc:startByCampaign', async (_evt, { campaignId, sessionId }) => {
+  try {
+    if (!callCenter) return { success: false, error: 'CallCenter not initialized' };
+    const sid = sessionId || `cc_${Date.now()}`;
+    const r = await callCenter.startByCampaign({ sessionId: sid, campaignId });
+    return { success: true, ...r };
+  } catch(e){ return { success: false, error: e.message }; }
+});
+
+ipcMain.handle('cc:end', async (_evt, { sessionId }) => {
+  try { 
+    if (!callCenter) return { success: false, error: 'CallCenter not initialized' };
+    const r = await callCenter.end({ sessionId }); 
+    return { success: true, ...r }; 
+  } catch(e){ return { success: false, error: e.message }; }
 });
 
 
