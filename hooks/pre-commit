@@ -1,0 +1,6 @@
+#!/bin/sh
+rg -n "\boptions\b" services/deepgram-service.js && {
+  echo "❌ No usar 'options' en callbacks de Deepgram. Usa this._opts/opts."; exit 1; }
+exit 0
+
+

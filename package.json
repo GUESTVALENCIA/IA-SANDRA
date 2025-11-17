@@ -55,6 +55,8 @@
     "precommit": "npm run lint && npm run test:unit",
     "prepush": "npm run smoke",
     "smoke": "node scripts/smoke.js",
+    "self:heal": "python3 sandra/self_heal.py",
+    "deploy:local": "./local-deploy.sh",
     "postinstall": "npm run build:sw",
     "rotation:start": "node scripts/security/key-rotation.js rotate",
     "rotation:verify": "node scripts/security/key-rotation.js verify",
