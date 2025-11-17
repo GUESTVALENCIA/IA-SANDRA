@@ -5,10 +5,13 @@ module.exports = {
     {
       id: 'developer',
       name: 'Sandra · Desarrolladora General, Operadora de Crisis y Guardiana del Código',
+      systemPromptFile: 'core/prompts/role-developer-sandra.md',
+      model: 'gpt-4o-mini',
       tools: [
-        // keep git_commit, but remove create_pr for this role
-        { name: 'git_commit', type: 'git', operation: 'commit' },
-        // other safe tools can be listed here
+        { name: 'execute_code', type: 'internal', operation: 'exec' },
+        { name: 'filesystem', type: 'internal', operation: 'fs' },
+        { name: 'git', type: 'git', operation: 'git' },
+        { name: 'http', type: 'internal', operation: 'http' }
       ],
       policy: {
         mode: 'EXECUTE_ONLY',
