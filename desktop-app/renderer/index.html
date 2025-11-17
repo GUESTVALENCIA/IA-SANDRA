@@ -1095,11 +1095,6 @@
         <div id="heygen-avatar" style="margin-top:10px;"></div>
       </div>
 
-      <!-- Controles de llamada conversacional -->
-      <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px; display:flex; align-items:center; gap:10px;">
-        <button id="btn-convo-call" class="role-btn" style="padding:10px 14px;">📞 Llamada conversacional</button>
-        <span id="call-state" class="voice-badge">Llamada: Inactiva</span>
-      </div>
 
       <div class="avatar-status">
         <div class="avatar-status-item">
@@ -1844,8 +1839,6 @@
 
     // ==================== LLAMADA CONVERSACIONAL (CONTINUA + STREAM) ====================
     let isCallActive = false;
-    const btnConvoCall = document.getElementById('btn-convo-call');
-    const callState = document.getElementById('call-state');
 
     async function startVoiceStreaming() {
       try {
@@ -1937,8 +1930,7 @@
         
         await startVoiceStreaming();
         isCallActive = true;
-        btnConvoCall.textContent = '⛔ Finalizar llamada';
-        callState.textContent = 'Llamada: Activa';
+        // UI del botón eliminado - no actualizar
         
         // Activar avatar Sora al iniciar llamada
         if (soraVideo && soraVideo.src) {
@@ -1983,8 +1975,7 @@
       
       // 7. Actualizar UI
       isCallActive = false;
-      btnConvoCall.textContent = '📞 Llamada conversacional';
-      callState.textContent = 'Llamada: Inactiva';
+      // UI del botón eliminado - no actualizar
       
       // 8. Pausar avatar Sora
       if (soraVideo) {
@@ -2179,14 +2170,6 @@
 
     // ==================== EVENT LISTENERS ====================
     sendBtn.addEventListener('click', sendMessage);
-    // Evento para llamada conversacional (toggle)
-    const btnConvoCall2 = document.getElementById('btn-convo-call');
-    if (btnConvoCall2) {
-      btnConvoCall2.addEventListener('click', async () => {
-        if (!isCallActive) await startConversationalCall();
-        else await stopConversationalCall();
-      });
-    }
     
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -2348,10 +2331,7 @@
           if (statusEl && state) {
             statusEl.textContent = state.sessionActive ? `Modo: ${state.mode} (live)` : 'Modo: Inactivo';
           }
-          const callStateEl = document.getElementById('call-state');
-          if (callStateEl && state) {
-            callStateEl.textContent = state.sessionActive ? 'Llamada: Activa' : 'Llamada: Inactiva';
-          }
+          // call-state element eliminado - no actualizar
           // Auto-colgar UI si la sesión se desactiva desde backend
           if (state && !state.sessionActive && typeof stopConversationalCall === 'function' && isCallActive) {
             stopConversationalCall();
