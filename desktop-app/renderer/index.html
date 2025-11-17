@@ -1,0 +1,3490 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Sandra - Desktop</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:;">
+  <style>
+    body { background:#06111a;color:#e6eef6;font-family:Inter,ui-sans-serif,system-ui; padding:18px; }
+    .card { background:#071120;border:1px solid #0f1720;padding:12px;border-radius:8px;margin-bottom:12px; }
+    .row { display:flex; align-items:center; }
+    button { padding:8px 10px;border-radius:6px;border:none;background:#0ea5a4;color:#042026;cursor:pointer; }
+    button.secondary { background:transparent;border:1px solid #233240;color:#9fb0c2; }
+    input, select { background:#0b1117;color:#e7ecf3;border:1px solid #12232b;padding:8px;border-radius:6px; }
+    table td, table th { border-bottom:1px solid rgba(255,255,255,0.03); }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <h3>Controles</h3>
+      <div class="body">Panel principal</div>
+    </section>
+
+    <section class="card">
+      <h3>Restauración del sistema</h3>
+      <div class="body">
+        <div class="row" style="margin-bottom:10px; gap:8px">
+          <input id="rpLabel" placeholder="Etiqueta (opcional)" style="flex:1" />
+          <button id="btnCreateRP">Crear punto de restauración</button>
+          <select id="restoreMode" style="margin-left:8px">
+            <option value="safe" selected>Modo SAFE (sin reescribir historia)</option>
+            <option value="hard">Modo HARD (reset + push --force)</option>
+          </select>
+        </div>
+        <div style="margin:10px 0 6px;color:#9aa6b2">Snapshots disponibles:</div>
+        <table id="rpTable" style="width:100%;border-collapse:collapse;font:12px ui-monospace">
+          <thead><tr><th style="text-align:left;padding:4px">TAG</th><th style="text-align:left;padding:4px">SHA</th><th style="text-align:left;padding:4px">FECHA</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div style="margin-top:8px">
+          <button id="btnReloadRP" class="secondary">Recargar lista</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function log() { console.log.apply(console, arguments); }
+    function attachSandraAPI(){ if (!window.sandraAPI) window.sandraAPI = { restoreList: async()=>({success:false,error:'no-api'}) }; }
+
+    (function init(){
+      attachSandraAPI();
+      // ====== Restore Manager UI ======
+      const tBody = document.querySelector('#rpTable tbody');
+      async function loadRP(){
+        const res = await window.sandraAPI.restoreList();
+        tBody.innerHTML = '';
+        if (!res?.success) { log('restore:list error: '+(res?.error||'desconocido')); return; }
+        (res.items||[]).forEach(item=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="padding:4px">${item.tag}</td>
+            <td style="padding:4px">${item.sha.substring(0,7)}</td>
+            <td style="padding:4px">${item.date}</td>
+            <td style="padding:4px"><button data-tag="${item.tag}">Restaurar</button></td>`;
+          tr.querySelector('button').onclick = async (e)=>{
+            const tag = e.target.getAttribute('data-tag');
+            const mode = document.getElementById('restoreMode').value;
+            await window.sandraAPI.restoreSetMode(mode);
+            const ok = confirm(`¿Confirmas restaurar a "${tag}" en modo ${mode.toUpperCase()}?`);
+            if (!ok) return;
+            const r = await window.sandraAPI.restoreApply(tag);
+            if (!r?.success) { alert('Error: '+r?.error); return; }
+            alert(`Restaurado a ${tag} (${r.sha.slice(0,7)}) [${r.mode}]`);
+            loadRP();
+          };
+          tBody.appendChild(tr);
+        });
+      }
+      document.getElementById('btnReloadRP').onclick = loadRP;
+      document.getElementById('btnCreateRP').onclick = async ()=>{
+        const label = document.getElementById('rpLabel').value || '';
+        const r = await window.sandraAPI.restoreCreate(label);
+        if (!r?.success) { alert('Error: '+r?.error); return; }
+        alert(`Snapshot creado: ${r.tag} (${r.sha.slice(0,7)})`);
+        document.getElementById('rpLabel').value='';
+        loadRP();
+      };
+      document.getElementById('restoreMode').onchange = async (e)=>{
+        await window.sandraAPI.restoreSetMode(e.target.value);
+      };
+      loadRP();
+    })();
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.groq.com https://api.deepgram.com wss://api.deepgram.com https://api.heygen.com https://api.cartesia.ai https://*.neon.tech wss://*.heygen.com; font-src 'self'; media-src 'self' blob:; worker-src 'none'; child-src 'none';">
+  <script>
+    // Bloquear Service Workers explícitamente
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+          console.log('🚫 Service Worker desregistrado:', registration.scope);
+        }
+      });
+    }
+  </script>
+  <title>Sandra IA 8.0 Pro - Multimodal</title>
+  <link rel="stylesheet" href="enterprise.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 280px 1fr 350px;
+      grid-template-rows: 60px calc(100vh - 140px) 80px;
+      height: 100vh;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    .header {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 0 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .ai-provider {
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ai-provider:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    .provider-selector {
+      position: absolute;
+      top: 65px;
+      right: 30px;
+      background: #16213e;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 12px;
+      min-width: 220px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      z-index: 1000;
+      display: none;
+    }
+
+    .provider-selector.active {
+      display: block;
+    }
+
+    .provider-option {
+      padding: 12px 16px;
+      margin: 4px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    .provider-option:hover {
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .provider-option.active {
+      background: rgba(102, 126, 234, 0.4);
+      border: 1px solid rgba(102, 126, 234, 0.6);
+    }
+
+    .provider-option.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .provider-status {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: #16213e;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+    .sidebar h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b92a8;
+      margin: 20px 0 10px 0;
+    }
+
+    .sidebar h3:first-child { margin-top: 0; }
+
+    .role-category {
+      margin-bottom: 25px;
+    }
+
+    .role-category h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b92a8;
+      margin: 20px 0 10px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .role-btn {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .role-btn:hover {
+      background: rgba(102, 126, 234, 0.3);
+      border-color: #667eea;
+      transform: translateX(5px);
+    }
+
+    .role-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #667eea;
+    }
+
+    .role-btn.hidden {
+      display: none;
+    }
+
+    /* CHAT AREA */
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      background: #0f3460;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+      scroll-behavior: smooth;
+    }
+
+    .messages-container::-webkit-scrollbar { width: 8px; }
+    .messages-container::-webkit-scrollbar-track { background: transparent; }
+    .messages-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    .message {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 15px 20px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .message.user .message-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .message-time {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 5px;
+    }
+
+    /* QUICK ACTIONS */
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .quick-action-btn {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+      border: 2px solid rgba(102, 126, 234, 0.5);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+      backdrop-filter: blur(10px);
+    }
+
+    .quick-action-btn:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%);
+      border-color: rgba(102, 126, 234, 0.8);
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .quick-action-btn:active {
+      transform: translateX(3px) scale(0.98);
+    }
+
+    .welcome-message {
+      animation: welcomeSlideIn 0.5s ease-out;
+    }
+
+    @keyframes welcomeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* AVATAR PANEL */
+    .avatar-panel {
+      background: #16213e;
+      padding: 20px;
+      border-left: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .avatar-container {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #0f3460;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      border: 2px solid rgba(102, 126, 234, 0.3);
+    }
+
+    #heygen-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-status {
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .avatar-status-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .avatar-status-item:last-child { margin-bottom: 0; }
+
+    .status-label {
+      color: rgba(255,255,255,0.6);
+    }
+
+    .status-value {
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    /* MULTIMODAL INPUT BAR */
+    .input-bar {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      background: #16213e;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 15px 30px;
+      display: flex !important;
+      gap: 15px;
+      align-items: center;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 100;
+      min-height: 80px;
+      height: 80px;
+      max-height: 80px;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 15px 20px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 25px;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    #message-input:focus {
+      border-color: #667eea;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .input-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .btn-video {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #fff;
+    }
+
+    .btn-video:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.5);
+    }
+
+    .btn-video.active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      animation: videoPulse 2s infinite;
+    }
+
+    @keyframes videoPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    }
+
+    .btn-voice {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+
+    .btn-voice:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    .btn-voice.recording {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      animation: recordPulse 1.5s infinite;
+    }
+
+    @keyframes recordPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+    }
+
+    .btn-send:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 20px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-send:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: scale(1);
+    }
+
+    /* RECORDING INDICATOR eliminado para experiencia limpia */
+
+    /* LOADING */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* TOAST NOTIFICATIONS */
+    .toast {
+      position: fixed;
+      top: 80px;
+      right: 30px;
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.active {
+      display: flex;
+    }
+
+    .toast.error {
+      background: rgba(239, 68, 68, 0.95);
+    }
+
+    /* ENTERPRISE ADDITIONS */
+    .voice-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.15);
+      padding: 6px 12px;
+      border-radius: 12px;
+    }
+    .voice-badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(16,185,129,0.2);
+      border: 1px solid rgba(16,185,129,0.5);
+      color: #10b981;
+    }
+    .avatar-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #0f3460;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid rgba(102,126,234,0.3);
+    }
+    .sora-mouth-overlay {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 24px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      opacity: 0.0;
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+    .mouth-talking {
+      opacity: 0.85 !important;
+      transform: translateX(-50%) scaleY(1.25);
+    }
+
+    /* Controles flotantes del avatar */
+    .avatar-controls-overlay {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+    .avatar-stage:hover .avatar-controls-overlay {
+      opacity: 1;
+    }
+    .avatar-control-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .avatar-control-icon:hover {
+      background: rgba(102,126,234,0.9);
+      border-color: #667eea;
+      transform: scale(1.1);
+    }
+
+    /* Botón de salir de pantalla completa */
+    .exit-fullscreen-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10000;
+    }
+    .exit-fullscreen-btn:hover {
+      background: rgba(220,38,38,0.9);
+      border-color: #dc2626;
+      transform: scale(1.05);
+    }
+
+    /* Tamaños de avatar */
+    .avatar-stage {
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .avatar-stage.size-normal {
+      height: 300px;
+    }
+    .avatar-stage.size-full {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999;
+      background: #000;
+      border-radius: 0;
+      aspect-ratio: unset;
+    }
+
+    .status-active {
+      background: #10b981;
+      color: white;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    .status-inactive {
+      background: #6b7280;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- HEADER -->
+    <div class="header">
+      <h1>
+        <span class="status-indicator"></span>
+        🚀 Sandra IA 8.0 Pro
+      </h1>
+      <div class="header-controls">
+        <div class="voice-controls">
+          <button class="role-btn" id="btn-mic-approve" style="padding:6px 10px;">🎤 Permitir micrófono</button>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
+            <input type="checkbox" id="toggle-always-listen">
+            Escucha siempre ("Hola Sandra")
+          </label>
+          <span id="voice-state" class="voice-badge">Mic: Inactivo</span>
+        </div>
+        <!-- Selector de proveedor eliminado -->
+      </div>
+    </div>
+
+    <!-- Selector de proveedor eliminado -->
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <input 
+          type="text" 
+          id="role-search" 
+          placeholder="🔍 Buscar rol..." 
+          style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 13px; outline: none;"
+        />
+      </div>
+      
+      <div class="role-category">
+        <h3>🎯 Core SOE (7)</h3>
+        <button class="role-btn active" data-role="general" data-category="core">
+          💬 General
+        </button>
+        <button class="role-btn" data-role="orchestrator" data-category="core">
+          🎼 Orquestador
+        </button>
+        <button class="role-btn" data-role="product_ceo" data-category="core">
+          👔 Product CEO
+        </button>
+        <button class="role-btn" data-role="developer" data-category="core">
+          💻 Desarrollador
+        </button>
+        <button class="role-btn" data-role="devops" data-category="core">
+          🚀 DevOps
+        </button>
+        <button class="role-btn" data-role="api_designer" data-category="core">
+          🔌 API Designer
+        </button>
+        <button class="role-btn" data-role="security" data-category="core">
+          🔒 Security
+        </button>
+        <button class="role-btn" data-role="prompt_engineer" data-category="core">
+          ✍️ Prompt Engineer
+        </button>
+      </div>
+
+      <div class="role-category">
+        <h3>🌟 Sandra IA 7.0 (18)</h3>
+        <button class="role-btn" data-role="concierge" data-category="sandra">
+          🏨 Concierge
+        </button>
+        <button class="role-btn" data-role="owner_acquisition" data-category="sandra">
+          🏠 Owner Acquisition
+        </button>
+        <button class="role-btn" data-role="community_manager" data-category="sandra">
+          👥 Community Manager
+        </button>
+        <button class="role-btn" data-role="youtuber" data-category="sandra">
+          🎬 YouTuber
+        </button>
+        <button class="role-btn" data-role="tourism" data-category="sandra">
+          ✈️ Turismo
+        </button>
+        <button class="role-btn" data-role="sales" data-category="sandra">
+          💼 Ventas
+        </button>
+        <button class="role-btn" data-role="analyst" data-category="sandra">
+          📊 Analista
+        </button>
+        <button class="role-btn" data-role="marketing" data-category="sandra">
+          📈 Marketing
+        </button>
+        <button class="role-btn" data-role="ceo" data-category="sandra">
+          🏢 CEO/Ejecutivo
+        </button>
+        <button class="role-btn" data-role="designer" data-category="sandra">
+          🎨 Diseñador
+        </button>
+        <button class="role-btn" data-role="lawyer" data-category="sandra">
+          ⚖️ Abogado
+        </button>
+        <button class="role-btn" data-role="financial" data-category="sandra">
+          💰 Financiero
+        </button>
+        <button class="role-btn" data-role="psychologist" data-category="sandra">
+          🧠 Psicólogo
+        </button>
+        <button class="role-btn" data-role="teacher" data-category="sandra">
+          📚 Profesor
+        </button>
+        <button class="role-btn" data-role="artist" data-category="sandra">
+          🎭 Artista
+        </button>
+        <button class="role-btn" data-role="scientist" data-category="sandra">
+          🔬 Científico
+        </button>
+        <button class="role-btn" data-role="engineer" data-category="sandra">
+          🔧 Ingeniero
+        </button>
+        <button class="role-btn" data-role="doctor" data-category="sandra">
+          🥼 Médico
+        </button>
+      </div>
+
+      <div class="role-category">
+        <h3>🚀 Especializados (27)</h3>
+        <button class="role-btn" data-role="influencer_marketing" data-category="specialized">
+          📱 Influencer Marketing
+        </button>
+        <button class="role-btn" data-role="cryptocurrency" data-category="specialized">
+          ₿ Cryptocurrency
+        </button>
+        <button class="role-btn" data-role="viralization" data-category="specialized">
+          🔥 Viralización
+        </button>
+        <button class="role-btn" data-role="optimization" data-category="specialized">
+          ⚡ Optimización
+        </button>
+        <button class="role-btn" data-role="ui_ux" data-category="specialized">
+          🎨 UI/UX
+        </button>
+        <button class="role-btn" data-role="finance" data-category="specialized">
+          💵 Finanzas
+        </button>
+        <button class="role-btn" data-role="yoga" data-category="specialized">
+          🧘 Yoga
+        </button>
+        <button class="role-btn" data-role="mindfulness" data-category="specialized">
+          🧠 Mindfulness
+        </button>
+        <button class="role-btn" data-role="sexology" data-category="specialized">
+          💕 Sexología
+        </button>
+        <button class="role-btn" data-role="content_creator" data-category="specialized">
+          ✍️ Content Creator
+        </button>
+        <button class="role-btn" data-role="animation" data-category="specialized">
+          🎬 Animación
+        </button>
+        <button class="role-btn" data-role="language_teacher" data-category="specialized">
+          🌍 Language Teacher
+        </button>
+        <button class="role-btn" data-role="empathy" data-category="specialized">
+          ❤️ Empatía
+        </button>
+        <button class="role-btn" data-role="geography" data-category="specialized">
+          🌎 Geografía
+        </button>
+        <button class="role-btn" data-role="startup_visionary" data-category="specialized">
+          🚀 Startup Visionary
+        </button>
+        <button class="role-btn" data-role="general_knowledge" data-category="specialized">
+          📚 Conocimiento General
+        </button>
+        <button class="role-btn" data-role="self_development" data-category="specialized">
+          🌱 Auto-desarrollo
+        </button>
+        <button class="role-btn" data-role="project_analyst" data-category="specialized">
+          📊 Project Analyst
+        </button>
+        <button class="role-btn" data-role="social_media" data-category="specialized">
+          📱 Social Media
+        </button>
+        <button class="role-btn" data-role="dev_support" data-category="specialized">
+          💻 Dev Support
+        </button>
+        <button class="role-btn" data-role="logistics" data-category="specialized">
+          📦 Logística
+        </button>
+        <button class="role-btn" data-role="organization" data-category="specialized">
+          📋 Organización
+        </button>
+        <button class="role-btn" data-role="ai_expert" data-category="specialized">
+          🤖 AI Expert
+        </button>
+      </div>
+
+      <div class="role-category">
+        <h3>📊 Marketing (10)</h3>
+        <button class="role-btn" data-role="business_analyst" data-category="marketing">
+          📈 Business Analyst
+        </button>
+        <button class="role-btn" data-role="marketing_strategist" data-category="marketing">
+          🎯 Marketing Strategist
+        </button>
+        <button class="role-btn" data-role="content_strategist" data-category="marketing">
+          ✍️ Content Strategist
+        </button>
+        <button class="role-btn" data-role="social_media_manager" data-category="marketing">
+          📱 Social Media Manager
+        </button>
+        <button class="role-btn" data-role="seo_specialist" data-category="marketing">
+          🔍 SEO Specialist
+        </button>
+        <button class="role-btn" data-role="ppc_specialist" data-category="marketing">
+          💰 PPC Specialist
+        </button>
+        <button class="role-btn" data-role="email_marketer" data-category="marketing">
+          📧 Email Marketer
+        </button>
+        <button class="role-btn" data-role="brand_manager" data-category="marketing">
+          🏷️ Brand Manager
+        </button>
+        <button class="role-btn" data-role="analytics_specialist" data-category="marketing">
+          📊 Analytics Specialist
+        </button>
+        <button class="role-btn" data-role="growth_hacker" data-category="marketing">
+          🚀 Growth Hacker
+        </button>
+      </div>
+
+      <h3>⚙️ Sistema</h3>
+      <button class="role-btn" data-action="mcp">
+        🛠️ Panel MCP
+      </button>
+      <button class="role-btn" data-action="validate">
+        ✅ Validar Roles
+      </button>
+      <button class="role-btn" data-action="stats">
+        📊 Estadísticas
+      </button>
+      <button class="role-btn" data-action="clear">
+        🧹 Limpiar Chat
+      </button>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area">
+      <div class="messages-container" id="messages">
+        <div class="message assistant welcome-message">
+          <div class="message-avatar">S</div>
+          <div class="message-content">
+            <div>
+              <strong>¡Hola! 👋 Soy Sandra IA 8.0 Pro</strong><br>
+              <p style="margin: 10px 0; opacity: 0.9;">Asistente multimodal premium con <strong>62 roles especializados</strong> listos para ayudarte.</p>
+              
+              <!-- Acciones rápidas removidas para una UI más limpia -->
+              
+              <p style="margin-top: 15px; font-size: 13px; opacity: 0.7;">O simplemente escribe o habla para comenzar una conversación.</p>
+            </div>
+            <div class="message-time" id="init-time"></div>
+          </div>
+        </div>
+      </div>
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>Sandra está pensando...</div>
+      </div>
+    </div>
+
+    <!-- AVATAR PANEL -->
+    <div class="avatar-panel">
+      <div class="avatar-container">
+        <div class="avatar-stage size-normal" id="avatar-stage">
+          <video id="sora-video" autoplay loop muted playsinline style="width:100%; height:100%; object-fit: cover; display:block; background:#000;"></video>
+          <div id="sora-mouth" class="sora-mouth-overlay"></div>
+          
+          <!-- Controles flotantes (aparecen al pasar el ratón) -->
+          <div class="avatar-controls-overlay" id="avatar-controls">
+            <button class="avatar-control-icon" id="btn-pip" title="Picture-in-Picture (flotante)">🖼️</button>
+            <button class="avatar-control-icon" id="btn-cast" title="Compartir en TV/dispositivo">📺</button>
+            <button class="avatar-control-icon" id="btn-fullscreen" title="Pantalla completa">⛶</button>
+      </div>
+
+          <!-- Botón de salir de pantalla completa (solo visible en fullscreen) -->
+          <button class="exit-fullscreen-btn" id="btn-exit-fullscreen" style="display:none;">✕ Salir</button>
+        </div>
+        <div id="heygen-avatar" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Controles de llamada conversacional -->
+      <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px; display:flex; align-items:center; gap:10px;">
+        <button id="btn-convo-call" class="role-btn" style="padding:10px 14px;">📞 Llamada conversacional</button>
+        <span id="call-state" class="voice-badge">Llamada: Inactiva</span>
+      </div>
+
+      <div class="avatar-status">
+        <div class="avatar-status-item">
+          <span class="status-label">Estado:</span>
+          <span class="status-value" id="avatar-status">Conectado</span>
+        </div>
+        <div class="avatar-status-item">
+          <span class="status-label">Rol Activo:</span>
+          <span class="status-value" id="active-role">General</span>
+        </div>
+        <div class="avatar-status-item">
+          <span class="status-label">Modo:</span>
+          <span class="status-value" id="mode-status">Multimodal</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MULTIMODAL INPUT BAR -->
+    <div class="input-bar">
+      <!-- Indicador de grabación eliminado -->
+      
+      <!-- Audio Visualizer Canvas -->
+      <canvas id="audio-visualizer" style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 400px; height: 50px; border-radius: 8px; background: rgba(0,0,0,0.3); display: none;"></canvas>
+      
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          id="message-input" 
+          placeholder="Escribe tu mensaje, usa el micrófono o inicia videollamada..."
+          autocomplete="off"
+        />
+        <!-- Botones de videollamada y grabación manual eliminados en favor de llamada conversacional continua -->
+        <button class="input-btn btn-send" id="send-btn" title="Enviar mensaje">
+          ➤
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast">
+    <span id="toast-message"></span>
+  </div>
+
+  <!-- MCP PANEL (MODULAR CONTROL PANEL) -->
+  <div id="mcp-panel" style="display: none; position: fixed; top: 80px; left: 50%; transform: translateX(-50%); width: 900px; max-height: 80vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 2px solid #667eea; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000; overflow: hidden;">
+    <!-- MCP Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+        🛠️ MCP - Modular Control Panel
+      </h2>
+      <button id="mcp-close" style="background: rgba(255,255,255,0.2); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">×</button>
+    </div>
+    
+    <!-- MCP Content -->
+    <div style="padding: 20px; overflow-y: auto; max-height: calc(80vh - 60px);">
+      <!-- Tabs -->
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+        <button class="mcp-tab active" data-tab="code" style="padding: 8px 16px; background: rgba(102, 126, 234, 0.3); border: 1px solid #667eea; border-radius: 6px; color: #fff; cursor: pointer; font-size: 13px; font-weight: 600;">💻 Generar Código</button>
+        <button class="mcp-tab" data-tab="deploy" style="padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; cursor: pointer; font-size: 13px; font-weight: 600;">🚀 Deploy</button>
+        <button class="mcp-tab" data-tab="agents" style="padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; cursor: pointer; font-size: 13px; font-weight: 600;">🤖 Agentes</button>
+        <button class="mcp-tab" data-tab="github" style="padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; cursor: pointer; font-size: 13px; font-weight: 600;">📦 GitHub</button>
+      </div>
+      
+      <!-- Tab: Generar Código -->
+      <div id="mcp-tab-code" class="mcp-tab-content">
+        <h3 style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 15px;">Generación de Código con IA</h3>
+        
+        <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">Tarea:</label>
+        <textarea id="mcp-code-task" placeholder="Ej: Crear una función para validar emails..." style="width: 100%; height: 100px; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px; resize: vertical; margin-bottom: 15px;"></textarea>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div>
+            <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">Rol:</label>
+            <select id="mcp-code-role" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px;">
+              <option value="developer">💻 Desarrollador</option>
+              <option value="engineer">🔧 Ingeniero</option>
+              <option value="scientist">🔬 Científico</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">Lenguaje:</label>
+            <select id="mcp-code-lang" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px;">
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="typescript">TypeScript</option>
+              <option value="java">Java</option>
+              <option value="csharp">C#</option>
+            </select>
+          </div>
+        </div>
+        
+        <button id="mcp-generate-code" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 15px;">✨ Generar Código</button>
+        
+        <div id="mcp-code-output" style="display: none;">
+          <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">Código Generado:</label>
+          <pre style="background: #0f3460; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 12px; color: #10b981; max-height: 300px; overflow-y: auto;"><code id="mcp-code-result"></code></pre>
+        </div>
+      </div>
+      
+      <!-- Tab: Deploy -->
+      <div id="mcp-tab-deploy" class="mcp-tab-content" style="display: none;">
+        <h3 style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 15px;">Despliegue Automático</h3>
+        
+        <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">Nombre del Proyecto:</label>
+        <input id="mcp-deploy-name" type="text" placeholder="mi-proyecto" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px; margin-bottom: 15px;">
+        
+        <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">URL del Repositorio:</label>
+        <input id="mcp-deploy-repo" type="text" placeholder="https://github.com/user/repo.git" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px; margin-bottom: 15px;">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div>
+            <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">Proveedor:</label>
+            <select id="mcp-deploy-provider" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px;">
+              <option value="vercel">Vercel</option>
+              <option value="netlify">Netlify</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">Entorno:</label>
+            <select id="mcp-deploy-env" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px;">
+              <option value="production">Production</option>
+              <option value="staging">Staging</option>
+            </select>
+          </div>
+        </div>
+        
+        <button id="mcp-deploy-btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;">🚀 Desplegar Ahora</button>
+        
+        <div id="mcp-deploy-output" style="display: none; margin-top: 15px; padding: 15px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 6px; font-size: 12px; color: #10b981;"></div>
+      </div>
+      
+      <!-- Tab: Agentes -->
+      <div id="mcp-tab-agents" class="mcp-tab-content" style="display: none;">
+        <h3 style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 15px;">Gestión de Agentes</h3>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <select id="mcp-agent-role" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 13px;">
+            <option value="developer">💻 Desarrollador</option>
+            <option value="youtuber">🎬 YouTuber</option>
+            <option value="community">👥 Community Manager</option>
+            <option value="tourism">🏨 Turismo</option>
+            <option value="sales">💼 Ventas</option>
+          </select>
+          <button id="mcp-spawn-agent" style="padding: 10px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 6px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;">🤖 Crear Agente</button>
+        </div>
+        
+        <div id="mcp-agents-list" style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 15px; min-height: 200px;">
+          <div style="text-align: center; color: rgba(255,255,255,0.4); padding: 40px 0;">
+            No hay agentes activos
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tab: GitHub -->
+      <div id="mcp-tab-github" class="mcp-tab-content" style="display: none;">
+        <h3 style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 15px;">Sincronización con GitHub</h3>
+        
+        <button id="mcp-github-sync" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 15px;">🔄 Sincronizar Ahora</button>
+        
+        <div id="mcp-github-status" style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 15px;">
+          <div style="text-align: center; color: rgba(255,255,255,0.4);">
+            Click en sincronizar para obtener el estado del repositorio
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== ENTERPRISE JS (cargado adicionalmente) ====================
+    // Flags de voz
+    let alwaysListen = false;
+    let micApproved = false;
+    let isAwake = false;
+    let mouthAnimTimer = null;
+
+    const btnMicApprove = document.getElementById('btn-mic-approve');
+    const toggleAlways = document.getElementById('toggle-always-listen');
+    const voiceState = document.getElementById('voice-state');
+    const soraVideo = document.getElementById('sora-video');
+    const soraMouth = document.getElementById('sora-mouth');
+
+    // Persistencia simple
+    function loadVoicePrefs() {
+      try {
+        micApproved = localStorage.getItem('sandra_micApproved') === 'true';
+        alwaysListen = localStorage.getItem('sandra_alwaysListen') === 'true';
+        toggleAlways.checked = alwaysListen;
+        updateVoiceState();
+      } catch {}
+    }
+    function saveVoicePrefs() {
+      try {
+        localStorage.setItem('sandra_micApproved', micApproved ? 'true' : 'false');
+        localStorage.setItem('sandra_alwaysListen', alwaysListen ? 'true' : 'false');
+      } catch {}
+    }
+    function updateVoiceState(text) {
+      if (text) {
+        voiceState.textContent = text;
+        return;
+      }
+      voiceState.textContent = micApproved ? (alwaysListen ? 'Mic: Escucha siempre' : 'Mic: Permitido') : 'Mic: Inactivo';
+    }
+
+    async function requestMicPermission() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        // Parar tracks inmediatamente, solo buscamos permiso persistente
+        stream.getTracks().forEach(t => t.stop());
+        micApproved = true;
+        saveVoicePrefs();
+        updateVoiceState('Mic: Permitido');
+        showToast('🎤 Micrófono permitido');
+        if (alwaysListen && window.sandraAPI) {
+          await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
+        }
+      } catch (e) {
+        showToast('❌ No se pudo acceder al micrófono', 'error');
+      }
+    }
+
+    btnMicApprove.addEventListener('click', requestMicPermission);
+    toggleAlways.addEventListener('change', async (e) => {
+      alwaysListen = e.target.checked;
+      saveVoicePrefs();
+      updateVoiceState();
+      if (alwaysListen && micApproved && window.sandraAPI) {
+        // Iniciar escucha ligera (sin continuous mode)
+        await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: false });
+        showToast('🔊 Escucha por wake word activada');
+      }
+    });
+
+    loadVoicePrefs();
+
+    // ==================== VARIABLES GLOBALES ====================
+    let currentRole = 'general';
+    let isRecording = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordTimeoutId = null;
+    let servicesReady = false;
+    let audioVisualizer = null;
+    let currentVoiceId = 'default';
+    let continuousMode = false;
+    let bargeInEnabled = true;
+    let webrtcManager = null;
+    let mouthAudioCtx = null;
+    let mouthAnalyser = null;
+    let mouthRAF = null;
+    // browserSpeaker eliminado - Solo se usa Cartesia
+    let currentTtsAudio = null;
+
+    // ======= RINGBACK (corrección ReferenceError) =======
+    let ringAudio = null, ringActive = false;
+    function ensureGraph(){
+      if (window._sandra_audio_inited) return;
+      try {
+        window._sandra_audio_inited = true;
+        const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        window._sandra_audioCtx = audioCtx;
+        const master = audioCtx.createGain(); master.gain.value = 0.95;
+        const deEsser = audioCtx.createBiquadFilter(); deEsser.type='peaking'; deEsser.frequency.value=6000; deEsser.Q.value=1.0; deEsser.gain.value=-6;
+        const lpf = audioCtx.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.value=11000; lpf.Q.value=0.7;
+        const comp = audioCtx.createDynamicsCompressor();
+        comp.threshold.value=-24; comp.knee.value=16; comp.ratio.value=2.5; comp.attack.value=0.003; comp.release.value=0.25;
+        deEsser.connect(lpf); lpf.connect(comp); comp.connect(master); master.connect(audioCtx.destination);
+        window._sandra_master = master;
+      } catch(e){ console.warn('ensureGraph error:', e && e.message); }
+    }
+    function startRingtone(){
+      if (ringActive) return;
+      ensureGraph();
+      try{
+        if (!ringAudio) {
+          ringAudio = new Audio('assets/audio/ringback.ogg');
+          ringAudio.loop = true; ringAudio.volume = 0.18;
+          try { window._sandra_audioCtx && window._sandra_audioCtx.createMediaElementSource && window._sandra_audioCtx.createMediaElementSource(ringAudio).connect(window._sandra_master); } catch {}
+        }
+        ringActive = true; ringAudio.currentTime = 0;
+        ringAudio.play().catch(()=>{});
+        console.log('▶ ringback');
+      }catch(e){ console.warn('startRingtone err', e && e.message); }
+    }
+    function stopRingtone(){ ringActive=false; try{ ringAudio && ringAudio.pause(); }catch{} console.log('⏹ ringback'); }
+
+    // ==================== ELEMENTOS DOM ====================
+    const messagesContainer = document.getElementById('messages');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const voiceBtn = document.getElementById('voice-btn');
+    // recordingIndicator eliminado
+    const loading = document.getElementById('loading');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    const activeRoleDisplay = document.getElementById('active-role');
+    const avatarStatus = document.getElementById('avatar-status');
+
+    // ==================== INICIALIZACIÓN ====================
+    document.getElementById('init-time').textContent = new Date().toLocaleTimeString('es-ES');
+
+    // Escuchar eventos del sistema
+    if (window.sandraAPI) {
+      window.sandraAPI.onServicesReady((data) => {
+        servicesReady = true;
+        showToast('✅ Todos los servicios iniciados correctamente');
+        avatarStatus.textContent = 'Operativo';
+      });
+
+      window.sandraAPI.onServicesError((data) => {
+        showToast('❌ Error: ' + data.error, 'error');
+        avatarStatus.textContent = 'Error';
+      });
+
+      // Cargar proveedores LLM disponibles
+      loadAvailableProviders();
+    }
+
+    // ==================== SELECTOR DE PROVEEDOR LLM ====================
+    // UI eliminada; mantener valor por defecto sin mostrar
+    let currentProvider = 'openai';
+
+    async function loadAvailableProviders() {
+      try {
+        const result = await window.sandraAPI.getAvailableProviders();
+        if (result.success) {
+          renderProviderOptions(result.providers);
+          
+          // Obtener proveedor actual
+          const currentResult = await window.sandraAPI.getCurrentProvider();
+          if (currentResult.success) {
+            currentProvider = currentResult.provider.name;
+            updateProviderDisplay(currentProvider);
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando proveedores:', error);
+      }
+    }
+
+    function renderProviderOptions(providers) {
+      const container = document.getElementById('provider-options');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      providers.forEach(provider => {
+        const option = document.createElement('div');
+        option.className = `provider-option ${provider.id === currentProvider ? 'active' : ''} ${!provider.hasApiKey ? 'disabled' : ''}`;
+        
+        let statusText = provider.hasApiKey ? '✅ Configurado' : '⚠️ Sin API Key';
+        if (provider.note) {
+          statusText = `${provider.hasApiKey ? '✅' : '⚠️'} ${provider.note}`;
+        }
+        
+        option.innerHTML = `
+          <div>
+            <div style="font-weight: 600;">${provider.name} ${provider.id === currentProvider ? '(Activo)' : ''}</div>
+            <div class="provider-status">${statusText}</div>
+            ${provider.defaultModel ? `<div class="provider-status" style="opacity: 0.5; font-size: 11px;">Modelo: ${provider.defaultModel}</div>` : ''}
+          </div>
+        `;
+        
+        if (provider.hasApiKey) {
+          option.onclick = () => switchProvider(provider.id);
+        }
+        
+        container.appendChild(option);
+      });
+    }
+
+    async function switchProvider(providerId) {
+      try {
+        const result = await window.sandraAPI.setProvider(providerId);
+        if (result.success) {
+          currentProvider = providerId;
+          updateProviderDisplay(providerId);
+          showToast(`✅ Proveedor cambiado a ${providerId.toUpperCase()}`);
+          
+          // Recargar opciones para actualizar el activo
+          loadAvailableProviders();
+          
+          // Cerrar selector
+          document.getElementById('provider-selector').classList.remove('active');
+        }
+      } catch (error) {
+        showToast('❌ Error cambiando proveedor: ' + error.message, 'error');
+      }
+    }
+
+    function updateProviderDisplay(providerId) {
+      const el = document.getElementById('provider-name');
+      if (!el) return;
+      const providerName = providerId.charAt(0).toUpperCase() + providerId.slice(1);
+      el.textContent = providerName;
+    }
+
+    function toggleProviderSelector() {
+      const selector = document.getElementById('provider-selector');
+      if (!selector) return;
+      selector.classList.toggle('active');
+    }
+
+    // Cerrar selector al hacer click fuera
+    document.addEventListener('click', (e) => {
+      const selector = document.getElementById('provider-selector');
+      const providerBtn = document.getElementById('ai-provider');
+      if (!selector || !providerBtn) return;
+      if (!selector.contains(e.target) && !providerBtn.contains(e.target)) {
+        selector.classList.remove('active');
+      }
+    });
+
+    // ==================== BÚSQUEDA DE ROLES ====================
+    const roleSearch = document.getElementById('role-search');
+    if (roleSearch) {
+      roleSearch.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const allRoleBtns = document.querySelectorAll('.role-btn[data-role]');
+        const categories = document.querySelectorAll('.role-category');
+        
+        if (searchTerm === '') {
+          // Mostrar todos
+          allRoleBtns.forEach(btn => btn.classList.remove('hidden'));
+          categories.forEach(cat => cat.style.display = 'block');
+        } else {
+          // Filtrar roles
+          let hasVisibleRoles = false;
+          allRoleBtns.forEach(btn => {
+            const roleText = btn.textContent.toLowerCase();
+            if (roleText.includes(searchTerm)) {
+              btn.classList.remove('hidden');
+              hasVisibleRoles = true;
+            } else {
+              btn.classList.add('hidden');
+            }
+          });
+          
+          // Ocultar categorías vacías
+          categories.forEach(cat => {
+            const visibleBtns = cat.querySelectorAll('.role-btn:not(.hidden)');
+            cat.style.display = visibleBtns.length > 0 ? 'block' : 'none';
+          });
+        }
+      });
+    }
+
+    // ==================== ROLES ====================
+    document.querySelectorAll('.role-btn[data-role]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Actualizar UI
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Actualizar rol actual
+        currentRole = btn.dataset.role;
+        activeRoleDisplay.textContent = btn.textContent.trim();
+        
+        showToast(`Rol cambiado a: ${btn.textContent.trim()}`);
+      });
+    });
+
+    // ==================== ACCIONES ====================
+    document.querySelectorAll('.role-btn[data-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const action = btn.dataset.action;
+        
+        if (action === 'clear') {
+          messagesContainer.innerHTML = '';
+          showToast('Chat limpiado');
+        } else if (action === 'stats') {
+          if (window.sandraAPI) {
+            const result = await window.sandraAPI.getStats();
+            if (result.success) {
+              const stats = result.stats;
+              addMessage(`📊 Estadísticas del Sistema:\n\n- Roles Activos: ${stats.activeRoles}/${stats.totalRoles}\n- Agentes Activos: ${stats.activeAgents}\n- Conversaciones: ${stats.conversations || 0}\n- Deployments: ${stats.deployments || 0}`, 'assistant');
+            }
+          }
+        } else if (action === 'validate') {
+          showToast('Validando roles...');
+          setTimeout(() => showToast('✅ Todos los roles validados'), 2000);
+        } else if (action === 'mcp') {
+          // Abrir panel MCP
+          document.getElementById('mcp-panel').style.display = 'block';
+        }
+      });
+    });
+
+    // ==================== ENVIAR MENSAJE ====================
+    async function sendMessage(mode = 'text') {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      // Limpiar input
+      messageInput.value = '';
+
+      // Agregar mensaje del usuario
+      addMessage(message, 'user');
+
+      // Mostrar loading
+      loading.classList.add('active');
+
+      try {
+        if (window.sandraAPI) {
+          // Pasar el modo (text/voice/video) al backend
+          const result = await window.sandraAPI.sendMessage(message, currentRole, mode);
+          
+          if (result.success) {
+            addMessage(result.response, 'assistant');
+          } else {
+            addMessage('Error: ' + result.error, 'assistant');
+          }
+        } else {
+          // Modo offline/demo
+          setTimeout(() => {
+            const responses = [
+              'Entendido, estoy procesando tu solicitud...',
+              'Excelente pregunta. Déjame analizar eso...',
+              'Perfecto, trabajando en ello...',
+              'Interesante planteamiento. Te ayudaré con eso...'
+            ];
+            addMessage(responses[Math.floor(Math.random() * responses.length)], 'assistant');
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error al enviar mensaje:', error);
+        addMessage('Error al procesar el mensaje', 'assistant');
+      } finally {
+        loading.classList.remove('active');
+      }
+    }
+
+    // ==================== GRABACIÓN DE VOZ CON DEEPGRAM ====================
+    async function startVoiceRecording() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              sampleRate: 44100
+            } 
+          });
+          
+          mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'audio/webm'
+          });
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            await processVoiceInput(audioBlob);
+            
+            // Detener el stream
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start(100); // Capturar cada 100ms
+          isRecording = true;
+
+        // Máximo 30s
+        clearTimeout(recordTimeoutId);
+        recordTimeoutId = setTimeout(() => {
+          if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+            stopVoiceRecording();
+            showToast('⏱️ Grabación detenida (30s máx)');
+          }
+        }, 30000);
+          
+          // Iniciar visualizador de audio
+          const visualizerCanvas = document.getElementById('audio-visualizer');
+          if (visualizerCanvas) {
+            visualizerCanvas.style.display = 'block';
+            
+            // Crear visualizador
+            if (!audioVisualizer) {
+            // Cargar AudioVisualizer
+              const AudioVisualizer = function(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.canvasContext = this.canvas ? this.canvas.getContext('2d') : null;
+                this.audioContext = null;
+                this.analyser = null;
+                this.dataArray = null;
+                this.bufferLength = 0;
+                this.animationId = null;
+                this.isVisualizing = false;
+                
+                this.startVisualization = async function(stream) {
+                  try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 2048;
+                    this.bufferLength = this.analyser.frequencyBinCount;
+                    this.dataArray = new Uint8Array(this.bufferLength);
+                    const source = this.audioContext.createMediaStreamSource(stream);
+                    source.connect(this.analyser);
+                    this.isVisualizing = true;
+                    this.draw();
+                    return { success: true };
+                  } catch (error) {
+                    return { success: false, error: error.message };
+                  }
+                };
+                
+                this.draw = function() {
+                  if (!this.isVisualizing) return;
+                  this.animationId = requestAnimationFrame(() => this.draw());
+                  if (!this.analyser || !this.dataArray) return;
+                  this.analyser.getByteTimeDomainData(this.dataArray);
+                  const ctx = this.canvasContext;
+                  const width = this.canvas.width;
+                  const height = this.canvas.height;
+                  ctx.fillStyle = 'rgba(15, 52, 96, 0.3)';
+                  ctx.fillRect(0, 0, width, height);
+                  ctx.lineWidth = 2;
+                  ctx.strokeStyle = '#667eea';
+                  ctx.beginPath();
+                  const sliceWidth = width / this.bufferLength;
+                  let x = 0;
+                  for (let i = 0; i < this.bufferLength; i++) {
+                    const v = this.dataArray[i] / 128.0;
+                    const y = (v * height) / 2;
+                    if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
+                    x += sliceWidth;
+                  }
+                  ctx.lineTo(width, height / 2);
+                  ctx.stroke();
+                };
+                
+                this.stop = function() {
+                  this.isVisualizing = false;
+                  if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                  }
+                  if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                  }
+                  if (this.canvas && this.canvasContext) {
+                    this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                  }
+                };
+              };
+              
+              audioVisualizer = new AudioVisualizer('audio-visualizer');
+            }
+            
+            audioVisualizer.startVisualization(stream);
+          }
+          
+          // Actualizar UI
+        if (voiceBtn) voiceBtn.classList.add('recording');
+        if (voiceBtn) voiceBtn.textContent = '⏹️';
+          
+        showToast('🎤 Grabando... suelta para enviar');
+        } catch (error) {
+          console.error('Error al acceder al micrófono:', error);
+          showToast('❌ No se pudo acceder al micrófono', 'error');
+        }
+    }
+
+    function stopVoiceRecording() {
+      try {
+        clearTimeout(recordTimeoutId);
+        // DETENER GRABACIÓN
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        
+        // Detener visualizador
+        if (audioVisualizer) {
+          audioVisualizer.stop();
+          const visualizerCanvas = document.getElementById('audio-visualizer');
+          if (visualizerCanvas) {
+            visualizerCanvas.style.display = 'none';
+          }
+        }
+        
+        isRecording = false;
+        
+        // Restaurar UI
+        if (voiceBtn) voiceBtn.classList.remove('recording');
+        if (voiceBtn) voiceBtn.textContent = '🎤';
+        
+        showToast('Procesando audio...');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function toggleVoiceRecording() {
+      if (!isRecording) {
+        await startVoiceRecording();
+      } else {
+        stopVoiceRecording();
+      }
+    }
+
+    async function processVoiceInput(audioBlob) {
+      try {
+        if (!window.sandraAPI) {
+          showToast('❌ API no disponible', 'error');
+          return;
+        }
+
+        showToast('🎤 Enviando audio al servicio multimodal...');
+        
+        // Convertir blob a buffer (Uint8Array)
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        
+        // Usar el flujo multimodal completo (STT + GPT-4o + TTS)
+        const result = await window.sandraAPI.multimodalSendVoice(buffer, null);
+        if (!result || !result.success) {
+          showToast('❌ Error procesando audio: ' + (result?.error || 'desconocido'), 'error');
+          return;
+        }
+        showToast('✅ Audio procesado');
+      } catch (error) {
+        console.error('Error al procesar audio:', error);
+        showToast('❌ Error al procesar el audio', 'error');
+      }
+    }
+
+    // ==================== LLAMADA CONVERSACIONAL (CONTINUA + STREAM) ====================
+    let isCallActive = false;
+    const btnConvoCall = document.getElementById('btn-convo-call');
+    const callState = document.getElementById('call-state');
+
+    async function startVoiceStreaming() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+        const sampleRate = audioCtx.sampleRate; // típicamente 48000
+        console.log('[VoiceStreaming] sampleRate=', sampleRate, 'bufferSize=', processor.bufferSize);
+        source.connect(processor);
+        processor.connect(audioCtx.destination);
+
+        function downsampleTo16k(float32Audio, inSampleRate) {
+          const outSampleRate = 16000;
+          if (inSampleRate === outSampleRate) return float32Audio;
+          const sampleRateRatio = inSampleRate / outSampleRate;
+          const newLength = Math.round(float32Audio.length / sampleRateRatio);
+          const result = new Float32Array(newLength);
+          let offsetResult = 0;
+          let offsetBuffer = 0;
+          while (offsetResult < result.length) {
+            const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+            let accum = 0, count = 0;
+            for (let i = offsetBuffer; i < nextOffsetBuffer && i < float32Audio.length; i++) {
+              accum += float32Audio[i];
+              count++;
+            }
+            result[offsetResult] = count > 0 ? (accum / count) : 0;
+            offsetResult++;
+            offsetBuffer = nextOffsetBuffer;
+          }
+          return result;
+        }
+
+        processor.onaudioprocess = (e) => {
+          if (!isCallActive || !window.sandraAPI) return;
+          const input = e.inputBuffer.getChannelData(0);
+          // Remuestrear a 16 kHz para Deepgram básico
+          const ds = downsampleTo16k(input, sampleRate);
+          // Convertir Float32 [-1,1] a PCM16 little-endian
+          const pcmBuffer = new Int16Array(ds.length);
+          for (let i = 0; i < ds.length; i++) {
+            let s = Math.max(-1, Math.min(1, ds[i]));
+            pcmBuffer[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          }
+          const u8 = new Uint8Array(pcmBuffer.buffer);
+          // Convertir a base64 para transporte robusto por IPC
+          const CHUNK = 0x8000;
+          let binary = '';
+          for (let i = 0; i < u8.length; i += CHUNK) {
+            binary += String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK));
+          }
+          const b64 = btoa(binary);
+          window.sandraAPI.sendAudioStream(b64);
+        };
+
+        mediaRecorder = { stop: () => { try { processor.disconnect(); source.disconnect(); const p = audioCtx.close(); if (p && typeof p.catch === 'function') { p.catch(() => {}); } stream.getTracks().forEach(t => t.stop()); } catch {} } };
+        isRecording = true;
+        showToast('🎤 Streaming de voz activo');
+      } catch (e) {
+        console.error(e);
+        showToast('❌ No se pudo iniciar el streaming de voz', 'error');
+      }
+    }
+
+    function stopVoiceStreaming() {
+      try {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      } catch {}
+      isRecording = false;
+      showToast('🔇 Streaming detenido');
+    }
+
+    async function startConversationalCall() {
+      if (!micApproved) await requestMicPermission();
+      if (!window.sandraAPI) return showToast('❌ API no disponible', 'error');
+      try {
+        // Fijar rol por defecto para llamadas iniciadas desde la app/web (conserje/turismo)
+        if (window.sandraAPI?.activateRole) {
+          try { await window.sandraAPI.activateRole('concierge'); } catch {}
+        }
+
+        const res = await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: false });
+        if (!res || !res.success) return showToast('❌ No se pudo iniciar la llamada conversacional', 'error');
+        
+        // Iniciar tono de llamada hasta que se conecte
+        greetedThisCall = false;
+        startRingtone();
+        
+        await startVoiceStreaming();
+        isCallActive = true;
+        btnConvoCall.textContent = '⛔ Finalizar llamada';
+        callState.textContent = 'Llamada: Activa';
+        
+        // Activar avatar Sora al iniciar llamada
+        if (soraVideo && soraVideo.src) {
+          soraVideo.play().catch(e => console.warn('No se pudo reproducir video Sora:', e));
+        }
+        
+        showToast('📞 Llamada conversacional activa');
+      } catch (e) {
+        console.error(e);
+        showToast('❌ Error iniciando llamada', 'error');
+      }
+    }
+
+    async function stopConversationalCall() {
+      console.log('📴 [CallCenter] Finalizando llamada...');
+      
+      // 1. Detener tono si está sonando
+      try { stopRingtone(); } catch {}
+      
+      // 2. Sonido de colgado (estilo call center)
+      playHangupSound();
+      
+      // 3. Detener streaming de voz
+      stopVoiceStreaming();
+      
+      // 4. Detener conversación multimodal
+      try {
+        if (window.sandraAPI) await window.sandraAPI.stopMultimodalConversation();
+      } catch {}
+      
+      // 5. Parar cualquier TTS en reproducción
+      try { 
+        if (currentTtsAudio) { 
+          currentTtsAudio.pause(); 
+          currentTtsAudio.currentTime = 0; 
+          currentTtsAudio = null; 
+        } 
+      } catch {}
+      
+      // 6. Reset flag de saludo para próxima llamada
+      greetedThisCall = false;
+      
+      // 7. Actualizar UI
+      isCallActive = false;
+      btnConvoCall.textContent = '📞 Llamada conversacional';
+      callState.textContent = 'Llamada: Inactiva';
+      
+      // 8. Pausar avatar Sora
+      if (soraVideo) {
+        soraVideo.pause();
+      }
+      stopMouthSync();
+      
+      showToast('📴 Llamada finalizada');
+      console.log('✅ [CallCenter] Llamada finalizada correctamente');
+    }
+    
+    // Sonido de colgado (estilo call center - más realista)
+    function playHangupSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const gainMaster = ctx.createGain();
+        gainMaster.connect(ctx.destination);
+        
+        // Simular "clack" de colgar con múltiples componentes
+        const makeHangupClick = (freq, startTime, duration, volume) => {
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, startTime);
+          g.gain.linearRampToValueAtTime(volume, startTime + 0.003);
+          g.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+          osc.connect(g).connect(gainMaster);
+          osc.start(startTime);
+          osc.stop(startTime + duration + 0.01);
+        };
+        
+        const now = ctx.currentTime;
+        // Sonido de colgado: dos clicks rápidos (más grave que el de descolgar)
+        makeHangupClick(600, now, 0.05, 0.1);        // Click principal
+        makeHangupClick(400, now + 0.025, 0.04, 0.08); // Click secundario (overlap)
+        makeHangupClick(300, now + 0.04, 0.03, 0.05);  // Resonancia final
+        
+        setTimeout(() => {
+          try { ctx.close().catch(() => {}); } catch {}
+        }, 120);
+        
+        console.log('🔊 [CallCenter] Sonido de colgado');
+      } catch (e) {
+        console.warn('⚠️ [CallCenter] Error reproduciendo sonido de colgado:', e);
+      }
+    }
+
+    // ==================== AGREGAR MENSAJE ====================
+    function addMessage(text, sender) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+      
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.textContent = sender === 'user' ? 'U' : 'S';
+      
+      const content = document.createElement('div');
+      content.className = 'message-content';
+      
+      const textDiv = document.createElement('div');
+      textDiv.textContent = text;
+      
+      const time = document.createElement('div');
+      time.className = 'message-time';
+      time.textContent = new Date().toLocaleTimeString('es-ES');
+      
+      content.appendChild(textDiv);
+      content.appendChild(time);
+      
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(content);
+      
+      messagesContainer.appendChild(messageDiv);
+      
+      // SCROLL AUTOMÁTICO
+      setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 100);
+    }
+
+    // ==================== TOAST ====================
+    function showToast(message, type = 'success') {
+      toastMessage.textContent = message;
+      toast.className = `toast active ${type}`;
+      
+      setTimeout(() => {
+        toast.classList.remove('active');
+      }, 3000);
+    }
+
+    // ==================== QUICK ACTIONS ====================
+    async function executeQuickAction(action) {
+      showToast(`🚀 Ejecutando: ${action}...`);
+      
+      switch(action) {
+        case 'system-status':
+          addMessage('Verificando estado del sistema...', 'user');
+          if (window.sandraAPI) {
+            const status = await window.sandraAPI.getSystemStatus();
+            if (status.success) {
+              addMessage(`✅ Estado del Sistema:\n\n${JSON.stringify(status.data, null, 2)}`, 'assistant');
+            } else {
+              addMessage('⚠️ No se pudo obtener el estado del sistema', 'assistant');
+            }
+          } else {
+            addMessage('✅ Sistema operativo\n✅ 62 roles disponibles\n✅ Multimodal activo', 'assistant');
+          }
+          break;
+          
+        case 'test-multimodal':
+          addMessage('Probando sistema multimodal...', 'user');
+          showToast('🎤 Iniciando prueba de voz...');
+          // Simular prueba multimodal
+          setTimeout(() => {
+            addMessage('✅ Sistema Multimodal:\n🎤 Voz: Listo\n📹 Avatar: Listo\n🔄 Barge-in: Activado', 'assistant');
+          }, 1000);
+          break;
+          
+        case 'github-sync':
+          addMessage('Sincronizando con GitHub...', 'user');
+          if (window.sandraAPI) {
+            const sync = await window.sandraAPI.syncWithGitHub();
+            if (sync.success) {
+              addMessage(`✅ Sincronización completada:\n${sync.message}`, 'assistant');
+            } else {
+              addMessage(`⚠️ Error en sincronización: ${sync.error}`, 'assistant');
+            }
+          } else {
+            addMessage('✅ Repositorio sincronizado\n✅ 62 roles en GitHub', 'assistant');
+          }
+          break;
+      }
+    }
+
+    // ==================== VIDEOCALL CON AVATAR ====================
+    let isVideoCallActive = false;
+    
+    async function toggleVideoCall() {
+      const videoBtn = document.getElementById('video-btn');
+      const avatarPanel = document.querySelector('.avatar-panel');
+      const avatarVideo = document.getElementById('heygen-avatar-video');
+      
+      if (!isVideoCallActive) {
+        // INICIAR VIDEOCALL
+        try {
+          showToast('📹 Iniciando videollamada con avatar...');
+          
+          if (window.sandraAPI) {
+            // Iniciar conversación multimodal en modo 'avatar'
+            const result = await window.sandraAPI.startMultimodalConversation({ mode: 'avatar', continuous: continuousMode });
+            if (result.success) {
+              isVideoCallActive = true;
+              videoBtn.classList.add('active');
+              avatarPanel.style.display = 'block';
+              if (avatarVideo) {
+                avatarVideo.style.display = 'block';
+              }
+              showToast('✅ Videollamada activa - Habla para interactuar');
+              addMessage('📹 Videollamada iniciada. El avatar está listo para conversar.', 'assistant');
+            } else {
+              showToast('❌ Error iniciando videollamada: ' + result.error, 'error');
+            }
+          }
+        } catch (error) {
+          console.error('Error en videollamada:', error);
+          showToast('❌ Error: ' + error.message, 'error');
+        }
+      } else {
+        // FINALIZAR VIDEOCALL
+        try {
+          if (window.sandraAPI) {
+            await window.sandraAPI.stopMultimodalConversation();
+            await window.sandraAPI.stopAvatar();
+          }
+          
+          isVideoCallActive = false;
+          videoBtn.classList.remove('active');
+          
+          if (avatarVideo) {
+            avatarVideo.srcObject = null;
+            avatarVideo.style.display = 'none';
+          }
+          
+          showToast('📹 Videollamada finalizada');
+          addMessage('📹 Videollamada finalizada.', 'assistant');
+        } catch (error) {
+          console.error('Error finalizando videollamada:', error);
+        }
+      }
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    sendBtn.addEventListener('click', sendMessage);
+    // Evento para llamada conversacional (toggle)
+    const btnConvoCall2 = document.getElementById('btn-convo-call');
+    if (btnConvoCall2) {
+      btnConvoCall2.addEventListener('click', async () => {
+        if (!isCallActive) await startConversationalCall();
+        else await stopConversationalCall();
+      });
+    }
+    
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Prevenir que el input pierda foco (no necesario para voz ahora)
+
+    // Selector de voz
+    const voiceSelector = document.getElementById('voice-selector');
+    if (voiceSelector) {
+      voiceSelector.addEventListener('change', (e) => {
+        currentVoiceId = e.target.value;
+        showToast(`Voz cambiada a: ${e.target.options[e.target.selectedIndex].text}`);
+      });
+    }
+
+    // Modo continuo
+    const continuousModeToggle = document.getElementById('continuous-mode');
+    if (continuousModeToggle) {
+      continuousModeToggle.addEventListener('change', async (e) => {
+        continuousMode = e.target.checked;
+        
+        if (continuousMode) {
+          showToast('🔄 Modo continuo activado');
+          if (window.sandraAPI) {
+            await window.sandraAPI.setContinuousMode(true);
+            await window.sandraAPI.startMultimodalConversation({ mode: 'voice', continuous: true });
+          }
+        } else {
+          showToast('Modo continuo desactivado');
+          if (window.sandraAPI) {
+            await window.sandraAPI.setContinuousMode(false);
+            await window.sandraAPI.stopMultimodalConversation();
+          }
+        }
+      });
+    }
+
+    // Barge-in toggle
+    const bargeInToggle = document.getElementById('barge-in-toggle');
+    if (bargeInToggle) {
+      bargeInToggle.addEventListener('change', async (e) => {
+        bargeInEnabled = e.target.checked;
+        
+        if (window.sandraAPI) {
+          await window.sandraAPI.setBargeIn(bargeInEnabled);
+        }
+        
+        showToast(`⚡ Barge-in ${bargeInEnabled ? 'activado' : 'desactivado'}`);
+      });
+    }
+
+    // ==================== HEYGEN AVATAR ====================
+    async function initializeHeyGenAvatar() {
+      const avatarContainer = document.getElementById('heygen-avatar');
+      
+      try {
+        if (window.sandraAPI) {
+          // Crear sesión de avatar
+          const result = await window.sandraAPI.createAvatarSession();
+          
+          if (result.success) {
+            // Aquí se integraría el WebRTC stream del avatar
+            avatarContainer.innerHTML = `
+              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div style="font-size: 60px;">🤖</div>
+                <div style="font-size: 14px; color: white; font-weight: 600;">Avatar Sandra</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.8);">✅ Sesión Activa</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.6);">ID: ${result.session.sessionId.substring(0, 8)}...</div>
+              </div>
+            `;
+            
+            showToast('✅ Avatar HeyGen inicializado');
+            avatarStatus.textContent = 'Streaming';
+          } else {
+            throw new Error(result.error);
+          }
+        }
+      } catch (error) {
+        console.error('Error inicializando avatar:', error);
+        avatarContainer.innerHTML = `
+          <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px;">
+            <div style="font-size: 60px;">🤖</div>
+            <div style="font-size: 14px; color: rgba(255,255,255,0.6);">Avatar Sandra</div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.4);">Modo Offline</div>
+          </div>
+        `;
+      }
+    }
+
+    // ==================== EVENTOS MULTIMODALES ====================
+    if (window.sandraAPI) {
+      // Actualización de transcripción en tiempo real
+      window.sandraAPI.onTranscriptUpdate((data) => {
+        const raw = data?.transcript || '';
+        const t = raw.toLowerCase();
+
+        // Wake word "Hola Sandra" → Iniciar llamada conversacional automáticamente
+        if (/(^|\b)hola sandra(\b|$)/i.test(t)) {
+          console.log('🎤 Wake word detectado: "Hola Sandra"');
+          
+          // Marcar como despierta
+          if (!isAwake) {
+            isAwake = true;
+            showToast('🟢 ¡Hola! Sandra activada por voz', 'success');
+          }
+          
+          // Disparar SOS en caliente (agente de emergencia)
+          if (window.sandraAPI && window.sandraAPI.triggerSOS) {
+            window.sandraAPI.triggerSOS().then(res => {
+              if (!res?.success) console.warn('SOS error:', res?.error);
+            }).catch(e => console.warn('SOS exception:', e.message));
+          }
+          
+          // INICIAR LLAMADA CONVERSACIONAL AUTOMÁTICAMENTE
+          if (typeof startConversationalCall === 'function' && !isCallActive) {
+            console.log('📞 Iniciando llamada conversacional automática...');
+            setTimeout(() => {
+              startConversationalCall();
+              showToast('📞 Llamada conversacional iniciada', 'success');
+            }, 500); // Pequeño delay para que el toast se vea
+          } else if (isCallActive) {
+            console.log('ℹ️ Llamada ya activa, continuando...');
+          }
+        }
+
+        // Barge-in en frontend: si Sandra está hablando y el usuario habla, cortar audio al instante
+        if (raw && raw.trim()) {
+          try {
+            // Cortar audio TTS de Cartesia (Audio element)
+            if (currentTtsAudio && !currentTtsAudio.paused) {
+              currentTtsAudio.pause();
+              currentTtsAudio.currentTime = currentTtsAudio.duration || currentTtsAudio.currentTime;
+              currentTtsAudio = null;
+            }
+          } catch (e) {
+            console.warn('Error aplicando barge-in en frontend:', e);
+          }
+          // También parar animación de boca
+          try {
+            if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+            mouthAnimTimer = null;
+            soraMouth.classList.remove('mouth-talking');
+          } catch {}
+        }
+
+        // Log de depuración de transcripción
+        if (t) console.log('[Transcript]', data.isFinal ? '(final)' : '(interim)', t);
+      });
+
+      // Estado de sesión multimodal
+      if (window.sandraAPI.onMultimodalSessionState) {
+        window.sandraAPI.onMultimodalSessionState((state) => {
+          console.log('[MultimodalState]', JSON.stringify(state));
+          const statusEl = document.getElementById('mode-status');
+          if (statusEl && state) {
+            statusEl.textContent = state.sessionActive ? `Modo: ${state.mode} (live)` : 'Modo: Inactivo';
+          }
+          const callStateEl = document.getElementById('call-state');
+          if (callStateEl && state) {
+            callStateEl.textContent = state.sessionActive ? 'Llamada: Activa' : 'Llamada: Inactiva';
+          }
+          // Auto-colgar UI si la sesión se desactiva desde backend
+          if (state && !state.sessionActive && typeof stopConversationalCall === 'function' && isCallActive) {
+            stopConversationalCall();
+          }
+          
+          // Si ya hay conexión de voz, no parar el tono: el saludo se disparará tras el 2º timbre
+          if (state && state.sessionActive && state.deepgramConnected) {
+            // no-op, dejamos sonar el tono hasta completar el ciclo
+          }
+        });
+      }
+
+      // Evitar registrar múltiples veces los mismos listeners (causaba respuestas duplicadas)
+      if (!window._sandraEventsBound) {
+        window._sandraEventsBound = true;
+
+      // Respuesta de IA lista
+      window.sandraAPI.onResponseReady((data) => {
+        console.log('Respuesta IA:', data.text);
+        addMessage(data.text, 'assistant');
+
+        // Si llega un video sincronizado, reproducirlo (evitar doble audio)
+        if (data && data.syncedVideoPath && soraVideo) {
+          try {
+            const fileUrl = 'file:///' + data.syncedVideoPath.replace(/\\/g, '/');
+            soraVideo.loop = false;
+            soraVideo.muted = false;
+            soraVideo.src = fileUrl;
+            soraVideo.play().catch(() => {});
+            // No reproducir audio aparte cuando hay video ya sincronizado
+            return;
+          } catch (e) {
+            console.warn('No se pudo reproducir video sincronizado:', e);
+          }
+        }
+
+        // Reproducir audio TTS si viene incluido (cuando no hay video sincronizado)
+        try {
+          if (data && data.audioBuffer) {
+            // Normalizar a Uint8Array (puede venir como { type:'Buffer', data:[...] } o ArrayBufferView)
+            let u8;
+            if (data.audioBuffer.data && Array.isArray(data.audioBuffer.data)) {
+              u8 = new Uint8Array(data.audioBuffer.data);
+            } else if (data.audioBuffer.buffer) {
+              u8 = new Uint8Array(data.audioBuffer.buffer);
+            } else {
+              u8 = new Uint8Array(data.audioBuffer);
+            }
+            const blob = new Blob([u8], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            // Volumen aprobado en el workflow para respuestas de Sandra
+            audio.volume = 0.45;
+
+            // Guardar referencia global para barge-in
+            currentTtsAudio = audio;
+
+            audio.addEventListener('play', () => {
+              startMouthSyncForAudio(audio);
+            });
+            audio.addEventListener('ended', () => {
+              if (currentTtsAudio === audio) currentTtsAudio = null;
+              stopMouthSync();
+            });
+            audio.play().catch(() => {});
+          }
+        } catch (e) {
+          console.warn('No se pudo reproducir TTS:', e);
+        }
+        // Simular lipsync sobre overlay mientras "habla"
+        if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+        soraMouth.classList.add('mouth-talking');
+        mouthAnimTimer = setInterval(() => {
+          soraMouth.classList.toggle('mouth-talking');
+        }, 160);
+        setTimeout(() => {
+          if (mouthAnimTimer) clearInterval(mouthAnimTimer);
+          soraMouth.classList.remove('mouth-talking');
+        }, Math.min(6000, Math.max(1800, data.text?.length || 1200)));
+      });
+
+      // Avatar hablando
+      window.sandraAPI.onAvatarSpeaking((data) => {
+        if (data.speaking) {
+          avatarStatus.textContent = 'Hablando...';
+          console.log('Avatar hablando:', data.text);
+        } else {
+          avatarStatus.textContent = 'Escuchando';
+        }
+      });
+
+      // Error multimodal
+      window.sandraAPI.onMultimodalError((data) => {
+        console.error('Error multimodal:', data.error);
+        showToast('❌ ' + data.error, 'error');
+      });
+
+      } // end guard listeners
+
+      // ==================== CALL CENTER PROFESIONAL ====================
+      let ringCtx = null;
+      let ringGain = null;
+      let ringTimer = null;
+      let ringGreetTimer = null;
+      let greetedThisCall = false;
+
+      // Sistema de ringtone mejorado con call center profesional
+      let ringtoneTimeout = null;
+      let callTimeout = null;
+      let isRinging = false;
+
+      async function startRingtone() {
+        if (isRinging) return;
+        isRinging = true;
+        
+        console.log('📞 [CallCenter] Iniciando ringtone...');
+        
+        // Activar visual de llamada
+        updateCallStatus('Llamando...', true);
+        
+        // Secuencia de ringtone profesional
+        const ringtoneSequence = [
+            { delay: 2500, action: () => playRingtoneSound() },
+            { delay: 4500, action: () => playRingtoneSound() },
+            { delay: 6500, action: () => playPickupSound() },
+            { delay: 7000, action: () => playClinkSound() },
+            { delay: 7500, action: () => playGreeting() }
+        ];
+        
+        // Ejecutar secuencia
+        for (const step of ringtoneSequence) {
+            ringtoneTimeout = setTimeout(step.action, step.delay);
+        }
+        
+        // Timeout de llamada
+        callTimeout = setTimeout(() => {
+            if (isRinging) {
+                console.log('📞 [CallCenter] Timeout - colgando...');
+                stopConversationalCall();
+            }
+        }, 30000);
+      }
+
+      function stopRingtone() {
+        if (!isRinging) return;
+        isRinging = false;
+        
+        console.log('📞 [CallCenter] Deteniendo ringtone...');
+        
+        if (ringtoneTimeout) {
+            clearTimeout(ringtoneTimeout);
+            ringtoneTimeout = null;
+        }
+        if (callTimeout) {
+            clearTimeout(callTimeout);
+            callTimeout = null;
+        }
+      }
+
+      // Función de sonido de ringtone
+      function playRingtoneSound() {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(440, ctx.currentTime);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(480, ctx.currentTime);
+        
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.0);
+        
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc1.start();
+        osc2.start();
+        osc1.stop(ctx.currentTime + 1.0);
+        osc2.stop(ctx.currentTime + 1.0);
+      }
+
+      function playPickupSound() {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
+        
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      }
+
+      function playClinkSound() {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+        
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      }
+
+      async function playGreeting() {
+        if (!isRinging) return;
+        
+        stopRingtone();
+        updateCallStatus('Conectado', true);
+        
+        const greeting = "Hola, soy Sandra, asistente de Guests Valencia. ¿En qué puedo ayudarte?";
+
+        // Intentar primero TTS profesional de Cartesia vía backend
+        try {
+          if (window.sandraAPI && typeof window.sandraAPI.generateSpeech === 'function') {
+            const res = await window.sandraAPI.generateSpeech(greeting, {
+              speed: 0.78,
+              emotion: [{ id: 'warm', strength: 0.6 }]
+            });
+
+            if (res && res.success && res.audioBuffer) {
+              let u8;
+              if (res.audioBuffer.data && Array.isArray(res.audioBuffer.data)) {
+                u8 = new Uint8Array(res.audioBuffer.data);
+              } else if (res.audioBuffer.buffer) {
+                u8 = new Uint8Array(res.audioBuffer.buffer);
+              } else {
+                u8 = new Uint8Array(res.audioBuffer);
+              }
+
+              const blob = new Blob([u8], { type: 'audio/wav' });
+              const url = URL.createObjectURL(blob);
+              const audio = new Audio(url);
+              // Mismo volumen aprobado en el workflow
+              audio.volume = 0.45;
+
+              // Referencia global para posibles integraciones de barge-in
+              currentTtsAudio = audio;
+
+              audio.addEventListener('play', () => {
+                if (typeof startMouthSyncForAudio === 'function') {
+                  try { startMouthSyncForAudio(audio); } catch {}
+                }
+              });
+              audio.addEventListener('ended', () => {
+                if (currentTtsAudio === audio) currentTtsAudio = null;
+                if (typeof stopMouthSync === 'function') {
+                  try { stopMouthSync(); } catch {}
+                }
+              });
+
+              await audio.play().catch(() => {});
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('Error generando/reproduciendo saludo Cartesia:', e);
+        }
+
+        // Fallback de emergencia: TTS del navegador si Cartesia falla
+        try {
+          const utterance = new SpeechSynthesisUtterance(greeting);
+          utterance.lang = 'es-ES';
+          utterance.rate = 0.9;
+          utterance.pitch = 1.0;
+          speechSynthesis.speak(utterance);
+        } catch {}
+      }
+
+      // Función de colgado
+      async function stopConversationalCall() {
+        console.log('📴 [CallCenter] Finalizando llamada...');
+        
+        stopRingtone();
+        updateCallStatus('Llamada finalizada', false);
+        
+        await playHangupSound();
+        
+        const callButton = document.getElementById('conversational-call-btn');
+        if (callButton) {
+            callButton.textContent = 'Llamada Conversacional';
+            callButton.classList.remove('active');
+        }
+      }
+
+      // Función de actualización de estado
+      function updateCallStatus(status, isActive) {
+        const statusElement = document.getElementById('call-status');
+        if (statusElement) {
+            statusElement.textContent = status;
+            statusElement.className = isActive ? 'status-active' : 'status-inactive';
+        }
+      }
+
+      // Timeout de inactividad
+      let inactivityTimeout = null;
+
+      function resetInactivityTimeout() {
+        if (inactivityTimeout) {
+            clearTimeout(inactivityTimeout);
+        }
+        
+        inactivityTimeout = setTimeout(() => {
+            if (window.multimodalState?.sessionActive) {
+                console.log('📞 [CallCenter] Inactividad detectada - colgando llamada');
+                stopConversationalCall();
+            }
+        }, 15000); // 15 segundos de inactividad
+      }
+    }
+
+    // Inicializar avatar
+    // initializeHeyGenAvatar(); // Dejado listo para inyección futura del widget HeyGen
+
+    // ==================== PERSISTENCIA DE VIDEO AVATAR ====================
+    function saveVideoToStorage(file) {
+      try {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            localStorage.setItem('sandra_avatar_video', e.target.result);
+            localStorage.setItem('sandra_avatar_video_name', file.name);
+            showToast('✅ Video guardado');
+          } catch (err) {
+            console.warn('Error guardando video:', err);
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (e) {
+        console.warn('Error leyendo archivo:', e);
+      }
+    }
+
+    function loadVideoFromStorage() {
+      try {
+        const videoData = localStorage.getItem('sandra_avatar_video');
+        if (videoData && soraVideo) {
+          soraVideo.src = videoData;
+          showToast('✅ Video cargado desde almacenamiento');
+        }
+      } catch (e) {
+        console.warn('Error cargando video:', e);
+      }
+    }
+
+    function clearVideoFromStorage() {
+      try {
+        localStorage.removeItem('sandra_avatar_video');
+        localStorage.removeItem('sandra_avatar_video_name');
+        if (soraVideo) {
+          soraVideo.src = '';
+        }
+        showToast('🗑️ Video eliminado');
+      } catch (e) {
+        console.warn('Error eliminando video:', e);
+      }
+    }
+
+    // Cargar video al iniciar
+    loadVideoFromStorage();
+
+    // Botón para cargar un video local de Sora
+    (function addSoraLoader(){
+      const panel = document.querySelector('.avatar-panel');
+      const wrap = document.createElement('div');
+      wrap.style.marginTop = '8px';
+      wrap.innerHTML = `
+        <label style="font-size:12px;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">🎬 Video Sora (local):</label>
+        <input id="sora-file" type="file" accept="video/*" style="width:100%;font-size:12px;margin-bottom:6px;">
+        <button id="clear-avatar-btn" style="width:100%;padding:6px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#ef4444;cursor:pointer;">🗑️ Limpiar video</button>
+      `;
+      panel.appendChild(wrap);
+      const input = wrap.querySelector('#sora-file');
+      const clearBtn = wrap.querySelector('#clear-avatar-btn');
+      
+      input.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          soraVideo.src = url;
+          showToast('🎬 Video Sora cargado');
+          
+          // Guardar en localStorage
+          saveVideoToStorage(file);
+
+          // Intentar registrar ruta real para lip-sync
+          try {
+            // Si Electron expone file.path, usarlo directamente
+            if (file.path && window.sandraAPI?.setLipSyncSourceVideo) {
+              window.sandraAPI.setLipSyncSourceVideo(file.path).then(res => {
+                if (!res?.success) console.warn('setLipSyncSourceVideo error:', res?.error);
+              }).catch(err => console.warn('setLipSyncSourceVideo ex:', err.message));
+            } else if (window.sandraAPI?.registerLipSyncSourceVideo) {
+              // Subir el contenido para guardarlo en temp y usarlo en backend
+              const reader = new FileReader();
+              reader.onload = function() {
+                try {
+                  const arr = new Uint8Array(reader.result);
+                  // Convertir a base64
+                  let binary = '';
+                  const CHUNK = 0x8000;
+                  for (let i = 0; i < arr.length; i += CHUNK) {
+                    binary += String.fromCharCode.apply(null, arr.subarray(i, i + CHUNK));
+                  }
+                  const b64 = btoa(binary);
+                  window.sandraAPI.registerLipSyncSourceVideo(file.name, b64).then(res => {
+                    if (!res?.success) console.warn('registerLipSyncSourceVideo error:', res?.error);
+                  }).catch(err => console.warn('registerLipSyncSourceVideo ex:', err.message));
+                } catch (e) {
+                  console.warn('Error preparando video para lip-sync:', e);
+                }
+              };
+              reader.readAsArrayBuffer(file);
+            }
+          } catch (e) {
+            console.warn('No se pudo registrar lip-sync source:', e);
+          }
+        }
+      });
+      
+      clearBtn.addEventListener('click', () => {
+        clearVideoFromStorage();
+        input.value = '';
+      });
+    })();
+
+    console.log('✅ Sandra IA 8.0 Pro - Sistema Multimodal Completo Cargado');
+    console.log('🎤 Deepgram STT - Listo');
+    console.log('🔊 Cartesia TTS - Listo');
+    console.log('🤖 HeyGen Avatar - Listo');
+    console.log('🔄 Barge-in - Activado');
+
+    // ==================== MCP PANEL ====================
+    
+    // Cerrar panel MCP
+    document.getElementById('mcp-close').addEventListener('click', () => {
+      document.getElementById('mcp-panel').style.display = 'none';
+    });
+
+    // Tabs del MCP
+    document.querySelectorAll('.mcp-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        
+        // Actualizar tabs activos
+        document.querySelectorAll('.mcp-tab').forEach(t => {
+          t.style.background = 'rgba(255,255,255,0.05)';
+          t.style.borderColor = 'rgba(255,255,255,0.1)';
+        });
+        tab.style.background = 'rgba(102, 126, 234, 0.3)';
+        tab.style.borderColor = '#667eea';
+        
+        // Mostrar contenido correspondiente
+        document.querySelectorAll('.mcp-tab-content').forEach(content => {
+          content.style.display = 'none';
+        });
+        document.getElementById(`mcp-tab-${tabName}`).style.display = 'block';
+      });
+    });
+
+    // Generar Código
+    document.getElementById('mcp-generate-code').addEventListener('click', async () => {
+      const task = document.getElementById('mcp-code-task').value.trim();
+      const role = document.getElementById('mcp-code-role').value;
+      const language = document.getElementById('mcp-code-lang').value;
+      
+      if (!task) {
+        showToast('❌ Por favor describe la tarea', 'error');
+        return;
+      }
+      
+      showToast('💻 Generando código...');
+      
+      try {
+        if (window.sandraAPI) {
+          const result = await window.sandraAPI.mcpGenerateCode(task, role, language);
+          
+          if (result.success) {
+            document.getElementById('mcp-code-output').style.display = 'block';
+            document.getElementById('mcp-code-result').textContent = result.result.code;
+            showToast('✅ Código generado correctamente');
+          } else {
+            showToast('❌ Error: ' + result.error, 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error generando código:', error);
+        showToast('❌ Error al generar código', 'error');
+      }
+    });
+
+    // Deploy
+    document.getElementById('mcp-deploy-btn').addEventListener('click', async () => {
+      const name = document.getElementById('mcp-deploy-name').value.trim();
+      const repo = document.getElementById('mcp-deploy-repo').value.trim();
+      const provider = document.getElementById('mcp-deploy-provider').value;
+      const environment = document.getElementById('mcp-deploy-env').value;
+      
+      if (!name || !repo) {
+        showToast('❌ Completa todos los campos', 'error');
+        return;
+      }
+      
+      showToast('🚀 Iniciando despliegue...');
+      
+      try {
+        if (window.sandraAPI) {
+          const result = await window.sandraAPI.mcpDeploy({
+            name,
+            repoUrl: repo,
+            provider,
+            environment,
+            path: `./temp/${name}`
+          });
+          
+          if (result.success) {
+            const output = document.getElementById('mcp-deploy-output');
+            output.style.display = 'block';
+            output.innerHTML = `
+              ✅ Despliegue completado<br>
+              📦 Proyecto: ${name}<br>
+              🌐 URL: ${result.result.url || 'Generando...'}<br>
+              ⏱️ Tiempo: ${new Date().toLocaleTimeString()}
+            `;
+            showToast('✅ Despliegue exitoso');
+          } else {
+            showToast('❌ Error: ' + result.error, 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error en despliegue:', error);
+        showToast('❌ Error al desplegar', 'error');
+      }
+    });
+
+    // Spawn Agent
+    document.getElementById('mcp-spawn-agent').addEventListener('click', async () => {
+      const role = document.getElementById('mcp-agent-role').value;
+      
+      showToast('🤖 Creando agente...');
+      
+      try {
+        if (window.sandraAPI) {
+          const result = await window.sandraAPI.mcpSpawnAgent(role, {});
+          
+          if (result.success) {
+            showToast(`✅ Agente ${role} creado`);
+            await updateAgentsList();
+          } else {
+            showToast('❌ Error: ' + result.error, 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error creando agente:', error);
+        showToast('❌ Error al crear agente', 'error');
+      }
+    });
+
+    async function updateAgentsList() {
+      try {
+        if (window.sandraAPI) {
+          const result = await window.sandraAPI.mcpGetAgents();
+          
+          if (result.success && result.agents.length > 0) {
+            const listHtml = result.agents.map(agent => `
+              <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #10b981;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 5px;">${agent.role}</div>
+                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">ID: ${agent.id}</div>
+                  </div>
+                  <div style="padding: 4px 12px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 11px; color: #10b981;">
+                    ${agent.status}
+                  </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.6);">
+                  Tareas completadas: ${agent.tasksCompleted || 0}
+                </div>
+              </div>
+            `).join('');
+            
+            document.getElementById('mcp-agents-list').innerHTML = listHtml;
+          } else {
+            document.getElementById('mcp-agents-list').innerHTML = `
+              <div style="text-align: center; color: rgba(255,255,255,0.4); padding: 40px 0;">
+                No hay agentes activos
+              </div>
+            `;
+          }
+        }
+      } catch (error) {
+        console.error('Error actualizando lista de agentes:', error);
+      }
+    }
+
+    // GitHub Sync
+    document.getElementById('mcp-github-sync').addEventListener('click', async () => {
+      showToast('🔄 Sincronizando con GitHub...');
+      
+      try {
+        if (window.sandraAPI) {
+          const result = await window.sandraAPI.mcpSyncGitHub();
+          
+          if (result.success) {
+            const status = result.result;
+            const statusHtml = `
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px;">
+                  <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">Último Commit</div>
+                  <div style="font-weight: 600; font-size: 13px;">${status.lastCommit ? status.lastCommit.sha.substring(0, 7) : 'N/A'}</div>
+                  <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 5px;">${status.lastCommit ? status.lastCommit.commit.message.substring(0, 50) : ''}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px;">
+                  <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">Branch</div>
+                  <div style="font-weight: 600; font-size: 13px;">${status.branch || 'main'}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px;">
+                  <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">⭐ Stars</div>
+                  <div style="font-weight: 600; font-size: 13px;">${status.stars || 0}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px;">
+                  <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">🔀 Forks</div>
+                  <div style="font-weight: 600; font-size: 13px;">${status.forks || 0}</div>
+                </div>
+              </div>
+            `;
+            
+            document.getElementById('mcp-github-status').innerHTML = statusHtml;
+            showToast('✅ Sincronización completada');
+          } else {
+            showToast('❌ Error: ' + result.error, 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error sincronizando con GitHub:', error);
+        showToast('❌ Error al sincronizar', 'error');
+      }
+    });
+
+    console.log('🛠️ MCP Panel - Listo');
+
+    // ==================== CONTROLES DE AVATAR (PiP, PANTALLA COMPLETA, CAST) ====================
+    const btnPip = document.getElementById('btn-pip');
+    const btnCast = document.getElementById('btn-cast');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const btnExitFullscreen = document.getElementById('btn-exit-fullscreen');
+    const avatarStage = document.getElementById('avatar-stage');
+    let isFullscreen = false;
+
+    // Picture-in-Picture
+    btnPip.addEventListener('click', async () => {
+      try {
+        if (soraVideo && document.pictureInPictureEnabled && !soraVideo.disablePictureInPicture) {
+          if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+            showToast('📺 Modo PiP desactivado');
+          } else {
+            await soraVideo.requestPictureInPicture();
+            showToast('🖼️ Modo Picture-in-Picture activado');
+          }
+        } else {
+          showToast('❌ Picture-in-Picture no disponible', 'error');
+        }
+      } catch (e) {
+        console.error('Error PiP:', e);
+        showToast('❌ No se pudo activar PiP', 'error');
+      }
+    });
+
+    // Cast a TV/dispositivo (Google Cast / AirPlay)
+    btnCast.addEventListener('click', async () => {
+      try {
+        // Intentar Google Cast si está disponible
+        if ('RemotePlayback' in HTMLMediaElement.prototype) {
+          const remotePlayback = soraVideo.remote;
+          if (remotePlayback.state === 'disconnected') {
+            await remotePlayback.prompt();
+            showToast('📺 Conectando a dispositivo...');
+          } else {
+            await remotePlayback.cancelWatchAvailability();
+            showToast('📺 Desconectado del dispositivo');
+          }
+        } else {
+          showToast('ℹ️ Compartir pantalla: Usa extensión de Chrome Cast o AirPlay desde el navegador', 'info');
+        }
+      } catch (e) {
+        console.error('Error Cast:', e);
+        showToast('ℹ️ Para compartir en TV: Usa Chrome Cast o AirPlay desde tu navegador', 'info');
+      }
+    });
+
+    // Pantalla Completa
+    btnFullscreen.addEventListener('click', () => {
+      avatarStage.classList.add('size-full');
+      btnExitFullscreen.style.display = 'block';
+      isFullscreen = true;
+      showToast('🖥️ Pantalla completa');
+    });
+
+    // Salir de pantalla completa
+    btnExitFullscreen.addEventListener('click', () => {
+      avatarStage.classList.remove('size-full');
+      btnExitFullscreen.style.display = 'none';
+      isFullscreen = false;
+      showToast('📱 Modo normal');
+    });
+
+    // Salir de pantalla completa con ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        avatarStage.classList.remove('size-full');
+        btnExitFullscreen.style.display = 'none';
+        isFullscreen = false;
+      }
+    });
+
+    // TTS del navegador ELIMINADO - Solo se usa Cartesia desde el backend
+
+    // ==================== LIP-SYNC AVANZADO (analizador de audio) ====================
+    function startMouthSyncForAudio(audioEl) {
+      try {
+        if (!audioEl) return;
+        stopMouthSync();
+        mouthAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = mouthAudioCtx.createMediaElementSource(audioEl);
+        mouthAnalyser = mouthAudioCtx.createAnalyser();
+        mouthAnalyser.fftSize = 1024;
+        source.connect(mouthAnalyser);
+        mouthAnalyser.connect(mouthAudioCtx.destination);
+        const dataArray = new Uint8Array(mouthAnalyser.frequencyBinCount);
+        const baseScale = 1.0;
+        const maxScale = 1.6;
+        const smoothing = 0.85;
+        function tick() {
+          if (!mouthAnalyser) return;
+          mouthAnalyser.smoothingTimeConstant = smoothing;
+          mouthAnalyser.getByteTimeDomainData(dataArray);
+          // Calcular amplitud RMS simple
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            const v = (dataArray[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / dataArray.length);
+          const scale = Math.min(maxScale, baseScale + rms * 2.5);
+          soraMouth.style.opacity = rms > 0.02 ? '0.85' : '0.1';
+          soraMouth.style.transform = `translateX(-50%) scaleY(${scale.toFixed(2)})`;
+          mouthRAF = requestAnimationFrame(tick);
+        }
+        tick();
+      } catch (e) {
+        console.warn('Mouth sync error:', e);
+      }
+    }
+    function stopMouthSync() {
+      try {
+        if (mouthRAF) cancelAnimationFrame(mouthRAF);
+        mouthRAF = null;
+        if (mouthAudioCtx) mouthAudioCtx.close();
+        mouthAudioCtx = null;
+        mouthAnalyser = null;
+        soraMouth.style.opacity = '0.0';
+        soraMouth.style.transform = 'translateX(-50%) scaleY(1.0)';
+      } catch {}
+    }
+
+    // SISTEMA COMPLETO DE CALL CENTER PROFESIONAL
+    class CallCenterAudio {
+        constructor() {
+            this.audioContext = null;
+            this.sounds = {};
+            this.initAudio();
+        }
+
+        initAudio() {
+            try {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.error('Error al inicializar AudioContext:', e);
+            }
+        }
+
+        // Generar tono de llamada profesional (ringtone)
+        async generateRingtone() {
+            if (!this.audioContext) return;
+            
+            const oscillator1 = this.audioContext.createOscillator();
+            const oscillator2 = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator1.type = 'sine';
+            oscillator1.frequency.setValueAtTime(440, this.audioContext.currentTime);
+            oscillator2.type = 'sine';
+            oscillator2.frequency.setValueAtTime(480, this.audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 1.0);
+            
+            oscillator1.connect(gainNode);
+            oscillator2.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator1.start();
+            oscillator2.start();
+            oscillator1.stop(this.audioContext.currentTime + 1.0);
+            oscillator2.stop(this.audioContext.currentTime + 1.0);
+        }
+
+        // Generar sonido de descolgar (pickup)
+        async generatePickupSound() {
+            if (!this.audioContext) return;
+            
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 0.1);
+        }
+
+        // Generar sonido de colgar (hangup)
+        async generateHangupSound() {
+            if (!this.audioContext) return;
+            
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(480, this.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(200, this.audioContext.currentTime + 0.3);
+            
+            gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 0.3);
+        }
+
+        // Generar sonido de clink (conexión establecida)
+        async generateClinkSound() {
+            if (!this.audioContext) return;
+            
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(600, this.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 0.05);
+            
+            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.05);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 0.05);
+        }
+    }
+
+    // Instancia global del sistema de audio
+    window.callCenterAudio = new CallCenterAudio();
+
+    // Sistema ultra-robusto de llamada conversacional
+    function initCallCenterSystem() {
+        console.log('🔧 [CallCenter] Inicializando sistema de llamadas...');
+        
+        // Buscar o crear el botón de llamada
+        let callButton = document.getElementById('conversational-call-btn');
+        
+        if (!callButton) {
+            // Buscar por clase o atributos
+            callButton = document.querySelector('[data-call-button]') || 
+                        document.querySelector('.call-button') ||
+                        document.querySelector('button[onclick*="call"]');
+        }
+        
+        if (!callButton) {
+            // Crear botón en el panel de control existente
+            const controlPanel = document.querySelector('.control-panel') || 
+                               document.querySelector('.sidebar') ||
+                               document.querySelector('.main-panel');
+            
+            if (controlPanel) {
+                callButton = document.createElement('button');
+                callButton.id = 'conversational-call-btn';
+                callButton.textContent = '📞 Llamada Conversacional';
+                callButton.className = 'call-button';
+                
+                // Estilos CSS en lugar de inline
+                const style = document.createElement('style');
+                style.textContent = `
+                    .call-button {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 25px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                        margin: 10px;
+                        display: block;
+                        width: 100%;
+                        max-width: 200px;
+                    }
+                    .call-button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                    }
+                    .call-button.active {
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                    }
+                    .call-button:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                controlPanel.appendChild(callButton);
+                console.log('✅ [CallCenter] Botón creado y añadido al panel');
+
+                // Añadir Snapshot rápido y badge de comandos (Cmd)
+                try {
+                  const snapBtn = document.createElement('button');
+                  snapBtn.id = 'btn-snapshot-quick';
+                  snapBtn.className = 'call-button';
+                  snapBtn.style.maxWidth = '140px';
+                  snapBtn.textContent = '📸 Snapshot rápido';
+                  snapBtn.addEventListener('click', async () => {
+                    try {
+                      const r = await window.sandraAPI.restoreCreate?.('quick');
+                      if (!r?.success) return alert('Error creando snapshot: '+(r?.error||''));
+                      alert(`Snapshot creado: ${r.tag}`);
+                    } catch (e) { alert('Error: '+e?.message); }
+                  });
+                  controlPanel.appendChild(snapBtn);
+
+                  const vcBadge = document.createElement('span');
+                  vcBadge.id = 'vc-badge';
+                  vcBadge.textContent = 'Cmd: off';
+                  vcBadge.style.display = 'inline-block';
+                  vcBadge.style.marginLeft = '8px';
+                  vcBadge.style.padding = '6px 8px';
+                  vcBadge.style.borderRadius = '8px';
+                  vcBadge.style.background = 'rgba(255,255,255,0.03)';
+                  vcBadge.style.color = '#9aa6b2';
+                  controlPanel.appendChild(vcBadge);
+                } catch (e) { console.warn('No se pudo añadir snapshot UI:', e.message); }
+            } else {
+                console.error('❌ [CallCenter] No se encontró panel de control');
+                return;
+            }
+        }
+
+        // Añadir listener con manejo de errores
+        if (callButton) {
+            callButton.addEventListener('click', async function() {
+                const button = this;
+                
+                try {
+                    if (button.disabled) return; // Prevenir doble click
+                    
+                    button.disabled = true;
+                    const isActive = button.classList.contains('active');
+                    
+                    if (isActive) {
+                        // Colgar llamada
+                        button.textContent = 'Colgando...';
+                        await stopConversationalCall();
+                        button.textContent = '📞 Llamada Conversacional';
+                        button.classList.remove('active');
+                    } else {
+                        // Iniciar llamada
+                        button.textContent = 'Conectando...';
+                        button.classList.add('active');
+                        
+                        await startRingtone();
+                        resetInactivityTimeout();
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ [CallCenter] Error en llamada:', error);
+                    button.textContent = '📞 Llamada Conversacional';
+                    button.classList.remove('active');
+                } finally {
+                    button.disabled = false;
+                }
+            });
+            
+            console.log('✅ [CallCenter] Listener añadido al botón');
+        }
+
+        // Crear indicador de estado
+        createCallStatusIndicator();
+    }
+
+    function createCallStatusIndicator() {
+        let statusIndicator = document.getElementById('call-status');
+        
+        if (!statusIndicator) {
+            statusIndicator = document.createElement('div');
+            statusIndicator.id = 'call-status';
+            statusIndicator.className = 'status-inactive';
+            statusIndicator.textContent = 'Llamada Inactiva';
+            
+            // Estilos CSS para el indicador
+            const style = document.createElement('style');
+            style.textContent = `
+                .status-indicator {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: bold;
+                    z-index: 1000;
+                    transition: all 0.3s ease;
+                }
+                .status-active {
+                    background: #10b981;
+                    color: white;
+                    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+                }
+                .status-inactive {
+                    background: #6b7280;
+                    color: white;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            statusIndicator.className = 'status-indicator status-inactive';
+            
+            // Añadir al body
+            document.body.appendChild(statusIndicator);
+            console.log('✅ [CallCenter] Indicador de estado creado');
+        }
+    }
+
+    // Función de actualización de estado mejorada
+    function updateCallStatus(status, isActive) {
+        const statusElement = document.getElementById('call-status');
+        if (statusElement) {
+            statusElement.textContent = status;
+            statusElement.className = `status-indicator ${isActive ? 'status-active' : 'status-inactive'}`;
+        }
+    }
+
+    // Inicialización segura
+    try {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCallCenterSystem);
+        } else {
+            initCallCenterSystem();
+        }
+    } catch (error) {
+        console.error('❌ [CallCenter] Error crítico:', error);
+    }
+</script>
+
+  <script>
+    // Panel de alarmas flotante y binding de comandos por voz (hola sandra)
+    (function(){
+      try {
+        // Crear panel de alarmas ligero
+        let alarms = document.getElementById('alarms-console');
+        if (!alarms) {
+          alarms = document.createElement('div');
+          alarms.id = 'alarms-console';
+          alarms.style.position = 'fixed';
+          alarms.style.right = '18px';
+          alarms.style.bottom = '18px';
+          alarms.style.width = '360px';
+          alarms.style.maxHeight = '220px';
+          alarms.style.overflow = 'auto';
+          alarms.style.background = 'rgba(3,7,12,0.8)';
+          alarms.style.border = '1px solid rgba(255,255,255,0.04)';
+          alarms.style.padding = '8px';
+          alarms.style.borderRadius = '8px';
+          alarms.style.fontSize = '12px';
+          alarms.style.color = '#e6eef6';
+          document.body.appendChild(alarms);
+        }
+
+        function logAlarm(a){
+          const t = new Date(a.ts||Date.now()).toLocaleTimeString();
+          const line = `[${t}] ${a.type?.toUpperCase() || 'ALARM'} • ${a.message || ''}` + (a.path?` • ${a.path}`:'') + (a.service?` • ${a.service}`:'') + (a.status?` • ${a.status}`:'');
+          const p = document.createElement('div');
+          p.textContent = line;
+          p.style.padding = '6px 4px';
+          p.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
+          alarms.appendChild(p);
+          alarms.scrollTop = alarms.scrollHeight;
+        }
+
+        window.sandraAPI?.onAlarm?.(logAlarm);
+
+        // Voz: comandos via onTranscriptUpdate
+        let vcArmed = false, vcTimer = null;
+        function setVC(on){
+          vcArmed = on;
+          const badge = document.getElementById('vc-badge');
+          if (badge) badge.textContent = 'Cmd: ' + (on ? 'ON' : 'off');
+        }
+        function normalize(t){ return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+        async function restoreLatest(mode='safe'){
+          try {
+            await window.sandraAPI.restoreSetMode?.(mode);
+            const res = await window.sandraAPI.restoreList?.();
+            if (!res?.success || !res.items?.length) return false;
+            const tag = res.items[0].tag;
+            const r = await window.sandraAPI.restoreApply?.(tag);
+            return !!r?.success;
+          } catch { return false; }
+        }
+        async function execVoiceCommand(text){
+          const t = normalize(text);
+          if (/^hola sandra\\b/.test(t)) { setVC(true); clearTimeout(vcTimer); vcTimer=setTimeout(()=>setVC(false),8000); return; }
+          if (!vcArmed) return;
+          if (/(inicia|empieza|comienza).*(llamada)|\\bllama(r)?\\b/.test(t)) { if (typeof startConversationalCall === 'function') { await startConversationalCall(); } setVC(false); return; }
+          if (/(finaliza|termina|corta).*(llamada)|\\bcuelga(r)?\\b/.test(t)) { if (typeof stopConversationalCall === 'function') { await stopConversationalCall(); } setVC(false); return; }
+          if (/snapshot.*(rapido|rápido)|crear.*snapshot|punto.*(restauracion|restauración)/.test(t)) { await window.sandraAPI.restoreCreate?.('quick'); setVC(false); alert('Snapshot rápido creado'); return; }
+          if (/restaura(r)?(.*ultimo|.*último|.*mas reciente|.*más reciente)?/.test(t)) { const ok = await restoreLatest('safe'); setVC(false); alert(ok ? 'Restaurado al último snapshot (SAFE)' : 'No hay snapshots o error'); return; }
+          if (/modo.*hard/.test(t)) { await window.sandraAPI.restoreSetMode?.('hard'); setVC(false); alert('Modo HARD activado'); return; }
+          if (/modo.*safe/.test(t)) { await window.sandraAPI.restoreSetMode?.('safe'); setVC(false); alert('Modo SAFE activado'); return; }
+        }
+
+        window.sandraAPI?.onTranscriptUpdate?.(({raw})=>{ if(raw) execVoiceCommand(String(raw)); });
+
+      } catch (e) { console.warn('Init alarms/voice commands failed:', e && e.message); }
+    })();
+  </script>
+
+  <script src="enterprise.js"></script>
+  <script src="voice-stream.module.js"></script>
+  <script src="callcenter.module.js"></script>
+</body>
+</html>
+

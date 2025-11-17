@@ -1,0 +1,37 @@
+version: 1
+
+mini:
+  allowed_paths:
+    - desktop-app/renderer/**
+    - services/**/cartesia-*.js
+    - services/**/deepgram-*.js
+    - services/**/multimodal-*.js
+    - services/pipeline-switcher.js
+    - core/role-lock.js
+    - tests/**/*
+    - docs/**/*
+
+  forbidden_paths:
+    - core/roles-system.js
+    - core/prompts/**
+    - server/security/**
+
+  pr_requirements:
+    - must_pass_tests
+    - must_keep_role_lock_intact
+    - no_direct_push_main
+
+  labels:
+    - mini:auto
+    - mini:voice
+    - mini:avatar
+    - mini:test
+    - mini:docs
+
+  qa_checklist:
+    - "barge_in_hold_ms in [250..800]"
+    - "ringback stops on STT open event"
+    - "no duplicate event listeners in renderer"
+    - "FSM transitions: SPEAKING→LISTENING on audio ended"
+
+

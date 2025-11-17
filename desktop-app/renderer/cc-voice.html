@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Sandra · Call-Center (Solo Voz)</title>
+<body style="font:14px system-ui;background:#0b0e12;color:#e7ecf3;margin:0;padding:16px">
+  <button id="start">Iniciar llamada</button>
+  <button id="end" disabled>Finalizar</button>
+  <button id="snap" class="secondary">Snapshot rápido</button>
+  <span id="stt" style="margin-left:8px">STT: off</span>
+  <span id="vc" style="margin-left:12px;color:#9aa6b2">Cmd: off</span>
+
+  <script>
+    let isCall=false;
+    function log(s){ console.log(s); }
+
+    async function start(){
+      if(isCall) return;
+      isCall=true;
+      document.getElementById('end').disabled=false;
+      try{
+        await window.sandraAPI.activatePipeline?.('voice_only');
+        await window.sandraAPI.startConversationalCall?.();
+      }catch(e){ log(e.message); }
+    }
+    async function end(){
+      if(!isCall) return;
+      isCall=false;
+      document.getElementById('end').disabled=true;
+      try{ await window.sandraAPI.endConversationalCall?.(); }catch{}
+    }
+    document.getElementById('start').onclick=start;
+    document.getElementById('end').onclick=end;
+    document.getElementById('snap').onclick = async ()=>{
+      try {
+        const r = await window.sandraAPI.restoreCreate?.('quick');
+        if (!r?.success) return alert('Error creando snapshot: '+(r?.error||''));
+        alert(`Snapshot creado: ${r.tag}`);
+      } catch(e) { alert('Error: '+e.message); }
+    };
+
+    window.sandraAPI?.onSTTConnectionChange?.(({connected})=>{
+      document.getElementById('stt').textContent = 'STT: ' + (connected?'on':'off');
+    });
+
+    // ====== COMANDOS DE VOZ (wake-word "hola sandra") ======
+    let vcArmed = false, vcTimer = null;
+    function setVC(on){ vcArmed = on; document.getElementById('vc').textContent = 'Cmd: ' + (on?'ON':'off'); }
+    async function restoreLatest(mode='safe'){
+      await window.sandraAPI.restoreSetMode?.(mode);
+      const res = await window.sandraAPI.restoreList?.();
+      if (!res?.success || !res.items?.length) return false;
+      const tag = res.items[0].tag;
+      const r = await window.sandraAPI.restoreApply?.(tag);
+      return !!r?.success;
+    }
+    function normalize(t){ return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+    async function execVoiceCommand(text){
+      const t = normalize(text);
+      if (/^hola sandra\\b/.test(t)) {
+        setVC(true); clearTimeout(vcTimer);
+        vcTimer = setTimeout(()=>setVC(false), 8000);
+        return;
+      }
+      if (!vcArmed) return;
+      if (/(inicia|empieza|comienza).*(llamada)|\\bllama(r)?\\b/.test(t)) { await start(); setVC(false); return; }
+      if (/(finaliza|termina|corta).*(llamada)|\\bcuelga(r)?\\b/.test(t)) { await end(); setVC(false); return; }
+      if (/snapshot.*(rapido|rápido)|crear.*snapshot|punto.*(restauracion|restauración)/.test(t)) {
+        await window.sandraAPI.restoreCreate?.('quick'); setVC(false); alert('Snapshot rápido creado'); return;
+      }
+      if (/restaura(r)?(.*ultimo|.*último|.*mas reciente|.*más reciente)?/.test(t)) {
+        const ok = await restoreLatest('safe'); setVC(false);
+        alert(ok ? 'Restaurado al último snapshot (SAFE)' : 'No hay snapshots o error'); return;
+      }
+      if (/modo.*hard/.test(t)) { await window.sandraAPI.restoreSetMode?.('hard'); setVC(false); alert('Modo HARD activado'); return; }
+      if (/modo.*safe/.test(t)) { await window.sandraAPI.restoreSetMode?.('safe'); setVC(false); alert('Modo SAFE activado'); return; }
+    }
+
+    // Alimentación desde STT (Deepgram): transcripciones parciales gatillan el router
+    window.sandraAPI?.onTranscriptUpdate?.(({raw})=>{
+      if (!raw) return;
+      execVoiceCommand(String(raw));
+    });
+  </script>
+</body>
+
+

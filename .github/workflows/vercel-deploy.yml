@@ -1,0 +1,30 @@
+name: Vercel Deploy (via Hooks)
+on:
+  push:
+    paths:
+      - 'vercel-app/**'
+      - '.github/workflows/vercel-deploy.yml'
+      - 'vercel-app/vercel.json'
+    branches:
+      - '**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine env (preview or production)
+        id: env
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+            echo "hook=${{ secrets.VERCEL_HOOK_PRODUCTION }}" >> $GITHUB_OUTPUT
+          else
+            echo "hook=${{ secrets.VERCEL_HOOK_PREVIEW }}" >> $GITHUB_OUTPUT
+          fi
+      - name: Trigger Vercel Deploy Hook
+        run: |
+          url="${{ steps.env.outputs.hook }}"
+          if [ -z "$url" ]; then
+            echo "Vercel hook not configured"; exit 1
+          fi
+          curl -fsSL -X POST "$url" -H "Content-Type: application/json" -d '{"trigger":"github-actions"}'
+
+
