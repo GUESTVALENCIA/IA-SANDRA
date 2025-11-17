@@ -4,6 +4,8 @@ const { createClient, LiveTranscriptionEvents } = (() => {
 const fs = require('fs');
 const EventEmitter = require('events');
 
+const DG_DEFAULTS = { autoReconnect: false, _retryDelayMs: 1000, _maxDelayMs: 8000 };
+
 class DeepgramService extends EventEmitter {
   constructor() {
     super();
@@ -13,7 +15,7 @@ class DeepgramService extends EventEmitter {
     this.isConnected = false;
     this.statusCallback = null;
     this._ka = null; // keep-alive timer
-    this._opts = { autoReconnect: false, _retryDelayMs: 1000, _maxDelayMs: 8000 };
+    this._opts = { ...DG_DEFAULTS };
 
     if (this.apiKey && createClient) {
       try {
@@ -66,10 +68,11 @@ class DeepgramService extends EventEmitter {
   }
 
   async connectLive(options = {}) {
-    this._opts = Object.assign({ autoReconnect: false, _retryDelayMs: 1000, _maxDelayMs: 8000 }, options);
-    const opts = this._opts;
+    // Congelar config en la instancia
+    this._opts = Object.assign({}, DG_DEFAULTS, options || {});
+    const opts = this._opts; // usar `opts` en TODO el método y sus callbacks
+
     if (!this.client || !this.client.listen) {
-      // Try to connect via SDK not available: emit warning and return
       console.warn('Deepgram SDK or listen.live not available, cannot start live transcription');
       return { success: false, error: 'SDK not available' };
     }
@@ -86,13 +89,14 @@ class DeepgramService extends EventEmitter {
         endpointing: 1200
       }, opts));
 
+      // Usa funciones flecha para mantener "this" y referirse a "opts"
       this.liveConnection.on(LiveTranscriptionEvents.Open, () => {
-        console.log('✅ Conexión Deepgram Live abierta');
+        console.log('Conexión Deepgram Live abierta');
         this.isConnected = true;
         this.emit('stt:open');
-        if (this._ka) clearInterval(this._ka);
-        this._ka = setInterval(() => { try { this.liveConnection.keepAlive(); } catch {} }, 15000);
-        opts._retryDelayMs = 1000;
+        if (this._ka) { clearInterval(this._ka); this._ka = null; }
+        this._ka = setInterval(() => { try { this.liveConnection.keepAlive && this.liveConnection.keepAlive(); } catch {} }, 15000);
+        opts._retryDelayMs = 1000; // reset del backoff
         if (typeof this.statusCallback === 'function') try { this.statusCallback({ connected: true }); } catch {}
       });
 
@@ -113,22 +117,28 @@ class DeepgramService extends EventEmitter {
       });
 
       this.liveConnection.on(LiveTranscriptionEvents.Error, (err) => {
-        console.error('Deepgram Live error:', err);
+        console.error('[Deepgram] error', err);
         this.emit('api:error', err);
         if (typeof this.statusCallback === 'function') try { this.statusCallback({ connected: false, error: String(err) }); } catch {}
       });
 
       this.liveConnection.on(LiveTranscriptionEvents.Close, () => {
-        console.log('Conexión Deepgram Live cerrada');
-        this.isConnected = false;
-        this.emit('stt:close');
-        if (this._ka) { clearInterval(this._ka); this._ka = null; }
-        if (opts.autoReconnect) {
-          const wait = Math.min((opts._retryDelayMs || 1000) * 2, opts._maxDelayMs || 8000);
-          opts._retryDelayMs = wait;
-          setTimeout(() => { if (!this.isConnected) this.connectLive(opts); }, wait);
+        try {
+          console.log('Conexión Deepgram Live cerrada');
+          this.isConnected = false;
+          this.emit('stt:close');
+          if (this._ka) { clearInterval(this._ka); this._ka = null; }
+          if (opts.autoReconnect) {
+            const delay = Math.min(opts._maxDelayMs, (opts._retryDelayMs || 1000) * 2);
+            opts._retryDelayMs = delay;
+            setTimeout(() => { if (!this.isConnected) this.connectLive(opts); }, delay);
+          }
+          if (typeof this.statusCallback === 'function') {
+            try { this.statusCallback({ connected: false }); } catch (e) {}
+          }
+        } catch (error) {
+          console.error('Error en handler Close de Deepgram:', error);
         }
-        if (typeof this.statusCallback === 'function') try { this.statusCallback({ connected: false }); } catch {}
       });
 
       return { success: true, message: 'Transcripción en vivo iniciada' };

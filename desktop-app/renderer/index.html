@@ -4,6 +4,28 @@
   <meta charset="utf-8" />
   <title>Sandra - Desktop</title>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:;">
+  <!-- Debe estar ANTES de cualquier script que llame a startRingtone() -->
+  <script src="./callcenter.module.js" defer></script>
+  <script>
+    // Config opcional con tus sonidos reales:
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.initCallAudio) {
+        window.initCallAudio({
+          ringSrc:   'assets/audio/ring.mp3',
+          pickupSrc: 'assets/audio/pickup.wav',
+          hangupSrc: 'assets/audio/hangup.wav',
+          volume: 0.55
+        });
+      }
+    });
+
+    // Blindaje: si el helper no existe, no revienta la llamada
+    window.safeStartRingtone = function(){ try { window.startRingtone && window.startRingtone(); } catch(e){ console.warn(e); } };
+    window.safeStopRingtone = function(){ try { window.stopRingtone && window.stopRingtone(); } catch(e){ console.warn(e); } };
+    // Alias para compatibilidad
+    function safeStartRingtone(){ window.safeStartRingtone(); }
+    function safeStopRingtone(){ window.safeStopRingtone(); }
+  </script>
   <style>
     body { background:#06111a;color:#e6eef6;font-family:Inter,ui-sans-serif,system-ui; padding:18px; }
     .card { background:#071120;border:1px solid #0f1720;padding:12px;border-radius:8px;margin-bottom:12px; }
@@ -1900,7 +1922,7 @@
         
         // Iniciar tono de llamada hasta que se conecte
         greetedThisCall = false;
-        startRingtone();
+        safeStartRingtone();
         
         await startVoiceStreaming();
         isCallActive = true;
@@ -1923,7 +1945,7 @@
       console.log('📴 [CallCenter] Finalizando llamada...');
       
       // 1. Detener tono si está sonando
-      try { stopRingtone(); } catch {}
+      safeStopRingtone();
       
       // 2. Sonido de colgado (estilo call center)
       playHangupSound();
@@ -3329,7 +3351,7 @@
                         button.textContent = 'Conectando...';
                         button.classList.add('active');
                         
-                        await startRingtone();
+                        safeStartRingtone();
                         resetInactivityTimeout();
                     }
                     
