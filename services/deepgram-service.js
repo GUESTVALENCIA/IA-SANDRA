@@ -67,6 +67,7 @@ class DeepgramService extends EventEmitter {
 
   async connectLive(options = {}) {
     this._opts = Object.assign({ autoReconnect: false, _retryDelayMs: 1000, _maxDelayMs: 8000 }, options);
+    const opts = this._opts;
     if (!this.client || !this.client.listen) {
       // Try to connect via SDK not available: emit warning and return
       console.warn('Deepgram SDK or listen.live not available, cannot start live transcription');
@@ -83,7 +84,7 @@ class DeepgramService extends EventEmitter {
         channels: 1,
         interim_results: true,
         endpointing: 1200
-      }, options));
+      }, opts));
 
       this.liveConnection.on(LiveTranscriptionEvents.Open, () => {
         console.log('✅ Conexión Deepgram Live abierta');
@@ -91,7 +92,7 @@ class DeepgramService extends EventEmitter {
         this.emit('stt:open');
         if (this._ka) clearInterval(this._ka);
         this._ka = setInterval(() => { try { this.liveConnection.keepAlive(); } catch {} }, 15000);
-        this._opts._retryDelayMs = 1000;
+        opts._retryDelayMs = 1000;
         if (typeof this.statusCallback === 'function') try { this.statusCallback({ connected: true }); } catch {}
       });
 
@@ -122,10 +123,10 @@ class DeepgramService extends EventEmitter {
         this.isConnected = false;
         this.emit('stt:close');
         if (this._ka) { clearInterval(this._ka); this._ka = null; }
-        if (this._opts.autoReconnect) {
-          const wait = Math.min(this._opts._retryDelayMs * 2, this._opts._maxDelayMs);
-          this._opts._retryDelayMs = wait;
-          setTimeout(() => { if (!this.isConnected) this.connectLive(this._opts); }, wait);
+        if (opts.autoReconnect) {
+          const wait = Math.min((opts._retryDelayMs || 1000) * 2, opts._maxDelayMs || 8000);
+          opts._retryDelayMs = wait;
+          setTimeout(() => { if (!this.isConnected) this.connectLive(opts); }, wait);
         }
         if (typeof this.statusCallback === 'function') try { this.statusCallback({ connected: false }); } catch {}
       });

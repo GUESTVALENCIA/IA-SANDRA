@@ -2,6 +2,10 @@
 <meta charset="utf-8">
 <title>Sandra · Call-Center (Solo Voz)</title>
 <body style="font:14px system-ui;background:#0b0e12;color:#e7ecf3;margin:0;padding:16px">
+  <script>
+    window.startRingtone = window.startRingtone || function(){try{(window.__ringEl||(window.__ringEl=new Audio('assets/audio/ringback.ogg'))).loop=true;window.__ringEl.volume=0.18;window.__ringEl.currentTime=0;window.__ringEl.play().catch(()=>{});}catch(e){}};
+    window.stopRingtone  = window.stopRingtone  || function(){try{window.__ringEl&&window.__ringEl.pause();}catch(e){}};
+  </script>
   <button id="start">Iniciar llamada</button>
   <button id="end" disabled>Finalizar</button>
   <button id="snap" class="secondary">Snapshot rápido</button>
@@ -9,6 +13,9 @@
   <span id="vc" style="margin-left:12px;color:#9aa6b2">Cmd: off</span>
 
   <script>
+    window.startRingtone = window.startRingtone || function(){try{(window.__ringEl||(window.__ringEl=new Audio('assets/audio/ringback.ogg'))).loop=true;window.__ringEl.volume=0.18;window.__ringEl.currentTime=0;window.__ringEl.play().catch(()=>{});}catch(e){}};
+    window.stopRingtone  = window.stopRingtone  || function(){try{window.__ringEl&&window.__ringEl.pause();}catch(e){}};
+    
     let isCall=false;
     function log(s){ console.log(s); }
 

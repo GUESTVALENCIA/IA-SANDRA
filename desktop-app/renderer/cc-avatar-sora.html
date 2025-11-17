@@ -2,6 +2,10 @@
 <meta charset="utf-8">
 <title>Sandra · Call-Center (Avatar Sora)</title>
 <body style="font:14px system-ui;background:#0b0e12;color:#e7ecf3;margin:0;padding:16px">
+  <script>
+    window.startRingtone = window.startRingtone || function(){try{(window.__ringEl||(window.__ringEl=new Audio('assets/audio/ringback.ogg'))).loop=true;window.__ringEl.volume=0.18;window.__ringEl.currentTime=0;window.__ringEl.play().catch(()=>{});}catch(e){}};
+    window.stopRingtone  = window.stopRingtone  || function(){try{window.__ringEl&&window.__ringEl.pause();}catch(e){}};
+  </script>
   <div style="display:flex;gap:16px;align-items:flex-start">
     <div>
       <video id="sora" playsinline muted loop style="width:540px;height:304px;object-fit:cover;background:#000;border-radius:10px;border:1px solid #1b222c"></video>
@@ -17,6 +21,9 @@
   </div>
 
   <script>
+    window.startRingtone = window.startRingtone || function(){try{(window.__ringEl||(window.__ringEl=new Audio('assets/audio/ringback.ogg'))).loop=true;window.__ringEl.volume=0.18;window.__ringEl.currentTime=0;window.__ringEl.play().catch(()=>{});}catch(e){}};
+    window.stopRingtone  = window.stopRingtone  || function(){try{window.__ringEl&&window.__ringEl.pause();}catch(e){}};
+    
     const video = document.getElementById('sora');
     const PLAY = { idle: '', listen: '', speak: '' };
     function log(s){ const p = document.getElementById('log'); p.textContent = (p.textContent? p.textContent + '\\n' : '') + s; console.log(s); }
