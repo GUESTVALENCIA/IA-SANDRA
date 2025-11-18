@@ -361,8 +361,11 @@ ipcMain.handle('ai:listModels', async () => {
 ipcMain.handle('ai:chat', async (_e, { provider, model, messages }) => {
   try {
     const res = await AIGateway.runModel({ provider, model, messages });
-    return { success: true, result: res };
-  } catch (e) { return { success: false, error: e.message }; }
+    return { success: true, text: res.text, raw: res.raw };
+  } catch (e) { 
+    console.error('[AI:Chat] Error:', e);
+    return { success: false, error: e.message }; 
+  }
 });
 
 ipcMain.handle('cc:startByRole', async (_evt, { roleId, sessionId }) => {
