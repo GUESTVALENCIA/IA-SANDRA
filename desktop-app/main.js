@@ -4,6 +4,16 @@ const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const crypto = require('crypto');
 const { existsSync } = require('fs');
+
+// Manejo de errores no capturados
+process.on('uncaughtException', (error) => {
+  console.error('[Main] ❌ Uncaught Exception:', error);
+  console.error('[Main] Stack:', error.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Main] ❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
 // AI Gateway experimental (aislado)
 let AIGateway;
 try {
@@ -36,23 +46,80 @@ function repoRoot() {
 
 let mainWindow;
 function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
+  console.log('[Main] Creando ventana...');
+  try {
+    mainWindow = new BrowserWindow({
+      width: 1200,
+      height: 800,
+      show: false, // No mostrar hasta que esté lista
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration: false,
+        webSecurity: true,
+      }
+    });
+
+    // Manejar errores de carga
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+      console.error('[Main] Error cargando:', errorCode, errorDescription, validatedURL);
+    });
+
+    mainWindow.webContents.on('crashed', () => {
+      console.error('[Main] Renderer process crashed');
+    });
+
+    // Mostrar ventana cuando esté lista
+    mainWindow.once('ready-to-show', () => {
+      console.log('[Main] Ventana lista, mostrando...');
+      mainWindow.show();
+      mainWindow.focus();
+    });
+
+    const indexPath = path.join(__dirname, 'renderer', 'index.html');
+    console.log('[Main] Cargando:', indexPath);
+    
+    if (!existsSync(indexPath)) {
+      console.error('[Main] index.html no encontrado en:', indexPath);
+      const fallbackPath = path.join(__dirname, '..', 'index.html');
+      if (existsSync(fallbackPath)) {
+        console.log('[Main] Usando fallback:', fallbackPath);
+        mainWindow.loadFile(fallbackPath).catch(err => {
+          console.error('[Main] Error cargando fallback:', err);
+        });
+      } else {
+        console.error('[Main] No se encontró ningún index.html');
+        mainWindow.loadURL('data:text/html,<h1>Error: index.html no encontrado</h1>');
+      }
+    } else {
+      mainWindow.loadFile(indexPath).catch(err => {
+        console.error('[Main] Error cargando index.html:', err);
+        // Fallback
+        try {
+          const fallbackPath = path.join(__dirname, '..', 'index.html');
+          if (existsSync(fallbackPath)) {
+            mainWindow.loadFile(fallbackPath);
+          }
+        } catch (e) {
+          console.error('[Main] Error en fallback:', e);
+        }
+      });
     }
-  });
-  const indexPath = path.join(__dirname, 'renderer', 'index.html');
-  mainWindow.loadFile(indexPath).catch(()=> {
-    // fallback to root index
-    try { mainWindow.loadFile(path.join(__dirname, '..', 'index.html')); } catch {}
-  });
+
+    // Abrir DevTools en desarrollo
+    if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
+      mainWindow.webContents.openDevTools();
+    }
+  } catch (err) {
+    console.error('[Main] Error creando ventana:', err);
+  }
 }
 
 app.whenReady().then(() => {
+  console.log('[Main] ✅ Electron app ready');
+  console.log('[Main] Directorio actual:', __dirname);
+  console.log('[Main] AIGateway disponible:', AIGateway !== null);
+  console.log('[Main] CallCenter disponible:', CallCenter !== null);
   createWindow();
   // Arrancar vigilancia y eventos de API al inicializar
   try { watchCritical(); } catch (e) { console.warn('watchCritical failed:', e.message); }
