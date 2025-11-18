@@ -182,7 +182,7 @@ class AIGateway {
           {
             method: 'POST',
             hostname: 'localhost',
-            port: 3000,
+            port: 3001,
             path: '/api/tools/invoke',
             headers
           },
