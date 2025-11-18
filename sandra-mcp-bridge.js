@@ -5,6 +5,23 @@ const cors = require('cors');
 const { exec } = require('child_process');
 const fs = require('fs').promises;
 const path = require('path');
+const AIGateway = require('./services/ai-gateway');
+
+// Utilidad básica de seguridad para FS
+const BASE_DIR = path.resolve(process.cwd());
+function safeResolve(p) {
+    const abs = path.resolve(BASE_DIR, p || '.');
+    if (!abs.startsWith(BASE_DIR)) throw new Error('path_outside_base_dir');
+    return abs;
+}
+function execSh(cmd, cwd = BASE_DIR) {
+    return new Promise((resolve, reject) => {
+        exec(cmd, { cwd }, (err, stdout, stderr) => {
+            if (err) return reject(new Error(stderr || err.message));
+            resolve(stdout.trim());
+        });
+    });
+}
 
 // IMPORTAR SISTEMA DE EXPERTOS EJECUTABLES
 const { sandraDevExpert, EXECUTABLE_CONSTRAINTS } = require('./sandra-experts-executable');
@@ -107,6 +124,286 @@ class SandraMCPBridge {
                     success: false,
                     error: error.message
                 });
+            }
+        });
+
+        // ============================================================================
+        // AI GATEWAY TOOLS (OpenAI / Anthropic via registry)
+        // ============================================================================
+        this.app.get('/api/ai/models', (_req, res) => {
+            try {
+                const models = AIGateway.listModels();
+                res.json({ success: true, models });
+            } catch (e) { res.status(500).json({ success:false, error: e.message }); }
+        });
+
+        this.app.post('/api/ai/chat', async (req, res) => {
+            try {
+                const { provider, model, messages } = req.body || {};
+                const result = await AIGateway.runModel({ provider, model, messages });
+                res.json({ success: true, result });
+            } catch (e) { res.status(500).json({ success:false, error: e.message }); }
+        });
+
+        // ============================================================================
+        // MCP-LIKE TOOLS REGISTRY (schemas + invocation + logs)
+        // ============================================================================
+        const toolLogs = [];
+        const MAX_TOOL_LOGS = 200;
+        function logToolInvocation(entry) {
+            try {
+                toolLogs.push({ ts: new Date().toISOString(), ...entry });
+                while (toolLogs.length > MAX_TOOL_LOGS) toolLogs.shift();
+            } catch {}
+        }
+
+        const tools = [
+            // ================= AI =================
+            {
+                name: 'ai_model_list',
+                description: 'Lista modelos disponibles en el registro interno (OpenAI/Anthropic)',
+                input_schema: { type: 'object', properties: {}, required: [] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' },
+                    models: { type: 'array' }
+                }, required: ['success','models'] }
+            },
+            {
+                name: 'openai_chat',
+                description: 'Llama a modelos de OpenAI con mensajes en formato chat',
+                input_schema: { type: 'object', properties: {
+                    model: { type: 'string' },
+                    messages: { type: 'array', items: { type: 'object', properties: {
+                        role: { type: 'string' },
+                        content: { type: 'string' }
+                    }, required: ['content'] } }
+                }, required: ['model','messages'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, result: { type: 'object' }
+                }, required: ['success'] }
+            },
+            {
+                name: 'anthropic_chat',
+                description: 'Llama a modelos de Anthropic (Claude) con mensajes en formato chat',
+                input_schema: { type: 'object', properties: {
+                    model: { type: 'string' },
+                    messages: { type: 'array', items: { type: 'object', properties: {
+                        role: { type: 'string' },
+                        content: { type: 'string' }
+                    }, required: ['content'] } }
+                }, required: ['model','messages'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, result: { type: 'object' }
+                }, required: ['success'] }
+            },
+            {
+                name: 'ai_chat',
+                description: 'Llama a modelos de OpenAI o Anthropic, especificando provider y model',
+                input_schema: { type: 'object', properties: {
+                    provider: { type: 'string', enum: ['openai','anthropic'] },
+                    model: { type: 'string' },
+                    messages: { type: 'array', items: { type: 'object', properties: {
+                        role: { type: 'string' },
+                        content: { type: 'string' }
+                    }, required: ['content'] } }
+                }, required: ['provider','model','messages'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, result: { type: 'object' }
+                }, required: ['success'] }
+            },
+            // ================ FILESYSTEM ================
+            {
+                name: 'filesystem_read',
+                description: 'Lee un archivo del repositorio (relativo a la raíz del proyecto)',
+                input_schema: { type: 'object', properties: {
+                    filePath: { type: 'string' },
+                    encoding: { type: 'string', default: 'utf8' }
+                }, required: ['filePath'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, content: { type: 'string' }
+                }, required: ['success'] }
+            },
+            {
+                name: 'filesystem_write',
+                description: 'Escribe un archivo en el repositorio (crea o sobreescribe)',
+                input_schema: { type: 'object', properties: {
+                    filePath: { type: 'string' },
+                    content: { type: 'string' },
+                    encoding: { type: 'string', default: 'utf8' }
+                }, required: ['filePath','content'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }
+                }, required: ['success'] }
+            },
+            {
+                name: 'filesystem_list',
+                description: 'Lista archivos en un directorio',
+                input_schema: { type: 'object', properties: {
+                    dirPath: { type: 'string' }
+                }, required: ['dirPath'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, items: { type: 'array' }
+                }, required: ['success'] }
+            },
+            // ==================== GIT ====================
+            {
+                name: 'git_status',
+                description: 'Devuelve el estado de git en la raíz del proyecto',
+                input_schema: { type: 'object', properties: {}, required: [] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, output: { type: 'string' }
+                }, required: ['success'] }
+            },
+            {
+                name: 'git_commit',
+                description: 'Realiza un commit',
+                input_schema: { type: 'object', properties: {
+                    message: { type: 'string' }
+                }, required: ['message'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, output: { type: 'string' }
+                }, required: ['success'] }
+            },
+            {
+                name: 'git_pull',
+                description: 'git pull --rebase --autostash',
+                input_schema: { type: 'object', properties: {}, required: [] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, output: { type: 'string' }
+                }, required: ['success'] }
+            },
+            {
+                name: 'git_push',
+                description: 'git push (o --force-with-lease si se especifica)',
+                input_schema: { type: 'object', properties: {
+                    forceWithLease: { type: 'boolean', default: false }
+                }, required: [] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, output: { type: 'string' }
+                }, required: ['success'] }
+            },
+            // =================== HTTP ====================
+            {
+                name: 'http_fetch',
+                description: 'Realiza una petición HTTP(S) simple',
+                input_schema: { type: 'object', properties: {
+                    url: { type: 'string' },
+                    method: { type: 'string', default: 'GET' },
+                    headers: { type: 'object' },
+                    body: { type: 'string' }
+                }, required: ['url'] },
+                output_schema: { type: 'object', properties: {
+                    success: { type: 'boolean' }, status: { type: 'number' }, data: { type: 'object' }
+                }, required: ['success'] }
+            }
+        ];
+
+        // GET /api/tools - lista de herramientas y schemas
+        this.app.get('/api/tools', (_req, res) => {
+            res.json({ success: true, tools });
+        });
+
+        // GET /api/tools/logs - últimas invocaciones
+        this.app.get('/api/tools/logs', (_req, res) => {
+            res.json({ success: true, logs: toolLogs.slice(-MAX_TOOL_LOGS) });
+        });
+
+        // POST /api/tools/invoke - invocar una herramienta por nombre
+        this.app.post('/api/tools/invoke', async (req, res) => {
+            const { name, args } = req.body || {};
+            const startedAt = Date.now();
+            try {
+                if (!name) throw new Error('tool_name_required');
+                const tool = tools.find(t => t.name === name);
+                if (!tool) throw new Error(`unknown_tool:${name}`);
+
+                let result = null;
+                if (name === 'ai_model_list') {
+                    result = { success: true, models: AIGateway.listModels() };
+                } else if (name === 'openai_chat') {
+                    const { model, messages } = args || {};
+                    if (!model || !messages) throw new Error('model_and_messages_required');
+                    const out = await AIGateway.runModel({ provider: 'openai', model, messages });
+                    result = { success: true, result: out };
+                } else if (name === 'anthropic_chat') {
+                    const { model, messages } = args || {};
+                    if (!model || !messages) throw new Error('model_and_messages_required');
+                    const out = await AIGateway.runModel({ provider: 'anthropic', model, messages });
+                    result = { success: true, result: out };
+                } else if (name === 'ai_chat') {
+                    const { provider, model, messages } = args || {};
+                    if (!provider || !model || !messages) throw new Error('provider_model_messages_required');
+                    const out = await AIGateway.runModel({ provider, model, messages });
+                    result = { success: true, result: out };
+                } else if (name === 'filesystem_read') {
+                    const { filePath, encoding = 'utf8' } = args || {};
+                    if (!filePath) throw new Error('filePath_required');
+                    const abs = safeResolve(filePath);
+                    const content = await fs.readFile(abs, encoding);
+                    result = { success: true, content };
+                } else if (name === 'filesystem_write') {
+                    const { filePath, content, encoding = 'utf8' } = args || {};
+                    if (!filePath) throw new Error('filePath_required');
+                    const abs = safeResolve(filePath);
+                    await fs.mkdir(path.dirname(abs), { recursive: true });
+                    await fs.writeFile(abs, content ?? '', encoding);
+                    result = { success: true };
+                } else if (name === 'filesystem_list') {
+                    const { dirPath } = args || {};
+                    if (!dirPath) throw new Error('dirPath_required');
+                    const abs = safeResolve(dirPath);
+                    const items = await fs.readdir(abs, { withFileTypes: true });
+                    result = { success: true, items: items.map(d => ({ name: d.name, type: d.isDirectory() ? 'dir' : 'file' })) };
+                } else if (name === 'git_status') {
+                    const out = await execSh('git status --porcelain=v1');
+                    result = { success: true, output: out };
+                } else if (name === 'git_commit') {
+                    const { message } = args || {};
+                    if (!message) throw new Error('commit_message_required');
+                    await execSh('git add -A');
+                    const out = await execSh(`git commit -m "${message.replace(/"/g,'\\"')}"`);
+                    result = { success: true, output: out };
+                } else if (name === 'git_pull') {
+                    const out = await execSh('git pull --rebase --autostash');
+                    result = { success: true, output: out };
+                } else if (name === 'git_push') {
+                    const { forceWithLease = false } = args || {};
+                    const out = await execSh(forceWithLease ? 'git push --force-with-lease' : 'git push');
+                    result = { success: true, output: out };
+                } else if (name === 'http_fetch') {
+                    const { url, method = 'GET', headers = {}, body } = args || {};
+                    if (!url) throw new Error('url_required');
+                    const { request } = require('https');
+                    const u = new URL(url);
+                    const isHttps = u.protocol === 'https:';
+                    const hreq = (isHttps ? require('https') : require('http')).request;
+                    result = await new Promise((resolve, reject) => {
+                        const req = hreq({
+                            method,
+                            hostname: u.hostname,
+                            path: u.pathname + (u.search || ''),
+                            headers
+                        }, (res) => {
+                            let data = '';
+                            res.on('data', (c) => data += c);
+                            res.on('end', () => {
+                                try { resolve({ success: true, status: res.statusCode, data: data ? JSON.parse(data) : {} }); }
+                                catch { resolve({ success: true, status: res.statusCode, data: { raw: data } }); }
+                            });
+                        });
+                        req.on('error', reject);
+                        if (body) req.write(body);
+                        req.end();
+                    });
+                } else {
+                    throw new Error(`tool_not_implemented:${name}`);
+                }
+
+                logToolInvocation({ name, args, ms: Date.now() - startedAt, ok: true });
+                res.json(result);
+            } catch (e) {
+                logToolInvocation({ name, args, ms: Date.now() - startedAt, ok: false, error: String(e && e.message || e) });
+                res.status(500).json({ success: false, error: String(e && e.message || e) });
             }
         });
 

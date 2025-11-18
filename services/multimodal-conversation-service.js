@@ -8,6 +8,8 @@ const CartesiaService = require('./cartesia-service');
 const HeyGenService = require('./heygen-service');
 const BrightDataService = require('./bright-data-service');
 const EventEmitter = require('events');
+const AIGateway = require('./ai-gateway');
+const ModelRegistry = require('./model-registry');
 
 // Timeout de inactividad configurable (evita "Llamada colgada por inactividad" durante backoff de STT)
 const IDLE_TIMEOUT_MS = parseInt(process.env.CALL_IDLE_MS || '120000', 10);
@@ -19,13 +21,13 @@ const IDLE_TIMEOUT_MS = parseInt(process.env.CALL_IDLE_MS || '120000', 10);
 class MultimodalConversationService extends EventEmitter {
   constructor(aiGateway, db) {
     super();
-    if (!aiGateway) throw new Error('MultimodalConversationService requiere aiGateway');
+    // Si no llega aiGateway externo, usar el gateway local con registro de modelos
+    this.aiGateway = aiGateway || AIGateway;
 
     this.deepgram = new DeepgramService();
     this.cartesia = new CartesiaService();
     this.heygen = new HeyGenService();
     this.brightData = new BrightDataService();
-    this.aiGateway = aiGateway;
     this.db = db;
     
     // Estado de sesión
@@ -54,7 +56,7 @@ class MultimodalConversationService extends EventEmitter {
     
     // Avatar
     this.avatarLipSyncEnabled = true;
-    
+
     // Callbacks
     this.onTranscriptUpdate = null;
     this.onResponseReady = null;
@@ -81,16 +83,16 @@ class MultimodalConversationService extends EventEmitter {
   _emitSessionState() {
     if (this.onSessionState) {
       this.onSessionState({
-        sessionId: this.sessionId,
-        userId: this.userId,
-        mode: this.currentMode,
-        sessionActive: this.sessionActive,
-        isListening: this.isListening,
-        isThinking: this.isThinking,
-        isSpeaking: this.isSpeaking,
-        bargeInEnabled: this.bargeInEnabled,
+      sessionId: this.sessionId,
+      userId: this.userId,
+      mode: this.currentMode,
+      sessionActive: this.sessionActive,
+      isListening: this.isListening,
+      isThinking: this.isThinking,
+      isSpeaking: this.isSpeaking,
+      bargeInEnabled: this.bargeInEnabled,
         continuousMode: false,
-        avatarLipSyncEnabled: this.avatarLipSyncEnabled,
+      avatarLipSyncEnabled: this.avatarLipSyncEnabled,
         deepgramConnected: this.deepgram?.isConnected || false,
         heygenStreaming: false
       });

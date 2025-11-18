@@ -1,0 +1,81 @@
+{
+  "providers": {
+    "openai": {
+      "envKey": "OPENAI_API_KEY",
+      "baseUrl": "https://api.openai.com/v1"
+    },
+    "anthropic": {
+      "envKey": "ANTHROPIC_API_KEY",
+      "baseUrl": "https://api.anthropic.com/v1"
+    }
+  },
+  "models": {
+    "gpt-4.0": {
+      "displayName": "GPT‑4.0",
+      "provider": "openai",
+      "apiModel": "gpt-4o",
+      "capabilities": ["chat", "vision", "tools"]
+    },
+    "gpt-5-mini": {
+      "displayName": "GPT‑5 Mini",
+      "provider": "openai",
+      "apiModel": "gpt-4o-mini",
+      "capabilities": ["chat", "tools"],
+      "aliasOf": "gpt-4o-mini"
+    },
+    "gpt-5.1-thinking": {
+      "displayName": "GPT‑5.1 Thinking",
+      "provider": "openai",
+      "apiModel": "gpt-4.1-mini", 
+      "capabilities": ["chat", "reasoning"]
+    },
+    "gpt-5": {
+      "displayName": "GPT‑5",
+      "provider": "openai",
+      "apiModel": "gpt-4.1", 
+      "capabilities": ["chat", "tools", "reasoning"]
+    },
+    "o3": {
+      "displayName": "O3",
+      "provider": "openai",
+      "apiModel": "o3",
+      "capabilities": ["chat", "reasoning"]
+    },
+    "o3-pro": {
+      "displayName": "O3 Pro",
+      "provider": "openai",
+      "apiModel": "o3-pro",
+      "capabilities": ["chat", "reasoning"]
+    },
+
+    "claude-sonnet-3.7": {
+      "displayName": "Claude Sonnet 3.7",
+      "provider": "anthropic",
+      "apiModel": "claude-3-5-sonnet-latest",
+      "capabilities": ["chat", "tools", "reasoning"]
+    },
+    "claude-haiku-thinking": {
+      "displayName": "Claude Haiku Thinking",
+      "provider": "anthropic",
+      "apiModel": "claude-3-5-haiku-latest",
+      "capabilities": ["chat", "tools"]
+    },
+    "claude-opus-4.1": {
+      "displayName": "Claude Opus 4.1",
+      "provider": "anthropic",
+      "apiModel": "claude-3-opus-20240229",
+      "capabilities": ["chat", "tools", "reasoning"]
+    },
+    "claude-sonnet-4.5": {
+      "displayName": "Claude Sonnet 4.5",
+      "provider": "anthropic",
+      "apiModel": "claude-3-5-sonnet-latest",
+      "capabilities": ["chat", "tools", "reasoning"]
+    }
+  },
+  "defaults": {
+    "developer": "gpt-4.0",
+    "concierge": "claude-sonnet-3.7"
+  }
+}
+

@@ -60,6 +60,10 @@ contextBridge.exposeInMainWorld('sandraAPI', {
   ccStartByRole: (roleId, sessionId) => ipcRenderer.invoke('cc:startByRole', { roleId, sessionId }),
   ccStartByCampaign: (campaignId, sessionId) => ipcRenderer.invoke('cc:startByCampaign', { campaignId, sessionId }),
   ccEnd: (sessionId) => ipcRenderer.invoke('cc:end', { sessionId }),
+
+  // AI Gateway
+  aiListModels: () => ipcRenderer.invoke('ai:listModels'),
+  aiChat: (provider, model, messages) => ipcRenderer.invoke('ai:chat', { provider, model, messages }),
 });
 
 

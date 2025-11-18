@@ -4,6 +4,7 @@ const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const crypto = require('crypto');
 const { existsSync } = require('fs');
+const AIGateway = require('../services/ai-gateway');
 
 // ==== CallCenter ====
 const CallCenter = require('../callcenter/service');
@@ -347,6 +348,21 @@ ipcMain.handle('cc:listRoutes', async () => {
     if (!callCenter) return { success: false, error: 'CallCenter not initialized' };
     return { success: true, data: callCenter.listRoutes() }; 
   } catch(e){ return { success: false, error: e.message }; }
+});
+
+// ---- IPC: AI Gateway (model orchestration) ----
+ipcMain.handle('ai:listModels', async () => {
+  try {
+    const list = AIGateway.listModels();
+    return { success: true, models: list };
+  } catch (e) { return { success: false, error: e.message }; }
+});
+
+ipcMain.handle('ai:chat', async (_e, { provider, model, messages }) => {
+  try {
+    const res = await AIGateway.runModel({ provider, model, messages });
+    return { success: true, result: res };
+  } catch (e) { return { success: false, error: e.message }; }
 });
 
 ipcMain.handle('cc:startByRole', async (_evt, { roleId, sessionId }) => {
