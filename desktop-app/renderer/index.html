@@ -29,16 +29,7 @@
       }
     });
 
-    // Manejar errores del Service Worker (Sandra Mobile PWA - ignorar)
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(registration => {
-          if (registration.scope.includes('localhost:8080')) {
-            console.warn('⚠️ Service Worker de Sandra Mobile detectado (PWA), ignorando errores');
-          }
-        });
-      });
-    }
+    // Service Workers se desactivan en el script del body (línea 75)
 
     // Blindaje: si el helper no existe, no revienta la llamada
     window.safeStartRingtone = function(){ try { window.startRingtone && window.startRingtone(); } catch(e){ console.warn(e); } };
@@ -59,6 +50,33 @@
 </head>
 <body>
   <script>
+    // DESACTIVAR SERVICE WORKERS INMEDIATAMENTE (antes de cualquier otra cosa)
+    (function() {
+      if ('serviceWorker' in navigator) {
+        // Desregistrar todos los Service Workers existentes
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => {
+            registration.unregister().then(success => {
+              if (success) {
+                console.log('✅ Service Worker desregistrado:', registration.scope);
+              }
+            }).catch(err => {
+              console.warn('⚠️ Error desregistrando SW:', err);
+            });
+          });
+        }).catch(err => {
+          console.warn('⚠️ Error obteniendo SW:', err);
+        });
+        
+        // Bloquear nuevos registros
+        const originalRegister = navigator.serviceWorker.register;
+        navigator.serviceWorker.register = function() {
+          console.warn('🚫 Intento de registrar Service Worker bloqueado');
+          return Promise.reject(new Error('Service Workers deshabilitados'));
+        };
+      }
+    })();
+
     window.startRingtone = window.startRingtone || function(){try{(window.__ringEl||(window.__ringEl=new Audio('assets/audio/ringback.ogg'))).loop=true;window.__ringEl.volume=0.18;window.__ringEl.currentTime=0;window.__ringEl.play().catch(()=>{});}catch(e){}};
     window.stopRingtone  = window.stopRingtone  || function(){try{window.__ringEl&&window.__ringEl.pause();}catch(e){}};
   </script>
@@ -155,15 +173,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.groq.com https://api.deepgram.com wss://api.deepgram.com https://api.heygen.com https://api.cartesia.ai https://*.neon.tech wss://*.heygen.com; font-src 'self'; media-src 'self' blob:; worker-src 'none'; child-src 'none';">
   <script>
-    // Bloquear Service Workers explícitamente
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
-          console.log('🚫 Service Worker desregistrado:', registration.scope);
-        }
-      });
-    }
+    // DESACTIVAR SERVICE WORKERS INMEDIATAMENTE (antes de cualquier otra cosa)
+    (function() {
+      if ('serviceWorker' in navigator) {
+        // Desregistrar todos los Service Workers existentes
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => {
+            registration.unregister().then(success => {
+              if (success) {
+                console.log('✅ Service Worker desregistrado:', registration.scope);
+              }
+            }).catch(err => {
+              console.warn('⚠️ Error desregistrando SW:', err);
+            });
+          });
+        }).catch(err => {
+          console.warn('⚠️ Error obteniendo SW:', err);
+        });
+        
+        // Bloquear nuevos registros
+        navigator.serviceWorker.register = function() {
+          console.warn('🚫 Intento de registrar Service Worker bloqueado');
+          return Promise.reject(new Error('Service Workers deshabilitados'));
+        };
+      }
+    })();
   </script>
   <title>Sandra IA 8.0 Pro - Multimodal</title>
   <link rel="stylesheet" href="enterprise.css">
