@@ -48,15 +48,15 @@ let mainWindow;
 function createWindow() {
   console.log('[Main] Creando ventana...');
   try {
-    mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
       show: false, // No mostrar hasta que esté lista
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        contextIsolation: true,
-        nodeIntegration: false,
-        webSecurity: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: true,
       }
     });
 
@@ -87,7 +87,7 @@ function createWindow() {
         mainWindow.loadFile(fallbackPath).catch(err => {
           console.error('[Main] Error cargando fallback:', err);
         });
-      } else {
+        } else {
         console.error('[Main] No se encontró ningún index.html');
         mainWindow.loadURL('data:text/html,<h1>Error: index.html no encontrado</h1>');
       }
@@ -420,7 +420,7 @@ ipcMain.handle('send-audio-stream', async (_e, b64) => {
     const deepgram = global.serviceManager?.get?.('deepgram');
     if (deepgram && typeof deepgram.sendAudioToLive === 'function') {
       try { deepgram.sendAudioToLive(Buffer.from(b64, 'base64')); } catch (e) { return { success: false, error: String(e) }; }
-      return { success: true };
+    return { success: true };
     }
     return { success: false, error: 'Deepgram not available' };
   } catch (e) { return { success: false, error: e.message }; }

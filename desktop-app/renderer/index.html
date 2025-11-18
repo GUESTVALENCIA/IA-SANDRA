@@ -1,3 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Sandra - Desktop</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:;">
+  <!-- Debe estar ANTES de cualquier script que llame a startRingtone() -->
+  <script src="./callcenter.module.js" defer></script>
+  <script>
+    // Config opcional con tus sonidos reales:
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.initCallAudio) {
+        window.initCallAudio({
+          ringSrc:   'assets/audio/ring.mp3',
+          pickupSrc: 'assets/audio/pickup.wav',
+          hangupSrc: 'assets/audio/hangup.wav',
+          volume: 0.55
+        });
+      }
+    });
+
+    // Blindaje: si el helper no existe, no revienta la llamada
+    window.safeStartRingtone = function(){ try { window.startRingtone && window.startRingtone(); } catch(e){ console.warn(e); } };
+    window.safeStopRingtone = function(){ try { window.stopRingtone && window.stopRingtone(); } catch(e){ console.warn(e); } };
+    // Alias para compatibilidad
+    function safeStartRingtone(){ window.safeStartRingtone(); }
+    function safeStopRingtone(){ window.safeStopRingtone(); }
+  </script>
+  <style>
+    body { background:#06111a;color:#e6eef6;font-family:Inter,ui-sans-serif,system-ui; padding:18px; }
+    .card { background:#071120;border:1px solid #0f1720;padding:12px;border-radius:8px;margin-bottom:12px; }
+    .row { display:flex; align-items:center; }
+    button { padding:8px 10px;border-radius:6px;border:none;background:#0ea5a4;color:#042026;cursor:pointer; }
+    button.secondary { background:transparent;border:1px solid #233240;color:#9fb0c2; }
+    input, select { background:#0b1117;color:#e7ecf3;border:1px solid #12232b;padding:8px;border-radius:6px; }
+    table td, table th { border-bottom:1px solid rgba(255,255,255,0.03); }
+  </style>
+</head>
+<body>
+  <script>
+    window.startRingtone = window.startRingtone || function(){try{(window.__ringEl||(window.__ringEl=new Audio('assets/audio/ringback.ogg'))).loop=true;window.__ringEl.volume=0.18;window.__ringEl.currentTime=0;window.__ringEl.play().catch(()=>{});}catch(e){}};
+    window.stopRingtone  = window.stopRingtone  || function(){try{window.__ringEl&&window.__ringEl.pause();}catch(e){}};
+  </script>
+  <main>
+    <section class="card">
+      <h3>Controles</h3>
+      <div class="body">Panel principal</div>
+    </section>
+
+    <section class="card">
+      <h3>Restauración del sistema</h3>
+      <div class="body">
+        <div class="row" style="margin-bottom:10px; gap:8px">
+          <input id="rpLabel" placeholder="Etiqueta (opcional)" style="flex:1" />
+          <button id="btnCreateRP">Crear punto de restauración</button>
+          <select id="restoreMode" style="margin-left:8px">
+            <option value="safe" selected>Modo SAFE (sin reescribir historia)</option>
+            <option value="hard">Modo HARD (reset + push --force)</option>
+          </select>
+        </div>
+        <div style="margin:10px 0 6px;color:#9aa6b2">Snapshots disponibles:</div>
+        <table id="rpTable" style="width:100%;border-collapse:collapse;font:12px ui-monospace">
+          <thead><tr><th style="text-align:left;padding:4px">TAG</th><th style="text-align:left;padding:4px">SHA</th><th style="text-align:left;padding:4px">FECHA</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div style="margin-top:8px">
+          <button id="btnReloadRP" class="secondary">Recargar lista</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function log() { console.log.apply(console, arguments); }
+    function attachSandraAPI(){ if (!window.sandraAPI) window.sandraAPI = { restoreList: async()=>({success:false,error:'no-api'}) }; }
+
+    (function init(){
+      attachSandraAPI();
+      // ====== Restore Manager UI ======
+      const tBody = document.querySelector('#rpTable tbody');
+      async function loadRP(){
+        const res = await window.sandraAPI.restoreList();
+        tBody.innerHTML = '';
+        if (!res?.success) { log('restore:list error: '+(res?.error||'desconocido')); return; }
+        (res.items||[]).forEach(item=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="padding:4px">${item.tag}</td>
+            <td style="padding:4px">${item.sha.substring(0,7)}</td>
+            <td style="padding:4px">${item.date}</td>
+            <td style="padding:4px"><button data-tag="${item.tag}">Restaurar</button></td>`;
+          tr.querySelector('button').onclick = async (e)=>{
+            const tag = e.target.getAttribute('data-tag');
+            const mode = document.getElementById('restoreMode').value;
+            await window.sandraAPI.restoreSetMode(mode);
+            const ok = confirm(`¿Confirmas restaurar a "${tag}" en modo ${mode.toUpperCase()}?`);
+            if (!ok) return;
+            const r = await window.sandraAPI.restoreApply(tag);
+            if (!r?.success) { alert('Error: '+r?.error); return; }
+            alert(`Restaurado a ${tag} (${r.sha.slice(0,7)}) [${r.mode}]`);
+            loadRP();
+          };
+          tBody.appendChild(tr);
+        });
+      }
+      document.getElementById('btnReloadRP').onclick = loadRP;
+      document.getElementById('btnCreateRP').onclick = async ()=>{
+        const label = document.getElementById('rpLabel').value || '';
+        const r = await window.sandraAPI.restoreCreate(label);
+        if (!r?.success) { alert('Error: '+r?.error); return; }
+        alert(`Snapshot creado: ${r.tag} (${r.sha.slice(0,7)})`);
+        document.getElementById('rpLabel').value='';
+        loadRP();
+      };
+      document.getElementById('restoreMode').onchange = async (e)=>{
+        await window.sandraAPI.restoreSetMode(e.target.value);
+      };
+      loadRP();
+    })();
+  </script>
+</body>
+</html>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -972,11 +1095,6 @@
         <div id="heygen-avatar" style="margin-top:10px;"></div>
       </div>
 
-      <!-- Controles de llamada conversacional -->
-      <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px; display:flex; align-items:center; gap:10px;">
-        <button id="btn-convo-call" class="role-btn" style="padding:10px 14px;">📞 Llamada conversacional</button>
-        <span id="call-state" class="voice-badge">Llamada: Inactiva</span>
-      </div>
 
       <div class="avatar-status">
         <div class="avatar-status-item">
@@ -1232,6 +1350,50 @@
     // browserSpeaker eliminado - Solo se usa Cartesia
     let currentTtsAudio = null;
 
+    // ======= RINGBACK (corrección ReferenceError) =======
+    let ringAudio = null, ringActive = false;
+    function ensureGraph(){
+      if (window._sandra_audio_inited) return;
+      try {
+        window._sandra_audio_inited = true;
+        const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        window._sandra_audioCtx = audioCtx;
+        const master = audioCtx.createGain(); master.gain.value = 0.95;
+        const deEsser = audioCtx.createBiquadFilter(); deEsser.type='peaking'; deEsser.frequency.value=6000; deEsser.Q.value=1.0; deEsser.gain.value=-6;
+        const lpf = audioCtx.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.value=11000; lpf.Q.value=0.7;
+        const comp = audioCtx.createDynamicsCompressor();
+        comp.threshold.value=-24; comp.knee.value=16; comp.ratio.value=2.5; comp.attack.value=0.003; comp.release.value=0.25;
+        deEsser.connect(lpf); lpf.connect(comp); comp.connect(master); master.connect(audioCtx.destination);
+        window._sandra_master = master;
+      } catch(e){ console.warn('ensureGraph error:', e && e.message); }
+    }
+    // Funciones locales que usan las globales si existen, sino fallback local
+    function startRingtone(){
+      if (typeof window.startRingtone === 'function') {
+        window.startRingtone();
+        return;
+      }
+      if (ringActive) return;
+      ensureGraph();
+      try{
+        if (!ringAudio) {
+          ringAudio = new Audio('assets/audio/ringback.ogg');
+          ringAudio.loop = true; ringAudio.volume = 0.18;
+          try { window._sandra_audioCtx && window._sandra_audioCtx.createMediaElementSource && window._sandra_audioCtx.createMediaElementSource(ringAudio).connect(window._sandra_master); } catch {}
+        }
+        ringActive = true; ringAudio.currentTime = 0;
+        ringAudio.play().catch(()=>{});
+        console.log('▶ ringback');
+      }catch(e){ console.warn('startRingtone err', e && e.message); }
+    }
+    function stopRingtone(){ 
+      if (typeof window.stopRingtone === 'function') {
+        window.stopRingtone();
+        return;
+      }
+      ringActive=false; try{ ringAudio && ringAudio.pause(); }catch{} console.log('⏹ ringback'); 
+    }
+
     // ==================== ELEMENTOS DOM ====================
     const messagesContainer = document.getElementById('messages');
     const messageInput = document.getElementById('message-input');
@@ -1443,6 +1605,74 @@
 
       // Agregar mensaje del usuario
       addMessage(message, 'user');
+
+      // ==================== COMANDOS ESPECIALES ====================
+      
+      // Comando: /modelos - Lista todos los modelos disponibles
+      if (message.toLowerCase() === '/modelos' || message.toLowerCase() === '/models') {
+        if (window.sandraAPI && window.sandraAPI.aiListModels) {
+          try {
+            const models = await window.sandraAPI.aiListModels();
+            let response = '🤖 **MODELOS DISPONIBLES**\n\n';
+            
+            if (models.openai && models.openai.length > 0) {
+              response += '**OpenAI:**\n';
+              models.openai.forEach(m => {
+                response += `  • ${m.alias} → ${m.apiModel}\n    ${m.description}\n\n`;
+              });
+            }
+            
+            if (models.anthropic && models.anthropic.length > 0) {
+              response += '**Anthropic:**\n';
+              models.anthropic.forEach(m => {
+                response += `  • ${m.alias} → ${m.apiModel}\n    ${m.description}\n\n`;
+              });
+            }
+            
+            response += '\n💡 **Uso:** `/ai <provider> <modelo> <mensaje>`\n';
+            response += 'Ejemplo: `/ai openai gpt-4.0 Hola, necesito ayuda con código`\n';
+            response += 'Ejemplo: `/ai anthropic claude-sonnet-4.5 Analiza este sistema`';
+            
+            addMessage(response, 'assistant');
+          } catch (error) {
+            addMessage('❌ Error obteniendo modelos: ' + error.message, 'assistant');
+          }
+        } else {
+          addMessage('❌ API de modelos no disponible. Verifica que el MCP esté activo.', 'assistant');
+        }
+        return;
+      }
+
+      // Comando: /ai <provider> <model> <mensaje>
+      // Ejemplo: /ai openai gpt-4.0 Necesito ayuda con código
+      const aiCommandMatch = message.match(/^\/ai\s+(openai|anthropic)\s+([\w\-\.]+)\s+(.+)$/i);
+      if (aiCommandMatch) {
+        const [, provider, model, userMessage] = aiCommandMatch;
+        
+        if (window.sandraAPI && window.sandraAPI.aiChat) {
+          loading.classList.add('active');
+          try {
+            const result = await window.sandraAPI.aiChat(provider.toLowerCase(), model, [
+              { role: 'user', content: userMessage }
+            ]);
+            
+            if (result.success) {
+              addMessage(`🤖 **${provider.toUpperCase()} ${model}**\n\n${result.text}`, 'assistant');
+            } else {
+              addMessage(`❌ Error: ${result.error}`, 'assistant');
+            }
+          } catch (error) {
+            addMessage(`❌ Error llamando a ${provider} ${model}: ${error.message}`, 'assistant');
+          } finally {
+            loading.classList.remove('active');
+          }
+        } else {
+          addMessage('❌ API de IA no disponible. Verifica que el MCP esté activo.', 'assistant');
+        }
+        return;
+      }
+
+      // ==================== MENSAJE NORMAL A SANDRA ====================
 
       // Mostrar loading
       loading.classList.add('active');
@@ -1677,8 +1907,6 @@
 
     // ==================== LLAMADA CONVERSACIONAL (CONTINUA + STREAM) ====================
     let isCallActive = false;
-    const btnConvoCall = document.getElementById('btn-convo-call');
-    const callState = document.getElementById('call-state');
 
     async function startVoiceStreaming() {
       try {
@@ -1766,12 +1994,11 @@
         
         // Iniciar tono de llamada hasta que se conecte
         greetedThisCall = false;
-        startRingtone();
+        safeStartRingtone();
         
         await startVoiceStreaming();
         isCallActive = true;
-        btnConvoCall.textContent = '⛔ Finalizar llamada';
-        callState.textContent = 'Llamada: Activa';
+        // UI del botón eliminado - no actualizar
         
         // Activar avatar Sora al iniciar llamada
         if (soraVideo && soraVideo.src) {
@@ -1789,7 +2016,7 @@
       console.log('📴 [CallCenter] Finalizando llamada...');
       
       // 1. Detener tono si está sonando
-      try { stopRingtone(); } catch {}
+      safeStopRingtone();
       
       // 2. Sonido de colgado (estilo call center)
       playHangupSound();
@@ -1805,10 +2032,10 @@
       // 5. Parar cualquier TTS en reproducción
       try { 
         if (currentTtsAudio) { 
-          currentTtsAudio.pause(); 
-          currentTtsAudio.currentTime = 0; 
-          currentTtsAudio = null; 
-        } 
+          currentTtsAudio.pause();
+          currentTtsAudio.currentTime = 0;
+          currentTtsAudio = null;
+        }
       } catch {}
       
       // 6. Reset flag de saludo para próxima llamada
@@ -1816,8 +2043,7 @@
       
       // 7. Actualizar UI
       isCallActive = false;
-      btnConvoCall.textContent = '📞 Llamada conversacional';
-      callState.textContent = 'Llamada: Inactiva';
+      // UI del botón eliminado - no actualizar
       
       // 8. Pausar avatar Sora
       if (soraVideo) {
@@ -2012,14 +2238,6 @@
 
     // ==================== EVENT LISTENERS ====================
     sendBtn.addEventListener('click', sendMessage);
-    // Evento para llamada conversacional (toggle)
-    const btnConvoCall2 = document.getElementById('btn-convo-call');
-    if (btnConvoCall2) {
-      btnConvoCall2.addEventListener('click', async () => {
-        if (!isCallActive) await startConversationalCall();
-        else await stopConversationalCall();
-      });
-    }
     
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -2181,10 +2399,7 @@
           if (statusEl && state) {
             statusEl.textContent = state.sessionActive ? `Modo: ${state.mode} (live)` : 'Modo: Inactivo';
           }
-          const callStateEl = document.getElementById('call-state');
-          if (callStateEl && state) {
-            callStateEl.textContent = state.sessionActive ? 'Llamada: Activa' : 'Llamada: Inactiva';
-          }
+          // call-state element eliminado - no actualizar
           // Auto-colgar UI si la sesión se desactiva desde backend
           if (state && !state.sessionActive && typeof stopConversationalCall === 'function' && isCallActive) {
             stopConversationalCall();
@@ -2297,6 +2512,11 @@
       let isRinging = false;
 
       async function startRingtone() {
+        // Usar función global si existe
+        if (typeof window.startRingtone === 'function') {
+          window.startRingtone();
+          return;
+        }
         if (isRinging) return;
         isRinging = true;
         
@@ -2329,6 +2549,11 @@
       }
 
       function stopRingtone() {
+        // Usar función global si existe
+        if (typeof window.stopRingtone === 'function') {
+          window.stopRingtone();
+          return;
+        }
         if (!isRinging) return;
         isRinging = false;
         
@@ -2410,7 +2635,7 @@
       async function playGreeting() {
         if (!isRinging) return;
         
-        stopRingtone();
+        safeStopRingtone();
         updateCallStatus('Conectado', true);
         
         const greeting = "Hola, soy Sandra, asistente de Guests Valencia. ¿En qué puedo ayudarte?";
@@ -2476,7 +2701,7 @@
       async function stopConversationalCall() {
         console.log('📴 [CallCenter] Finalizando llamada...');
         
-        stopRingtone();
+        safeStopRingtone();
         updateCallStatus('Llamada finalizada', false);
         
         await playHangupSound();
@@ -2517,6 +2742,53 @@
     // Inicializar avatar
     // initializeHeyGenAvatar(); // Dejado listo para inyección futura del widget HeyGen
 
+    // ==================== PERSISTENCIA DE VIDEO AVATAR ====================
+    function saveVideoToStorage(file) {
+      try {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            localStorage.setItem('sandra_avatar_video', e.target.result);
+            localStorage.setItem('sandra_avatar_video_name', file.name);
+            showToast('✅ Video guardado');
+          } catch (err) {
+            console.warn('Error guardando video:', err);
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (e) {
+        console.warn('Error leyendo archivo:', e);
+      }
+    }
+
+    function loadVideoFromStorage() {
+      try {
+        const videoData = localStorage.getItem('sandra_avatar_video');
+        if (videoData && soraVideo) {
+          soraVideo.src = videoData;
+          showToast('✅ Video cargado desde almacenamiento');
+        }
+      } catch (e) {
+        console.warn('Error cargando video:', e);
+      }
+    }
+
+    function clearVideoFromStorage() {
+      try {
+        localStorage.removeItem('sandra_avatar_video');
+        localStorage.removeItem('sandra_avatar_video_name');
+        if (soraVideo) {
+          soraVideo.src = '';
+        }
+        showToast('🗑️ Video eliminado');
+      } catch (e) {
+        console.warn('Error eliminando video:', e);
+      }
+    }
+
+    // Cargar video al iniciar
+    loadVideoFromStorage();
+
     // Botón para cargar un video local de Sora
     (function addSoraLoader(){
       const panel = document.querySelector('.avatar-panel');
@@ -2524,16 +2796,22 @@
       wrap.style.marginTop = '8px';
       wrap.innerHTML = `
         <label style="font-size:12px;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">🎬 Video Sora (local):</label>
-        <input id="sora-file" type="file" accept="video/*" style="width:100%;font-size:12px;">
+        <input id="sora-file" type="file" accept="video/*" style="width:100%;font-size:12px;margin-bottom:6px;">
+        <button id="clear-avatar-btn" style="width:100%;padding:6px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#ef4444;cursor:pointer;">🗑️ Limpiar video</button>
       `;
       panel.appendChild(wrap);
       const input = wrap.querySelector('#sora-file');
+      const clearBtn = wrap.querySelector('#clear-avatar-btn');
+      
       input.addEventListener('change', (e) => {
         const file = e.target.files?.[0];
         if (file) {
           const url = URL.createObjectURL(file);
           soraVideo.src = url;
           showToast('🎬 Video Sora cargado');
+          
+          // Guardar en localStorage
+          saveVideoToStorage(file);
 
           // Intentar registrar ruta real para lip-sync
           try {
@@ -2568,6 +2846,11 @@
             console.warn('No se pudo registrar lip-sync source:', e);
           }
         }
+      });
+      
+      clearBtn.addEventListener('click', () => {
+        clearVideoFromStorage();
+        input.value = '';
       });
     })();
 
@@ -3081,6 +3364,34 @@
                 
                 controlPanel.appendChild(callButton);
                 console.log('✅ [CallCenter] Botón creado y añadido al panel');
+
+                // Añadir Snapshot rápido y badge de comandos (Cmd)
+                try {
+                  const snapBtn = document.createElement('button');
+                  snapBtn.id = 'btn-snapshot-quick';
+                  snapBtn.className = 'call-button';
+                  snapBtn.style.maxWidth = '140px';
+                  snapBtn.textContent = '📸 Snapshot rápido';
+                  snapBtn.addEventListener('click', async () => {
+                    try {
+                      const r = await window.sandraAPI.restoreCreate?.('quick');
+                      if (!r?.success) return alert('Error creando snapshot: '+(r?.error||''));
+                      alert(`Snapshot creado: ${r.tag}`);
+                    } catch (e) { alert('Error: '+e?.message); }
+                  });
+                  controlPanel.appendChild(snapBtn);
+
+                  const vcBadge = document.createElement('span');
+                  vcBadge.id = 'vc-badge';
+                  vcBadge.textContent = 'Cmd: off';
+                  vcBadge.style.display = 'inline-block';
+                  vcBadge.style.marginLeft = '8px';
+                  vcBadge.style.padding = '6px 8px';
+                  vcBadge.style.borderRadius = '8px';
+                  vcBadge.style.background = 'rgba(255,255,255,0.03)';
+                  vcBadge.style.color = '#9aa6b2';
+                  controlPanel.appendChild(vcBadge);
+                } catch (e) { console.warn('No se pudo añadir snapshot UI:', e.message); }
             } else {
                 console.error('❌ [CallCenter] No se encontró panel de control');
                 return;
@@ -3109,7 +3420,7 @@
                         button.textContent = 'Conectando...';
                         button.classList.add('active');
                         
-                        await startRingtone();
+                        safeStartRingtone();
                         resetInactivityTimeout();
                     }
                     
@@ -3192,8 +3503,82 @@
         console.error('❌ [CallCenter] Error crítico:', error);
     }
   </script>
+
+  <script>
+    // Panel de alarmas flotante y binding de comandos por voz (hola sandra)
+    (function(){
+      try {
+        // Crear panel de alarmas ligero
+        let alarms = document.getElementById('alarms-console');
+        if (!alarms) {
+          alarms = document.createElement('div');
+          alarms.id = 'alarms-console';
+          alarms.style.position = 'fixed';
+          alarms.style.right = '18px';
+          alarms.style.bottom = '18px';
+          alarms.style.width = '360px';
+          alarms.style.maxHeight = '220px';
+          alarms.style.overflow = 'auto';
+          alarms.style.background = 'rgba(3,7,12,0.8)';
+          alarms.style.border = '1px solid rgba(255,255,255,0.04)';
+          alarms.style.padding = '8px';
+          alarms.style.borderRadius = '8px';
+          alarms.style.fontSize = '12px';
+          alarms.style.color = '#e6eef6';
+          document.body.appendChild(alarms);
+        }
+
+        function logAlarm(a){
+          const t = new Date(a.ts||Date.now()).toLocaleTimeString();
+          const line = `[${t}] ${a.type?.toUpperCase() || 'ALARM'} • ${a.message || ''}` + (a.path?` • ${a.path}`:'') + (a.service?` • ${a.service}`:'') + (a.status?` • ${a.status}`:'');
+          const p = document.createElement('div');
+          p.textContent = line;
+          p.style.padding = '6px 4px';
+          p.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
+          alarms.appendChild(p);
+          alarms.scrollTop = alarms.scrollHeight;
+        }
+
+        window.sandraAPI?.onAlarm?.(logAlarm);
+
+        // Voz: comandos via onTranscriptUpdate
+        let vcArmed = false, vcTimer = null;
+        function setVC(on){
+          vcArmed = on;
+          const badge = document.getElementById('vc-badge');
+          if (badge) badge.textContent = 'Cmd: ' + (on ? 'ON' : 'off');
+        }
+        function normalize(t){ return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+        async function restoreLatest(mode='safe'){
+          try {
+            await window.sandraAPI.restoreSetMode?.(mode);
+            const res = await window.sandraAPI.restoreList?.();
+            if (!res?.success || !res.items?.length) return false;
+            const tag = res.items[0].tag;
+            const r = await window.sandraAPI.restoreApply?.(tag);
+            return !!r?.success;
+          } catch { return false; }
+        }
+        async function execVoiceCommand(text){
+          const t = normalize(text);
+          if (/^hola sandra\\b/.test(t)) { setVC(true); clearTimeout(vcTimer); vcTimer=setTimeout(()=>setVC(false),8000); return; }
+          if (!vcArmed) return;
+          if (/(inicia|empieza|comienza).*(llamada)|\\bllama(r)?\\b/.test(t)) { if (typeof startConversationalCall === 'function') { await startConversationalCall(); } setVC(false); return; }
+          if (/(finaliza|termina|corta).*(llamada)|\\bcuelga(r)?\\b/.test(t)) { if (typeof stopConversationalCall === 'function') { await stopConversationalCall(); } setVC(false); return; }
+          if (/snapshot.*(rapido|rápido)|crear.*snapshot|punto.*(restauracion|restauración)/.test(t)) { await window.sandraAPI.restoreCreate?.('quick'); setVC(false); alert('Snapshot rápido creado'); return; }
+          if (/restaura(r)?(.*ultimo|.*último|.*mas reciente|.*más reciente)?/.test(t)) { const ok = await restoreLatest('safe'); setVC(false); alert(ok ? 'Restaurado al último snapshot (SAFE)' : 'No hay snapshots o error'); return; }
+          if (/modo.*hard/.test(t)) { await window.sandraAPI.restoreSetMode?.('hard'); setVC(false); alert('Modo HARD activado'); return; }
+          if (/modo.*safe/.test(t)) { await window.sandraAPI.restoreSetMode?.('safe'); setVC(false); alert('Modo SAFE activado'); return; }
+        }
+
+        window.sandraAPI?.onTranscriptUpdate?.(({raw})=>{ if(raw) execVoiceCommand(String(raw)); });
+
+      } catch (e) { console.warn('Init alarms/voice commands failed:', e && e.message); }
+    })();
+  </script>
+
   <script src="enterprise.js"></script>
   <script src="voice-stream.module.js"></script>
-  <script src="callcenter.module.js"></script>
 </body>
 </html>
+
