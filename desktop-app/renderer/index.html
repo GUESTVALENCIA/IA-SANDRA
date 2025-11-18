@@ -1606,6 +1606,74 @@
       // Agregar mensaje del usuario
       addMessage(message, 'user');
 
+      // ==================== COMANDOS ESPECIALES ====================
+      
+      // Comando: /modelos - Lista todos los modelos disponibles
+      if (message.toLowerCase() === '/modelos' || message.toLowerCase() === '/models') {
+        if (window.sandraAPI && window.sandraAPI.aiListModels) {
+          try {
+            const models = await window.sandraAPI.aiListModels();
+            let response = '🤖 **MODELOS DISPONIBLES**\n\n';
+            
+            if (models.openai && models.openai.length > 0) {
+              response += '**OpenAI:**\n';
+              models.openai.forEach(m => {
+                response += `  • ${m.alias} → ${m.apiModel}\n    ${m.description}\n\n`;
+              });
+            }
+            
+            if (models.anthropic && models.anthropic.length > 0) {
+              response += '**Anthropic:**\n';
+              models.anthropic.forEach(m => {
+                response += `  • ${m.alias} → ${m.apiModel}\n    ${m.description}\n\n`;
+              });
+            }
+            
+            response += '\n💡 **Uso:** `/ai <provider> <modelo> <mensaje>`\n';
+            response += 'Ejemplo: `/ai openai gpt-4.0 Hola, necesito ayuda con código`\n';
+            response += 'Ejemplo: `/ai anthropic claude-sonnet-4.5 Analiza este sistema`';
+            
+            addMessage(response, 'assistant');
+          } catch (error) {
+            addMessage('❌ Error obteniendo modelos: ' + error.message, 'assistant');
+          }
+        } else {
+          addMessage('❌ API de modelos no disponible. Verifica que el MCP esté activo.', 'assistant');
+        }
+        return;
+      }
+
+      // Comando: /ai <provider> <model> <mensaje>
+      // Ejemplo: /ai openai gpt-4.0 Necesito ayuda con código
+      const aiCommandMatch = message.match(/^\/ai\s+(openai|anthropic)\s+([\w\-\.]+)\s+(.+)$/i);
+      if (aiCommandMatch) {
+        const [, provider, model, userMessage] = aiCommandMatch;
+        
+        if (window.sandraAPI && window.sandraAPI.aiChat) {
+          loading.classList.add('active');
+          try {
+            const result = await window.sandraAPI.aiChat(provider.toLowerCase(), model, [
+              { role: 'user', content: userMessage }
+            ]);
+            
+            if (result.success) {
+              addMessage(`🤖 **${provider.toUpperCase()} ${model}**\n\n${result.text}`, 'assistant');
+            } else {
+              addMessage(`❌ Error: ${result.error}`, 'assistant');
+            }
+          } catch (error) {
+            addMessage(`❌ Error llamando a ${provider} ${model}: ${error.message}`, 'assistant');
+          } finally {
+            loading.classList.remove('active');
+          }
+        } else {
+          addMessage('❌ API de IA no disponible. Verifica que el MCP esté activo.', 'assistant');
+        }
+        return;
+      }
+
+      // ==================== MENSAJE NORMAL A SANDRA ====================
+      
       // Mostrar loading
       loading.classList.add('active');
 
