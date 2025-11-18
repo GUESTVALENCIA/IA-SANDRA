@@ -4,6 +4,37 @@
   <meta charset="utf-8" />
   <title>Sandra - Desktop</title>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:;">
+  
+  <!-- DESACTIVAR SERVICE WORKERS INMEDIATAMENTE (PRIMERA COSA QUE SE EJECUTA) -->
+  <script>
+    (function() {
+      'use strict';
+      if ('serviceWorker' in navigator) {
+        // Bloquear nuevos registros PRIMERO
+        const originalRegister = navigator.serviceWorker.register;
+        navigator.serviceWorker.register = function() {
+          console.warn('🚫 Service Worker registration bloqueado');
+          return Promise.reject(new Error('Service Workers deshabilitados en app de escritorio'));
+        };
+        
+        // Desregistrar todos los existentes
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => {
+            registration.unregister().then(success => {
+              if (success) {
+                console.log('✅ Service Worker desregistrado:', registration.scope);
+              }
+            }).catch(err => {
+              console.warn('⚠️ Error desregistrando SW:', err);
+            });
+          });
+        }).catch(err => {
+          console.warn('⚠️ Error obteniendo SW:', err);
+        });
+      }
+    })();
+  </script>
+  
   <!-- Debe estar ANTES de cualquier script que llame a startRingtone() -->
   <script src="./callcenter.module.js" defer onerror="console.warn('callcenter.module.js no disponible, continuando sin él')"></script>
   <script>
@@ -169,14 +200,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.groq.com https://api.deepgram.com wss://api.deepgram.com https://api.heygen.com https://api.cartesia.ai https://*.neon.tech wss://*.heygen.com; font-src 'self'; media-src 'self' blob:; worker-src 'none'; child-src 'none';">
   <script>
-    // DESACTIVAR SERVICE WORKERS INMEDIATAMENTE (antes de cualquier otra cosa)
+    // DESACTIVAR SERVICE WORKERS INMEDIATAMENTE (PRIMERA COSA QUE SE EJECUTA)
     (function() {
+      'use strict';
       if ('serviceWorker' in navigator) {
-        // Desregistrar todos los Service Workers existentes
+        // Bloquear nuevos registros PRIMERO
+        const originalRegister = navigator.serviceWorker.register;
+        navigator.serviceWorker.register = function() {
+          console.warn('🚫 Service Worker registration bloqueado');
+          return Promise.reject(new Error('Service Workers deshabilitados en app de escritorio'));
+        };
+        
+        // Desregistrar todos los existentes
         navigator.serviceWorker.getRegistrations().then(registrations => {
           registrations.forEach(registration => {
             registration.unregister().then(success => {
@@ -190,15 +226,11 @@
         }).catch(err => {
           console.warn('⚠️ Error obteniendo SW:', err);
         });
-        
-        // Bloquear nuevos registros
-        navigator.serviceWorker.register = function() {
-          console.warn('🚫 Intento de registrar Service Worker bloqueado');
-          return Promise.reject(new Error('Service Workers deshabilitados'));
-        };
       }
     })();
   </script>
+  <meta charset="UTF-8">
+  <meta name="viewport"
   <title>Sandra IA 8.0 Pro - Multimodal</title>
   <link rel="stylesheet" href="enterprise.css">
   <style>
@@ -3642,4 +3674,5 @@
   <script src="voice-stream.module.js"></script>
 </body>
 </html>
+
 
