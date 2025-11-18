@@ -14,8 +14,14 @@ try {
 }
 
 // ==== CallCenter ====
-const CallCenter = require('../callcenter/service');
+let CallCenter;
 let callCenter;
+try {
+  CallCenter = require('../callcenter/service');
+} catch (e) {
+  console.warn('[Main] CallCenter no disponible:', e.message);
+  CallCenter = null;
+}
 
 // --- Utils git ---
 function sh(cmd, cwd) {
@@ -52,17 +58,21 @@ app.whenReady().then(() => {
   try { watchCritical(); } catch (e) { console.warn('watchCritical failed:', e.message); }
   try { tapServiceApiEvents(); } catch (e) { console.warn('tapServiceApiEvents failed:', e.message); }
   // Inicializar CallCenter
-  try {
-    // Si tienes un serviceManager global, pásalo; si no, este ctor funciona igual
-    const mm = global.serviceManager?.get?.('multimodal');
-    const rs = global.serviceManager?.get?.('roles-system');
-    callCenter = new CallCenter({ 
-      serviceManager: global.serviceManager, 
-      multimodal: mm,
-      rolesSystem: rs
-    });
-    console.log('✅ CallCenter inicializado');
-  } catch (e) { console.warn('CallCenter init failed:', e.message); }
+  if (CallCenter) {
+    try {
+      // Si tienes un serviceManager global, pásalo; si no, este ctor funciona igual
+      const mm = global.serviceManager?.get?.('multimodal');
+      const rs = global.serviceManager?.get?.('roles-system');
+      callCenter = new CallCenter({ 
+        serviceManager: global.serviceManager, 
+        multimodal: mm,
+        rolesSystem: rs
+      });
+      console.log('✅ CallCenter inicializado');
+    } catch (e) { console.warn('CallCenter init failed:', e.message); }
+  } else {
+    console.warn('⚠️ CallCenter no disponible (módulo no encontrado)');
+  }
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
