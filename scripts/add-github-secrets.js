@@ -5,7 +5,11 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.GITHUB_PAT;
+if (!GITHUB_TOKEN) {
+  console.error('❌ GITHUB_TOKEN o GITHUB_PAT no configurado');
+  process.exit(1);
+}
 const GITHUB_REPO = 'GUESTVALENCIA/IA-SANDRA';
 const API_BASE = `https://api.github.com/repos/${GITHUB_REPO}`;
 

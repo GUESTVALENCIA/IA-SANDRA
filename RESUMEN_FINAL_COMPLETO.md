@@ -34,7 +34,7 @@
 
 **URL**: https://github.com/GUESTVALENCIA/IA-SANDRA/settings/secrets/actions
 
-**Token actualizado**: `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`
+**Token**: Configurado en variable de entorno `GITHUB_TOKEN` o `GITHUB_PAT`
 
 **Añadir manualmente** (el script tiene problemas técnicos con el formato RSA):
 1. Ve a la URL arriba
