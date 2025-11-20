@@ -11,6 +11,11 @@ class BrightDataService {
     this.host = process.env.BRIGHT_DATA_HOST || 'brd.superproxy.io:9515';
     this.proxyUrl = `http://${this.auth}@${this.host}`;
     
+    // Caches con TTL de 30 segundos
+    this.accommodationsCache = new Map();
+    this.eventsCache = new Map();
+    this.CACHE_TTL = 30000; // 30 segundos en milisegundos
+    
     // Alojamientos de Guests-Valencia (gestión profesional)
     this.myListings = {
       properties: [
@@ -346,6 +351,71 @@ class BrightDataService {
       status: 'processed',
       timestamp: new Date().toISOString()
     };
+  }
+
+  /**
+   * Obtener alojamientos con cache (TTL 30s)
+   * @param {string} zoneKey - Clave de zona (ej: 'valencia', 'montanejos')
+   * @param {string} date - Fecha en formato ISO
+   * @param {number} guests - Número de huéspedes
+   * @returns {Promise<Object>} Datos de alojamientos
+   */
+  async getMyAccommodationsCached(zoneKey, date, guests) {
+    const cacheKey = `${zoneKey}_${date}_${guests}`;
+    const cached = this.accommodationsCache.get(cacheKey);
+    
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+      return cached.data;
+    }
+    
+    // Si no hay cache válido, obtener datos frescos
+    const checkIn = date ? new Date(date).toISOString().split('T')[0] : null;
+    const checkOut = date ? new Date(new Date(date).getTime() + 86400000).toISOString().split('T')[0] : null;
+    
+    const data = await this.getMyAccommodations(checkIn, checkOut, guests);
+    
+    // Guardar en cache
+    this.accommodationsCache.set(cacheKey, {
+      data,
+      timestamp: Date.now()
+    });
+    
+    return data;
+  }
+
+  /**
+   * Obtener eventos locales con cache (TTL 30s)
+   * @param {string} zoneKey - Clave de zona
+   * @param {string} date - Fecha en formato ISO
+   * @returns {Promise<Array>} Lista de eventos
+   */
+  async getLocalEventsCached(zoneKey, date) {
+    const cacheKey = `${zoneKey}_events_${date}`;
+    const cached = this.eventsCache.get(cacheKey);
+    
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+      return cached.data;
+    }
+    
+    // Simular obtención de eventos (implementar según necesidad real)
+    const events = [
+      {
+        id: `event_${zoneKey}_${date}`,
+        name: `Evento en ${zoneKey}`,
+        date,
+        location: zoneKey,
+        type: 'cultural',
+        description: 'Evento local disponible'
+      }
+    ];
+    
+    // Guardar en cache
+    this.eventsCache.set(cacheKey, {
+      data: events,
+      timestamp: Date.now()
+    });
+    
+    return events;
   }
 }
 

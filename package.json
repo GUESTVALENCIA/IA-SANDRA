@@ -9,7 +9,7 @@
     "start:mcp": "node mcp-server/server.js",
     "start:sonnet-mcp": "node mcp-server/mcp-sonnet-full-access.js",
     "build": "electron-builder --win --x64",
-    "test": "echo \"No tests specified\""
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -29,5 +29,8 @@
     "puppeteer-core": "^24.30.0",
     "semver": "^7.7.3",
     "twilio": "^5.10.5"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
   }
 }
