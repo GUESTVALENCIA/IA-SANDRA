@@ -55,7 +55,8 @@
     "@types/node": "^24.10.1",
     "electron-builder": "^26.0.12",
     "jest": "^30.2.0",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "vercel": "^48.10.4"
   },
   "jest": {
     "setupFiles": [

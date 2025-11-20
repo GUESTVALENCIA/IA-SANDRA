@@ -1,0 +1,35 @@
+name: Deploy PWA to Vercel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "guests-pwa/**"
+      - "package.json"
+      - ".github/workflows/vercel.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      
+      - run: pnpm --filter guests-pwa build
+      
+      - name: Deploy to Vercel
+        run: |
+          npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --confirm \
+            --org-id ${{ secrets.VERCEL_ORG_ID }} --project-id ${{ secrets.VERCEL_PROJECT_ID }} \
+            --cwd guests-pwa
+
