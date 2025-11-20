@@ -1,7 +1,7 @@
 const express = require('express');
 const client = require('prom-client');
 const fs = require('fs');
-const glob = require('glob');
+const { globSync } = require('glob');
 const path = require('path');
 
 const app = express();
@@ -16,7 +16,7 @@ client.collectDefaultMetrics({ timeout: 5000 });
 app.get('/metrics', async (_, res) => {
   // parse last 24h JSONL logs
   const logsDir = path.join(__dirname, '../../logs');
-  const files = glob.sync(path.join(logsDir, 'costs-*.jsonl'));
+  const files = globSync(path.join(logsDir, 'costs-*.jsonl'));
   
   let sumCost = 0;
   let arrLat = [];

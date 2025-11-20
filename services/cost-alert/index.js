@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const fs = require('fs');
-const glob = require('glob');
+const { globSync } = require('glob');
 const nodemailer = require('nodemailer');
 
 const LIMIT = parseFloat(process.env.COST_LIMIT || '5');   // USD
@@ -16,7 +16,7 @@ const tx = nodemailer.createTransport(SMTP_URL, { tls: { rejectUnauthorized: fal
 
 async function checkCost() {
   const start = Date.now() - 24 * 3600e3;
-  const files = glob.sync('logs/costs-*.jsonl');
+  const files = globSync('logs/costs-*.jsonl');
   let sum = 0;
 
   files.forEach(f => {

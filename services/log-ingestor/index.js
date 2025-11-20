@@ -1,6 +1,6 @@
 const { Client } = require('pg');
 const fs = require('fs');
-const glob = require('glob');
+const { globSync } = require('glob');
 const path = require('path');
 
 const CONN = process.env.NEON_DATABASE_URL;
@@ -29,7 +29,7 @@ let offset = fs.existsSync(OFFSET_FILE) ? parseInt(fs.readFileSync(OFFSET_FILE, 
     );
   `);
 
-  const files = glob.sync('logs/costs-*.jsonl').sort();
+  const files = globSync('logs/costs-*.jsonl').sort();
   let count = 0;
 
   for (const f of files) {
