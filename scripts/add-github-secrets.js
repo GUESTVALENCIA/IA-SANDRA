@@ -5,7 +5,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
 const GITHUB_REPO = 'GUESTVALENCIA/IA-SANDRA';
 const API_BASE = `https://api.github.com/repos/${GITHUB_REPO}`;
 
@@ -31,15 +31,23 @@ async function getPublicKey() {
 }
 
 function encryptSecret(publicKey, secretValue) {
+  // GitHub devuelve la clave en base64, necesitamos formatearla como PEM
+  // Dividir en líneas de 64 caracteres
+  const keyLines = publicKey.match(/.{1,64}/g) || [];
+  const formattedKey = `-----BEGIN PUBLIC KEY-----\n${keyLines.join('\n')}\n-----END PUBLIC KEY-----`;
+  
   const buffer = Buffer.from(secretValue, 'utf8');
+  
+  // RSA tiene límite de tamaño, usar OAEP con SHA-256
   const encrypted = crypto.publicEncrypt(
     {
-      key: publicKey,
+      key: formattedKey,
       padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
       oaepHash: 'sha256'
     },
     buffer
   );
+  
   return encrypted.toString('base64');
 }
 
