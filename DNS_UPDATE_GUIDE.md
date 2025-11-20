@@ -22,34 +22,52 @@ guestsvalencia.es  ALIAS  cname.vercel-dns-017.com.
 
 ## 🔄 Cambios Requeridos en tu Panel DNS
 
+### ⚠️ IMPORTANTE: Error Común
+
+**NO puedes poner un CNAME en un registro A.**
+- ❌ `guestsvalencia.es  A  cname.vercel-dns-017.com` → **ERROR: Debe ser una IP**
+- ✅ `guestsvalencia.es  ALIAS  cname.vercel-dns-017.com` → **Correcto (si soporta ALIAS)**
+
 ### Opción 1: Usar ALIAS (Recomendado si tu proveedor lo soporta)
 
-**Eliminar:**
+**PASO 1: Eliminar el registro A actual:**
 ```
-guestsvalencia.es  A  76.76.21.21
-```
-
-**Agregar:**
-```
-guestsvalencia.es  ALIAS  cname.vercel-dns-017.com.
+guestsvalencia.es  A  76.76.21.21  ← ELIMINAR ESTE
 ```
 
-**Mantener (sin cambios):**
+**PASO 2: Agregar registro ALIAS (NO es tipo A, es tipo ALIAS):**
+```
+Tipo: ALIAS (o ANAME si aparece)
+Nombre: guestsvalencia.es (o @)
+Valor: cname.vercel-dns-017.com.
+```
+
+**PASO 3: Mantener www (sin cambios):**
 ```
 www.guestsvalencia.es  CNAME  0766c3485bb54aed.vercel-dns-017.com  ✅
 ```
 
-### Opción 2: Usar solo www (Solución temporal)
+**Nota:** Si en tu panel DNS no aparece la opción "ALIAS" o "ANAME", usa la Opción 2.
 
-Si tu proveedor DNS no soporta ALIAS para el dominio raíz:
+### Opción 2: Usar solo www (Solución más compatible)
 
-**Mantener:**
+Si tu proveedor DNS **NO soporta ALIAS** para el dominio raíz:
+
+**MANTENER el registro A (NO cambiarlo):**
 ```
-guestsvalencia.es  A  76.76.21.21  (redirige a www)
+guestsvalencia.es  A  76.76.21.21  ← MANTENER ESTE (NO cambiar)
+```
+
+**MANTENER www (ya está correcto):**
+```
 www.guestsvalencia.es  CNAME  0766c3485bb54aed.vercel-dns-017.com  ✅
 ```
 
-**Nota:** Con esta opción, la PWA funcionará en `www.guestsvalencia.es` pero no en `guestsvalencia.es` directamente.
+**Configurar redirección en el servidor (76.76.21.21):**
+- Redirigir `guestsvalencia.es` → `www.guestsvalencia.es`
+- O configurar en Vercel una redirección automática
+
+**Resultado:** La PWA funcionará en `www.guestsvalencia.es` y `guestsvalencia.es` redirigirá a www.
 
 ## 📋 Registros que DEBEN mantenerse (NO tocar)
 
