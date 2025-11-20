@@ -12,6 +12,7 @@
     "build:mac": "electron-builder --config electron-builder.yml --mac",
     "build": "electron-builder --config electron-builder.yml",
     "call-router": "node services/call-router/index.js",
+    "avatar-streamer": "node services/avatar-streamer/index.js",
     "test": "jest"
   },
   "keywords": [],
@@ -30,6 +31,7 @@
     "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "g711": "^1.0.1",
+    "node-webrtc": "^0.0.0",
     "pg": "^8.16.3",
     "puppeteer-core": "^24.30.0",
     "semver": "^7.7.3",
