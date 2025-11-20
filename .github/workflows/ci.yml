@@ -1,0 +1,47 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Set dummy env
+      run: |
+        echo "BRIGHT_DATA_AUTH=mock" >> $GITHUB_ENV
+        echo "BRIGHTDATA_API_KEY=mock" >> $GITHUB_ENV
+        echo "NEON_DATABASE_URL=postgres://mock:mock@mock:5432/mock" >> $GITHUB_ENV
+        echo "NEON_API_KEY=mock" >> $GITHUB_ENV
+        echo "GROQ_API_KEY=mock" >> $GITHUB_ENV
+        echo "DEEPGRAM_API_KEY=mock" >> $GITHUB_ENV
+        echo "CARTESIA_API_KEY=mock" >> $GITHUB_ENV
+        echo "HEYGEN_API_KEY=mock" >> $GITHUB_ENV
+        echo "VERCEL_TOKEN=mock" >> $GITHUB_ENV
+        echo "GITHUB_TOKEN=mock" >> $GITHUB_ENV
+        
+    - name: Run tests
+      run: npm test
+      
+    - name: Test summary
+      if: always()
+      run: |
+        echo "Tests completed"
+        echo "All external services are mocked"
+

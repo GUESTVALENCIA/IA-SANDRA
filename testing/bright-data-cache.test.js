@@ -9,8 +9,11 @@ describe('Bright Data Cache', () => {
   let brightDataService;
 
   beforeEach(() => {
-    // Mock de BRIGHTDATA_API_KEY si no existe
-    if (!process.env.BRIGHT_DATA_AUTH) {
+    // En modo mock, no hacer llamadas reales
+    if (process.env.BRIGHT_DATA_AUTH === 'mock') {
+      // Los mocks se cargan automáticamente desde jest.setup.js
+      process.env.BRIGHT_DATA_AUTH = 'mock';
+    } else if (!process.env.BRIGHT_DATA_AUTH) {
       process.env.BRIGHT_DATA_AUTH = 'test-auth';
     }
     brightDataService = new BrightDataService();
@@ -89,6 +92,7 @@ describe('Bright Data Cache', () => {
   });
 
   test('getMyAccommodationsCached funciona sin BRIGHT_DATA_AUTH (modo fallback)', async () => {
+    const originalAuth = process.env.BRIGHT_DATA_AUTH;
     delete process.env.BRIGHT_DATA_AUTH;
     const service = new BrightDataService();
     service.accommodationsCache.clear();
@@ -98,6 +102,25 @@ describe('Bright Data Cache', () => {
     expect(result).toBeDefined();
     expect(result.success).toBe(true);
     expect(result.accommodations).toBeDefined();
+    
+    // Restaurar
+    if (originalAuth) {
+      process.env.BRIGHT_DATA_AUTH = originalAuth;
+    }
+  });
+
+  test('getMyAccommodationsCached no hace fetch real cuando BRIGHT_DATA_AUTH=mock', async () => {
+    process.env.BRIGHT_DATA_AUTH = 'mock';
+    const service = new BrightDataService();
+    service.accommodationsCache.clear();
+
+    // En modo mock, debería usar datos mock sin hacer fetch real
+    const result = await service.getMyAccommodationsCached('valencia', '2025-02-15', 2);
+    
+    expect(result).toBeDefined();
+    expect(result.success).toBe(true);
+    // Verificar que no se intentó hacer fetch real (modo mock o fallback)
+    expect(result.mode === 'mock' || result.mode === 'fallback').toBe(true);
   });
 });
 
