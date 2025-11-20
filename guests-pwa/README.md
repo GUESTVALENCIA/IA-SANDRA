@@ -18,4 +18,4 @@ npm run build
 
 El deployment se realiza automáticamente a Vercel mediante GitHub Actions.
 
-# trigger
+# redeploy
