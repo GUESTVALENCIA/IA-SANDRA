@@ -3,9 +3,20 @@
  * Configuración global de mocks para todos los tests
  */
 
-// Auto-mock de servicios externos
-jest.mock('../services/bright-data-service');
-jest.mock('../services/negotiation-service');
+// Auto-mock de servicios externos (solo si existen)
+try {
+  require.resolve('../services/bright-data-service');
+  jest.mock('../services/bright-data-service');
+} catch (e) {
+  // Servicio no existe, ignorar
+}
+
+try {
+  require.resolve('../services/negotiation-service');
+  jest.mock('../services/negotiation-service');
+} catch (e) {
+  // Servicio no existe, ignorar
+}
 
 // Configurar variables de entorno por defecto para tests
 if (!process.env.BRIGHT_DATA_AUTH) {
