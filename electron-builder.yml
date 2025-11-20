@@ -1,0 +1,23 @@
+appId: com.guestsvalencia.sandra
+productName: Sandra IA
+
+directories:
+  output: dist
+
+files:
+  - desktop-app/**/*
+
+win:
+  target:
+    - target: nsis
+      arch: x64
+
+mac:
+  target:
+    - dmg
+
+asarUnpack:
+  - '**/*.node'
+
+publish: never
+
