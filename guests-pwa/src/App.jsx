@@ -1,42 +1,35 @@
-import { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { useState } from 'react';
+import Brand from './Brand.jsx';
+import Privacy from './pages/Privacy.jsx';
+import Tos from './pages/Tos.jsx';
+import useMicStream from './hooks/useMicStream.js';
 
 export default function App() {
-  const [messages, setM] = useState([]);
-  const wsRef = useRef(null);
-  const [connected, setConn] = useState(false);
-
-  const send = (txt) => {
-    setM(m => [...m, { role: 'user', txt }]);
-    wsRef.current && wsRef.current.send(JSON.stringify({ type: 'user', text: txt }));
-  };
-
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:4747');
-    ws.onopen = () => setConn(true);
-    ws.onmessage = (e) => {
-      const d = typeof e.data === 'string' ? JSON.parse(e.data) : null;
-      if (d?.response?.text) {
-        setM(m => [...m, { role: 'assistant', txt: d.response.text }]);
-      }
-    };
-    wsRef.current = ws;
-    return () => ws.close();
-  }, []);
+  const [logs,setLogs] = useState([]);
+  const { ready, start, stop } = useMicStream();
 
   return (
-    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-      <h3>Guests-Valencia PWA</h3>
-      <div style={{ minHeight: 200, border: '1px solid #ccc', padding: 10 }}>
-        {messages.map((m, i) => (
-          <p key={i}>
-            <b>{m.role === 'user' ? '👤' : '🤖'}:</b> {m.txt}
-          </p>
-        ))}
-      </div>
-      <input id="msg" placeholder="Escribe…" style={{ width: '80%' }} />
-      <button disabled={!connected} onClick={() => send(document.getElementById('msg').value)}>
-        Enviar
-      </button>
-    </div>
+    <BrowserRouter>
+      <Brand/>
+      <nav style={{padding:'8px 16px',background:'#f0fdf4'}}>
+        <Link to="/" style={{marginRight:12}}>Home</Link>
+        <Link to="/privacy" style={{marginRight:12}}>Privacy</Link>
+        <Link to="/tos">TOS</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={
+          <div style={{padding:20}}>
+            <h3>Chat / Voz</h3>
+            <button disabled={!ready} onClick={start}>🎙️ Hablar</button>
+            <button onClick={stop} style={{marginLeft:8}}>⛔ Parar</button>
+            <pre style={{background:'#eef',padding:6}}>{logs.join('\n')}</pre>
+          </div>
+        }/>
+        <Route path="/privacy" element={<Privacy/>}/>
+        <Route path="/tos" element={<Tos/>}/>
+      </Routes>
+    </BrowserRouter>
   );
 }

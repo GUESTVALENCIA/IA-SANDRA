@@ -458,6 +458,10 @@ Push a main ➜ Vercel deploy auto.
 
 La PWA Guests-Valencia se despliega automáticamente a Vercel cuando se hace push a la rama `main` con cambios en `guests-pwa/`. La URL se mostrará en los logs de GitHub Actions.
 
+## Guests-Valencia PWA
+
+Incluye micrófono dúplex, branding y rutas de privacidad/TOS.
+
 ---
 
 ## ⚙️ Configuración
