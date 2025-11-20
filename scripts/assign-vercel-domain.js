@@ -8,6 +8,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.pro') });
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN || 'rTbbeIXzN70ZvXbG6L9Avj5d';
+// Proyecto correcto: guestsvalencia-site
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_HNCaiegvbQcqBHrV8kZwttlKrDPe';
 const DOMAIN = 'guestsvalencia.es';
 
