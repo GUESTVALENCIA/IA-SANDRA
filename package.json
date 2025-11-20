@@ -14,6 +14,7 @@
     "call-router": "node services/call-router/index.js",
     "avatar-streamer": "node services/avatar-streamer/index.js",
     "metrics": "node services/metrics-exporter/index.js",
+    "log-ingestor": "node services/log-ingestor/index.js",
     "test": "jest"
   },
   "keywords": [],
