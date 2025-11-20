@@ -1,0 +1,996 @@
+{
+  "e997caaf9c9fd40d1b282db3f13ca7a1": {
+    "text": "Hola, soy Sandra. ¿En qué puedo ayudarte?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "e997caaf9c9fd40d1b282db3f13ca7a1.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\e997caaf9c9fd40d1b282db3f13ca7a1.wav",
+    "size": 80234,
+    "createdAt": 1763336121154,
+    "accessCount": 18,
+    "lastAccessed": 1763604629153,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "364ae4161cadc8dfe5db4925d47e9718": {
+    "text": "Error al usar OpenAI: API key inválida o revocada. Abre tu panel de OpenAI y crea una nueva API key. Copia EXACTAMENTE la clave en la variable OPENAI_API_KEY de tu archivo. env. pro (sin espacios ni comillas). Guarda el archivo y REINICIA completamente la aplicación de escritorio. Hasta que no se actualice la clave, cualquier llamada a GPT‑4o / GPT‑4o‑mini fallará.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "364ae4161cadc8dfe5db4925d47e9718.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\364ae4161cadc8dfe5db4925d47e9718.wav",
+    "size": 768362,
+    "createdAt": 1763343713350,
+    "accessCount": 3,
+    "lastAccessed": 1763346977246,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "d74257c690eb4f0531eebfe0b539d894": {
+    "text": "¡Hola! Estoy aquí lista para ayudarte. ¿En qué puedo asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "d74257c690eb4f0531eebfe0b539d894.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\d74257c690eb4f0531eebfe0b539d894.wav",
+    "size": 125290,
+    "createdAt": 1763347304429,
+    "accessCount": 5,
+    "lastAccessed": 1763592111342,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "b8652c1f94a28ab7e1cca28b02764f40": {
+    "text": "Aquí tienes una opción de alojamiento disponible en la Comunidad Valenciana:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible. Este apartamento es parte de la oferta de Guests-Valencia, quienes tienen experiencia de 4 años en gestión de alojamientos turísticos. ¿Te gustaría más información sobre este apartamento o necesitas ayuda con otra cosa?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "b8652c1f94a28ab7e1cca28b02764f40.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\b8652c1f94a28ab7e1cca28b02764f40.wav",
+    "size": 895338,
+    "createdAt": 1763347327070,
+    "accessCount": 0,
+    "lastAccessed": 1763347327070,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "0a5578c07307b1f5ba69bf679201bedb": {
+    "text": "Parece que estás interesado en alojarte en Valencia este fin de semana. Aquí tienes algunas opciones disponibles con Guests-Valencia:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible. Todos los apartamentos mencionados son el mismo, \"Precioso apartamento a minutos del metro\", localizado en Bétera. Si necesitas más información o quieres proceder con la reserva, avísame.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "0a5578c07307b1f5ba69bf679201bedb.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\0a5578c07307b1f5ba69bf679201bedb.wav",
+    "size": 919914,
+    "createdAt": 1763347331139,
+    "accessCount": 0,
+    "lastAccessed": 1763347331139,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "79c4dd218e3916d71ce95af82c693e4d": {
+    "text": "¡Hola! Claro, puedo ayudarte con muchas cosas. Aquí tienes algunas ideas:. Responder a tus preguntas sobre tecnología o inteligencia artificial. Ofrecerte consejos para mejorar la productividad. Ayudarte a planificar un proyecto o tarea específica. ¿Cuál de estas te interesa más?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "79c4dd218e3916d71ce95af82c693e4d.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\79c4dd218e3916d71ce95af82c693e4d.wav",
+    "size": 563562,
+    "createdAt": 1763348305990,
+    "accessCount": 0,
+    "lastAccessed": 1763348305990,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "ddf3a09e81fd72e6644aafc1fc0e602c": {
+    "text": "¡Hola! Aquí tienes una opción disponible para alojarte en Valencia este fin de semana:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Sí. Este alojamiento está gestionado por Guests-Valencia, quienes tienen una buena experiencia en el sector. ¿Te gustaría más información o ayuda para reservar?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "ddf3a09e81fd72e6644aafc1fc0e602c.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\ddf3a09e81fd72e6644aafc1fc0e602c.wav",
+    "size": 721258,
+    "createdAt": 1763348308216,
+    "accessCount": 0,
+    "lastAccessed": 1763348308216,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "f36a42eb5e0175d73b123a2d36833c72": {
+    "text": "¡Claro! Estoy aquí para ayudarte. ¿En qué tema necesitas asistencia? Puede ser sobre tecnología, ideas para un proyecto, tutoriales o cualquier cosa en que pueda ser útil.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "f36a42eb5e0175d73b123a2d36833c72.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\f36a42eb5e0175d73b123a2d36833c72.wav",
+    "size": 305514,
+    "createdAt": 1763349479493,
+    "accessCount": 0,
+    "lastAccessed": 1763349479493,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "1f38c3ba9d467c06ec94892c93530469": {
+    "text": "Hola, encantado de ayudarte a encontrar alojamiento en Valencia para el próximo fin de semana. Aquí tienes algunas opciones disponibles. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Disponible. Las tres opciones que aparecen son el mismo apartamento en Bétera. ¿Te gustaría reservar este alojamiento o necesitas más información?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "1f38c3ba9d467c06ec94892c93530469.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\1f38c3ba9d467c06ec94892c93530469.wav",
+    "size": 772458,
+    "createdAt": 1763349484067,
+    "accessCount": 0,
+    "lastAccessed": 1763349484067,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "9b0a883f4d0b20462d22a37d21ea0612": {
+    "text": "Para este fin de semana, en la Comunidad Valenciana, tengo disponibles las siguientes opciones de alojamiento para 6 personas. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Disponible. Parece que esta opción se repite, lo que indica que es la única opción disponible en este momento. Si te interesa, te recomendaría proceder con la reserva pronto para asegurar la disponibilidad. ¿Te gustaría más información sobre este apartamento o ayuda con la reserva?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "9b0a883f4d0b20462d22a37d21ea0612.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\9b0a883f4d0b20462d22a37d21ea0612.wav",
+    "size": 1040746,
+    "createdAt": 1763349752138,
+    "accessCount": 0,
+    "lastAccessed": 1763349752138,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "2baa307b0eb360382049df04fd8a3fa6": {
+    "text": "¡Hola! ¿En qué puedo ayudarte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "2baa307b0eb360382049df04fd8a3fa6.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\2baa307b0eb360382049df04fd8a3fa6.wav",
+    "size": 57706,
+    "createdAt": 1763350508470,
+    "accessCount": 5,
+    "lastAccessed": 1763514726722,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "2daa00858324ac1e622d181c663b861e": {
+    "text": "Aquí tienes una opción de alojamiento disponible para el día 29 en la Comunidad Valenciana. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Disponible para la fecha solicitada. Si te interesa esta opción, te recomiendo proceder a la reserva cuanto antes para asegurar la disponibilidad. ¿Necesitas más información o quieres que te ayude con algo más?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "2daa00858324ac1e622d181c663b861e.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\2daa00858324ac1e622d181c663b861e.wav",
+    "size": 794986,
+    "createdAt": 1763350526556,
+    "accessCount": 0,
+    "lastAccessed": 1763350526556,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "d5486db660a95abff96e36b8effe2c10": {
+    "text": "Hola, aquí tienes algunas opciones de alojamiento disponibles en la Comunidad Valenciana, específicamente en Bétera, Valencia. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Disponible. Parece que hay varias opciones del mismo apartamento en Bétera, todas con la misma disponibilidad y precio. Si necesitas más información o ayuda para hacer una reserva, házmelo saber.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "d5486db660a95abff96e36b8effe2c10.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\d5486db660a95abff96e36b8effe2c10.wav",
+    "size": 862570,
+    "createdAt": 1763351086191,
+    "accessCount": 0,
+    "lastAccessed": 1763351086191,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "a996454f7f48cd5e428c44765daad8aa": {
+    "text": "Para el próximo fin de semana en la Comunidad Valenciana, GuestsValencia ofrece las siguientes opciones de alojamiento. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Sí. Plataforma Booking. Este apartamento está disponible para el fin de semana y se encuentra en una ubicación conveniente cerca del metro. ¿Te gustaría reservarlo o necesitas más información?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "a996454f7f48cd5e428c44765daad8aa.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\a996454f7f48cd5e428c44765daad8aa.wav",
+    "size": 813418,
+    "createdAt": 1763351086910,
+    "accessCount": 0,
+    "lastAccessed": 1763351086910,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "7e455fa07d5c4b7c7a124090d079e7a1": {
+    "text": "¡Hola! Claro, puedo ayudarte con varias cosas. Aquí algunas opciones. Información sobre inteligencia artificial Pregúntame cualquier cosa sobre IA y te daré detalles. Asesoría en proyectos Si estás trabajando en un proyecto, puedo ofrecerte consejos o ideas. Aprendizaje Puedo recomendarte recursos para aprender más sobre IA o tecnología en general. ¿Qué te gustaría explorar?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "7e455fa07d5c4b7c7a124090d079e7a1.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\7e455fa07d5c4b7c7a124090d079e7a1.wav",
+    "size": 792938,
+    "createdAt": 1763351089252,
+    "accessCount": 0,
+    "lastAccessed": 1763351089252,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "b6116ae212960648c9bedf232907216c": {
+    "text": "Parece que tu mensaje quedó incompleto. ¿Podrías darme más detalles sobre qué están buscando? Así podré ayudarte mejor.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "b6116ae212960648c9bedf232907216c.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\b6116ae212960648c9bedf232907216c.wav",
+    "size": 209258,
+    "createdAt": 1763351468012,
+    "accessCount": 0,
+    "lastAccessed": 1763351468012,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "95f0aa719c9ceb3f0b26d5ed962b64a8": {
+    "text": "Entiendo que son un grupo de 6 personas. ¿En qué puedo ayudarles? Aquí algunas ideas. Planificar un evento ¿Necesitan ayuda organizando una actividad o reunión. Colaborar en un proyecto ¿Están trabajando en algo específico y necesitan orientación. Aprender algo nuevo juntos Puedo sugerirles temas o recursos para explorar. Dime cuál opción les interesa o si tienen otra idea en mente.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "95f0aa719c9ceb3f0b26d5ed962b64a8.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\95f0aa719c9ceb3f0b26d5ed962b64a8.wav",
+    "size": 776554,
+    "createdAt": 1763351489898,
+    "accessCount": 0,
+    "lastAccessed": 1763351489898,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "de1be08c3736d83eface4a62e679c842": {
+    "text": "Aquí tienes las opciones de alojamiento disponibles en Bétera, Valencia. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Disponible. Estas opciones están disponibles para 2 huéspedes. Si necesitas más información o deseas realizar una reserva, házmelo saber.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "de1be08c3736d83eface4a62e679c842.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\de1be08c3736d83eface4a62e679c842.wav",
+    "size": 635242,
+    "createdAt": 1763351492312,
+    "accessCount": 0,
+    "lastAccessed": 1763351492312,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "04bfdebc049e98255a185658a3bb6a57": {
+    "text": "Para el próximo fin de semana en la Comunidad Valenciana, GuestsValencia tiene disponibles las siguientes opciones de alojamiento. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Sí. Estas opciones están disponibles para 2 huéspedes. Si deseas más información o reservar, te recomiendo contactar directamente con la plataforma de booking. ¿Te gustaría ayuda con algo más?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "04bfdebc049e98255a185658a3bb6a57.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\04bfdebc049e98255a185658a3bb6a57.wav",
+    "size": 901482,
+    "createdAt": 1763351497635,
+    "accessCount": 0,
+    "lastAccessed": 1763351497635,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "e3f9c3f5d73856242a5307fff5f77623": {
+    "text": "Claro, estoy aquí para ayudarte con varias cosas. Aquí tienes algunas opciones de lo que puedo hacer por ti. Ideas Creativas Si necesitas inspiración para un proyecto, puedo sugerir ideas innovadoras. Soporte Técnico Ayuda con problemas tecnológicos o preguntas sobre software. Información y Recursos Proveer datos, estadísticas o guías sobre un tema en particular. Dime cuál te interesa o si hay algo específico en lo que puedo asistirte.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "e3f9c3f5d73856242a5307fff5f77623.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\e3f9c3f5d73856242a5307fff5f77623.wav",
+    "size": 901482,
+    "createdAt": 1763351500283,
+    "accessCount": 0,
+    "lastAccessed": 1763351500283,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "b58d2c41aff096330522d9da13435c44": {
+    "text": "¡Hola! ¿En qué puedo ayudarte hoy? Si tienes alguna pregunta o necesitas asistencia, aquí estoy para apoyarte.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "b58d2c41aff096330522d9da13435c44.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\b58d2c41aff096330522d9da13435c44.wav",
+    "size": 192874,
+    "createdAt": 1763353304692,
+    "accessCount": 0,
+    "lastAccessed": 1763353304692,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "ba60ece14d295187587ae40358c84bf2": {
+    "text": "Actualmente, GuestsValencia tiene las siguientes opciones disponibles para alojamiento. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Sí. Estos apartamentos están disponibles y podrían ser una buena opción para tu estancia en la Comunidad Valenciana. ¿Te gustaría proceder con alguna de estas opciones?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "ba60ece14d295187587ae40358c84bf2.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\ba60ece14d295187587ae40358c84bf2.wav",
+    "size": 645482,
+    "createdAt": 1763353305338,
+    "accessCount": 0,
+    "lastAccessed": 1763353305338,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "995cd33027ec132c2524ca51c8881af9": {
+    "text": "Aquí tienes las opciones de alojamiento disponibles en Valencia para los próximos días. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Disponible. Estos apartamentos están gestionados por GuestsValencia, una empresa con 4 años de experiencia en la gestión de alojamientos turísticos en toda la Comunidad Valenciana. Si necesitas más información o reservar, comunícate directamente con ellos. ¿Necesitas algo más específico?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "995cd33027ec132c2524ca51c8881af9.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\995cd33027ec132c2524ca51c8881af9.wav",
+    "size": 1026410,
+    "createdAt": 1763353317009,
+    "accessCount": 0,
+    "lastAccessed": 1763353317009,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "4705fed4df52911b99c5f48043d40761": {
+    "text": "¡Hola! Claro, estoy aquí para ayudarte. ¿Sobre qué tema necesitas información o asistencia?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "4705fed4df52911b99c5f48043d40761.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\4705fed4df52911b99c5f48043d40761.wav",
+    "size": 180586,
+    "createdAt": 1763358598773,
+    "accessCount": 0,
+    "lastAccessed": 1763358598773,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "886175f318d19b8d2045578bf81ff3f1": {
+    "text": "El próximo sábado es el 21 de octubre de 2023. Si tienes algo en mente para ese día, como un evento o una actividad, puedo ayudarte a planificarlo. ¿En qué te gustaría enfocarte?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "886175f318d19b8d2045578bf81ff3f1.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\886175f318d19b8d2045578bf81ff3f1.wav",
+    "size": 405866,
+    "createdAt": 1763358603504,
+    "accessCount": 0,
+    "lastAccessed": 1763358603504,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "289df159f15e18762b6e0ebd02470664": {
+    "text": "Actualmente, GuestsValencia tiene tres opciones disponibles para alquilar. Precioso apartamento a minutos del metro. Ubicación Bétera, Valencia. Precio Desde 70noche. Disponibilidad Sí. Las tres opciones son idénticas y están disponibles. Si te interesa alguna de estas opciones, te recomendaría contactar directamente con el anfitrión a través de la plataforma de Booking para más detalles o para realizar una reserva. ¿Necesitas más información o ayuda con otra cosa?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "289df159f15e18762b6e0ebd02470664.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\289df159f15e18762b6e0ebd02470664.wav",
+    "size": 956778,
+    "createdAt": 1763358631210,
+    "accessCount": 0,
+    "lastAccessed": 1763358631210,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "ba077371922a1e0260c93f5122963ed5": {
+    "text": "¡Hola! Estoy aquí y lista para ayudarte. ¿En qué puedo asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "ba077371922a1e0260c93f5122963ed5.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\ba077371922a1e0260c93f5122963ed5.wav",
+    "size": 137578,
+    "createdAt": 1763453045783,
+    "accessCount": 0,
+    "lastAccessed": 1763453045783,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "1ba5f8cbc15ce647d6a83252528878bf": {
+    "text": "Para el próximo fin de semana, Guests-Valencia tiene disponibles los siguientes alojamientos:. **Precioso apartamento a minutos del metro**. **Ubicación**: Bétera, Valencia. **Precio**: Desde 70€/noche. **Disponibilidad**: Disponible. Estos apartamentos son gestionados por una empresa con 4 años de experiencia en la Comunidad Valenciana, con una calificación de 7. 8 basada en 63 opiniones. ¿Te gustaría proceder con la reserva?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "1ba5f8cbc15ce647d6a83252528878bf.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\1ba5f8cbc15ce647d6a83252528878bf.wav",
+    "size": 889194,
+    "createdAt": 1763455083464,
+    "accessCount": 0,
+    "lastAccessed": 1763455083464,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "d7120a24888b612515b918f53726fab8": {
+    "text": "¡Hola! Estoy muy bien, gracias. Espero que tú también lo estés. ¿Hay algo en lo que pueda ayudarte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "d7120a24888b612515b918f53726fab8.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\d7120a24888b612515b918f53726fab8.wav",
+    "size": 162154,
+    "createdAt": 1763491830927,
+    "accessCount": 0,
+    "lastAccessed": 1763491830927,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "e50d56a3b3bf61c94105bb02edb6047d": {
+    "text": "Opciones Guests‑Valencia para 3 personas: Precioso apartamento a minutos del metro, Bétera, Valencia, desde Desde 70€/noche | Precioso apartamento a minutos del metro, Bétera, Valencia, desde Desde 70€/noche | Precioso apartamento a minutos del metro, Bétera, Valencia, desde Desde 70€/noche. ¿Confirmas fechas para verificar disponibilidad en tiempo real?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "e50d56a3b3bf61c94105bb02edb6047d.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\e50d56a3b3bf61c94105bb02edb6047d.wav",
+    "size": 856426,
+    "createdAt": 1763491880217,
+    "accessCount": 2,
+    "lastAccessed": 1763492261567,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "0f2e5cda209900335b8fa0b624aafa8f": {
+    "text": "¡Hola! Estoy aquí lista para ayudarte con lo que necesites. ¿Hay algo en particular en lo que pueda asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "0f2e5cda209900335b8fa0b624aafa8f.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\0f2e5cda209900335b8fa0b624aafa8f.wav",
+    "size": 186730,
+    "createdAt": 1763493164774,
+    "accessCount": 0,
+    "lastAccessed": 1763493164774,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "bb71ff3545f8e1ab96d884c3f1388e8a": {
+    "text": "No puedo escuchar, pero puedo leer tus mensajes. ¿En qué puedo ayudarte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "bb71ff3545f8e1ab96d884c3f1388e8a.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\bb71ff3545f8e1ab96d884c3f1388e8a.wav",
+    "size": 115050,
+    "createdAt": 1763493182568,
+    "accessCount": 0,
+    "lastAccessed": 1763493182568,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "0ba5791fe5ad1fb34ac705d758cc5974": {
+    "text": "¡Hola! Estoy aquí lista para ayudarte en lo que necesites. ¿En qué puedo asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "0ba5791fe5ad1fb34ac705d758cc5974.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\0ba5791fe5ad1fb34ac705d758cc5974.wav",
+    "size": 164202,
+    "createdAt": 1763495044430,
+    "accessCount": 1,
+    "lastAccessed": 1763514116610,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "e5fda2984b4730c177ac730ca30e0121": {
+    "text": "¡Exacto! Estoy aquí para ayudarte a través del chat de texto. ¿En qué puedo asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "e5fda2984b4730c177ac730ca30e0121.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\e5fda2984b4730c177ac730ca30e0121.wav",
+    "size": 164202,
+    "createdAt": 1763495059323,
+    "accessCount": 0,
+    "lastAccessed": 1763495059323,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "55ac939ecb3394df28a2f5b0a087e5dc": {
+    "text": "Parece que hubo una confusión, ya que no puedo recibir llamadas telefónicas. Pero estoy aquí para ayudarte con cualquier pregunta o tema que necesites discutir. ¿Hay algo específico en lo que pueda asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "55ac939ecb3394df28a2f5b0a087e5dc.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\55ac939ecb3394df28a2f5b0a087e5dc.wav",
+    "size": 397674,
+    "createdAt": 1763495074705,
+    "accessCount": 0,
+    "lastAccessed": 1763495074705,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "f65310a18b9fb823935839bc3a826056": {
+    "text": "Parece que hay un cambio en el enfoque o tema de conversación. ¿Podrías aclarar qué necesitas o cómo puedo ayudarte con los textos en el chat. Aquí algunas opciones para guiarte:. ¿Necesitas ayuda con la redacción de mensajes. ¿Estás buscando mejorar la comunicación en un chat específico. ¿Quieres ideas para un proyecto relacionado con chats. Elige una opción o cuéntame más detalles.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "f65310a18b9fb823935839bc3a826056.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\f65310a18b9fb823935839bc3a826056.wav",
+    "size": 747882,
+    "createdAt": 1763495083161,
+    "accessCount": 0,
+    "lastAccessed": 1763495083161,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "0dd654388724dca4d4b3b908923ea4a7": {
+    "text": "Entiendo que deseas una comunicación clara y coherente. No tengo la capacidad de realizar llamadas telefónicas. Sin embargo, estoy aquí para ayudarte por este medio con cualquier pregunta o tarea que tengas. ¿En qué puedo asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "0dd654388724dca4d4b3b908923ea4a7.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\0dd654388724dca4d4b3b908923ea4a7.wav",
+    "size": 416106,
+    "createdAt": 1763495094322,
+    "accessCount": 0,
+    "lastAccessed": 1763495094322,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "c3d8dd9bd4044944388ee9941dd390c5": {
+    "text": "¡Hola! Estoy aquí para ayudarte, ¿en qué puedo asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "c3d8dd9bd4044944388ee9941dd390c5.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\c3d8dd9bd4044944388ee9941dd390c5.wav",
+    "size": 108906,
+    "createdAt": 1763499821399,
+    "accessCount": 1,
+    "lastAccessed": 1763505469521,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "148202da7d29c0c826456e082ee84c4f": {
+    "text": "¡Gracias por preguntar! Estoy aquí para ayudarte en lo que necesites. ¿Hay algo específico en lo que pueda asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "148202da7d29c0c826456e082ee84c4f.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\148202da7d29c0c826456e082ee84c4f.wav",
+    "size": 246122,
+    "createdAt": 1763499835833,
+    "accessCount": 0,
+    "lastAccessed": 1763499835833,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "97b7d598dd740e50fb0940217aab7d57": {
+    "text": "Actualmente, Guests-Valencia tiene disponibles las siguientes opciones de alojamiento en Bétera, Valencia:. **Precioso apartamento a minutos del metro**. **Precio: ** Desde 70€/noche. **Ubicación: ** Bétera, Valencia. **Disponibilidad: ** Disponible. Si estás interesado en alguna de estas opciones, puedo ayudarte con más detalles o guiarte sobre cómo proceder con la reserva. ¿Te gustaría saber más?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "97b7d598dd740e50fb0940217aab7d57.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\97b7d598dd740e50fb0940217aab7d57.wav",
+    "size": 821610,
+    "createdAt": 1763499857879,
+    "accessCount": 0,
+    "lastAccessed": 1763499857879,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "dc6f789e0b593b0966b4fd799431bc4d": {
+    "text": "Parece que tu mensaje está incompleto. ¿Podrías especificar un poco más qué necesitas saber o planear para las fechas alrededor del 6 de diciembre? Aquí algunas ideas sobre cómo podría ayudarte:. **Planes de viaje**: ¿Necesitas ayuda con itinerarios o lugares para visitar en esa fecha. **Eventos importantes**: ¿Buscas información sobre eventos o festividades que ocurren alrededor del 6 de diciembre. **Organización de actividades**: ¿Requieres ayuda para planificar alguna actividad o evento personal. Dime cuál te interesa más o si tienes otra consulta específica.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "dc6f789e0b593b0966b4fd799431bc4d.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\dc6f789e0b593b0966b4fd799431bc4d.wav",
+    "size": 1057130,
+    "createdAt": 1763499865724,
+    "accessCount": 0,
+    "lastAccessed": 1763499865724,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "8cc9dffd333b4436afa82c0751a84bed": {
+    "text": "Parece que mencionaste una fecha sin contexto adicional. Si necesitas información o ayuda relacionada con el 9 de diciembre, por favor dime más detalles. Aquí hay algunas opciones sobre cómo puedo ayudarte:. **Eventos Históricos**: Si buscas eventos importantes que ocurrieron un 9 de diciembre, puedo investigar algunos. **Planificación**: Si estás planeando algo para esa fecha, puedo sugerir ideas o ayudarte con la organización. **Calendario**: Si necesitas saber qué día de la semana cae o algún otro detalle del calendario, también puedo ayudarte. ¿Qué te gustaría saber o hacer sobre el 9 de diciembre?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "8cc9dffd333b4436afa82c0751a84bed.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\8cc9dffd333b4436afa82c0751a84bed.wav",
+    "size": 1204586,
+    "createdAt": 1763499871473,
+    "accessCount": 0,
+    "lastAccessed": 1763499871473,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "12ffca0cb5736c4bf4a0eb4342c335cd": {
+    "text": "Lamentablemente, en la información disponible no hay alojamientos en el Cabañal, Valencia. Todos los alojamientos listados están en Bétera, Valencia. Aquí tienes las opciones disponibles en Bétera:. **Precioso apartamento a minutos del metro**. Ubicación: Bétera, Valencia. Precio: Desde 70€/noche. Disponibilidad: Sí. Si estás interesado en estas opciones o necesitas más ayuda, házmelo saber.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "12ffca0cb5736c4bf4a0eb4342c335cd.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\12ffca0cb5736c4bf4a0eb4342c335cd.wav",
+    "size": 809322,
+    "createdAt": 1763499880182,
+    "accessCount": 0,
+    "lastAccessed": 1763499880182,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "93e06224a47026ca24ec143d71d78c61": {
+    "text": "¡De nada! Si necesitas algo más o tienes alguna pregunta, aquí estoy para ayudarte.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "93e06224a47026ca24ec143d71d78c61.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\93e06224a47026ca24ec143d71d78c61.wav",
+    "size": 156010,
+    "createdAt": 1763499901804,
+    "accessCount": 0,
+    "lastAccessed": 1763499901804,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "77f5294b56285f5501f3de7fcb5721b3": {
+    "text": "¡Hasta luego! Si necesitas algo más en el futuro, aquí estaré para ayudarte.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "77f5294b56285f5501f3de7fcb5721b3.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\77f5294b56285f5501f3de7fcb5721b3.wav",
+    "size": 151914,
+    "createdAt": 1763499905111,
+    "accessCount": 0,
+    "lastAccessed": 1763499905111,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "96228a8233e2aa5aa2bc8144b0642bd0": {
+    "text": "Actualmente, Guests-Valencia ofrece los siguientes alojamientos disponibles en Bétera, Valencia:. **Precioso apartamento a minutos del metro**. **Precio: ** Desde 70€/noche. **Ubicación: ** Bétera, Valencia. **Disponibilidad: ** Disponible. Estos datos son a modo de ejemplo y es importante configurar las URLs reales para más información. Si necesitas más detalles o tienes alguna otra consulta, por favor házmelo saber.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "96228a8233e2aa5aa2bc8144b0642bd0.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\96228a8233e2aa5aa2bc8144b0642bd0.wav",
+    "size": 846186,
+    "createdAt": 1763499906620,
+    "accessCount": 0,
+    "lastAccessed": 1763499906620,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "88e592295a2827be7050029fd1be57e1": {
+    "text": "¡Hola! Estoy aquí, lista para ayudarte en lo que necesites. ¿Hay algo en particular en lo que pueda asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "88e592295a2827be7050029fd1be57e1.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\88e592295a2827be7050029fd1be57e1.wav",
+    "size": 203114,
+    "createdAt": 1763500698029,
+    "accessCount": 0,
+    "lastAccessed": 1763500698029,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "f1e762edfa4e7a48a790a9fe8477e69c": {
+    "text": "Para el próximo sábado, tienes las siguientes opciones de alojamiento disponibles en Bétera, Valencia:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible. Estas opciones están gestionadas por Guests-Valencia, quienes cuentan con 4 años de experiencia en el sector y cubren toda la Comunidad Valenciana. Si necesitas más detalles o deseas hacer una reserva, te recomendaría contactar directamente con la plataforma de booking.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "f1e762edfa4e7a48a790a9fe8477e69c.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\f1e762edfa4e7a48a790a9fe8477e69c.wav",
+    "size": 1042794,
+    "createdAt": 1763500728092,
+    "accessCount": 0,
+    "lastAccessed": 1763500728092,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "589be38304adbbe3a166fe720f2222d7": {
+    "text": "¡Hola! Claro, estoy aquí para ayudarte. ¿Podrías decirme un poco más sobre lo que necesitas? Por ejemplo:. ¿Buscas información sobre un tema específico. ¿Necesitas ayuda para planificar un proyecto. ¿Estás interesado en aprender algo nuevo. Dime qué opción se ajusta más a lo que buscas o si tienes otra cosa en mente.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "589be38304adbbe3a166fe720f2222d7.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\589be38304adbbe3a166fe720f2222d7.wav",
+    "size": 581994,
+    "createdAt": 1763500730457,
+    "accessCount": 0,
+    "lastAccessed": 1763500730457,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "8ba42a7071659802c384226afa222d28": {
+    "text": "Actualmente, Guests-Valencia ofrece tres opciones de alojamiento disponibles en Bétera, Valencia, ideal para dos huéspedes:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible en modo en vivo. Todos los apartamentos tienen la misma ubicación y precio. Puedes verificar la disponibilidad y realizar una reserva a través de la plataforma Booking. Si necesitas más detalles o tienes alguna pregunta, estaré encantada de ayudarte.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "8ba42a7071659802c384226afa222d28.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\8ba42a7071659802c384226afa222d28.wav",
+    "size": 1046890,
+    "createdAt": 1763500733364,
+    "accessCount": 0,
+    "lastAccessed": 1763500733364,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "a6e81a69ce67f92f57f619d2782b1e13": {
+    "text": "Entiendo, ¿en qué puedo ayudarles a ustedes cuatro? Pueden ser desde ideas para actividades en grupo hasta resolver alguna duda específica.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "a6e81a69ce67f92f57f619d2782b1e13.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\a6e81a69ce67f92f57f619d2782b1e13.wav",
+    "size": 242026,
+    "createdAt": 1763501780255,
+    "accessCount": 0,
+    "lastAccessed": 1763501780255,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "2a6b68b34fd4ad55c6a14fcd4f132e55": {
+    "text": "Para tu estancia en Valencia, puedo ofrecerte las siguientes opciones disponibles:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible. Estas opciones están disponibles para reservar. Si quieres proceder con la reserva, necesitaré saber tus fechas de check-in y check-out. ¿Puedo ayudarte con algo más?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "2a6b68b34fd4ad55c6a14fcd4f132e55.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\2a6b68b34fd4ad55c6a14fcd4f132e55.wav",
+    "size": 778602,
+    "createdAt": 1763501780684,
+    "accessCount": 0,
+    "lastAccessed": 1763501780684,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "c62d6b8266495a85be1798ee6e030889": {
+    "text": "Para planificar un fin de semana de 3 noches, aquí tienes algunas opciones:. **Escapada a la naturaleza**: Busca una cabaña o casa rural cerca de un parque nacional o reserva natural. Es perfecto para desconectar y disfrutar al aire libre. **Visita a una ciudad cercana**: Explora una ciudad que no conozcas bien. Puedes visitar museos, probar la gastronomía local y pasear por sus calles. **Relajación en un spa**: Reserva un hotel con spa para descansar y recibir tratamientos relajantes. ¿Te interesa alguna de estas opciones o tienes algo más en mente?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "c62d6b8266495a85be1798ee6e030889.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\c62d6b8266495a85be1798ee6e030889.wav",
+    "size": 1165674,
+    "createdAt": 1763501791312,
+    "accessCount": 0,
+    "lastAccessed": 1763501791312,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "5e9a3cb5f3a827da573ca695a9248882": {
+    "text": "¡Hola! Estoy aquí lista para ayudarte con lo que necesites. ¿En qué puedo asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "5e9a3cb5f3a827da573ca695a9248882.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\5e9a3cb5f3a827da573ca695a9248882.wav",
+    "size": 178538,
+    "createdAt": 1763506020596,
+    "accessCount": 0,
+    "lastAccessed": 1763506020596,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "d5669887151d4edb1e677e81014e1e15": {
+    "text": "¡Hola! Estoy muy bien, gracias por preguntar. ¿En qué puedo ayudarte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "d5669887151d4edb1e677e81014e1e15.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\d5669887151d4edb1e677e81014e1e15.wav",
+    "size": 139626,
+    "createdAt": 1763513217847,
+    "accessCount": 0,
+    "lastAccessed": 1763513217847,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "a576357d380d103676e3e4ee2b32a3e8": {
+    "text": "¡Por supuesto! Estoy aquí para ayudarte. ¿En qué área necesitas asistencia? Puedo ofrecerte apoyo en temas de tecnología, consejos profesionales, ideas creativas, entre otros. ¿Algo específico que tengas en mente?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "a576357d380d103676e3e4ee2b32a3e8.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\a576357d380d103676e3e4ee2b32a3e8.wav",
+    "size": 426346,
+    "createdAt": 1763514357514,
+    "accessCount": 0,
+    "lastAccessed": 1763514357514,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "45b55202982b311cbc59d52fa81bd9e8": {
+    "text": "¡Hola! Estoy aquí para ayudarte con diversas tareas. Aquí tienes algunas cosas que puedo hacer:. Responder preguntas sobre tecnología, inteligencia artificial y otros temas. Proporcionar ideas o consejos sobre proyectos creativos. Ayudarte con recomendaciones de libros, películas o música. ¿Hay algo específico en lo que te gustaría que te ayude?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "45b55202982b311cbc59d52fa81bd9e8.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\45b55202982b311cbc59d52fa81bd9e8.wav",
+    "size": 725354,
+    "createdAt": 1763514368018,
+    "accessCount": 0,
+    "lastAccessed": 1763514368018,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "9f1a4290ae27576b13754fb6409e8254": {
+    "text": "Aquí tienes algunas opciones de alojamiento en Valencia para el próximo sábado, según los datos disponibles de Guests-Valencia:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible para el próximo sábado. Parece que el único alojamiento registrado está repetido, pero está disponible y bien ubicado. Si necesitas más opciones o información adicional, te recomiendo revisar directamente en la plataforma de \"booking\" usando el nombre del alojamiento. ¿Te gustaría ayuda con algo más?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "9f1a4290ae27576b13754fb6409e8254.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\9f1a4290ae27576b13754fb6409e8254.wav",
+    "size": 1093994,
+    "createdAt": 1763514369871,
+    "accessCount": 0,
+    "lastAccessed": 1763514369871,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "8a60c4544ac4b092ba20acf21b641638": {
+    "text": "Parece que planeas algo para mañana, pero no tengo claro qué necesitas. Aquí tienes algunas opciones:. ¿Necesitas ayuda organizando tus tareas para mañana. ¿Buscas ideas para un evento o actividad específica. ¿Quieres consejos para planificar mejor tu día. Déjame saber cómo puedo ayudarte.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "8a60c4544ac4b092ba20acf21b641638.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\8a60c4544ac4b092ba20acf21b641638.wav",
+    "size": 567658,
+    "createdAt": 1763514743265,
+    "accessCount": 0,
+    "lastAccessed": 1763514743265,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "528fe13e958610218fed69527733b4ec": {
+    "text": "Aquí tienes las opciones de alojamiento disponibles en Valencia a través de Guests-Valencia:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible. Actualmente, todos los alojamientos disponibles son del mismo tipo y ubicación. Si necesitas más detalles o ayuda para reservar, házmelo saber.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "528fe13e958610218fed69527733b4ec.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\528fe13e958610218fed69527733b4ec.wav",
+    "size": 766314,
+    "createdAt": 1763514744620,
+    "accessCount": 0,
+    "lastAccessed": 1763514744620,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "cce96236c062099e293f1683fbc492d5": {
+    "text": "Hola, claro que sí. Aquí tienes las opciones de alojamiento disponibles en Valencia:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Sí, está disponible. Todos los apartamentos listados están disponibles para huéspedes. Si necesitas más información o deseas reservar, solo dímelo.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "cce96236c062099e293f1683fbc492d5.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\cce96236c062099e293f1683fbc492d5.wav",
+    "size": 751978,
+    "createdAt": 1763517548237,
+    "accessCount": 0,
+    "lastAccessed": 1763517548237,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "0e9d673d25fa54629ab538c4bec4d7f1": {
+    "text": "En Valencia, para las fechas que mencionas, Guests-Valencia ofrece las siguientes opciones de alojamiento:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible para las fechas solicitadas. Todos los alojamientos mencionados están disponibles y tienen un precio desde 70€ por noche. ¿Te gustaría saber algo más sobre alguno de ellos?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "0e9d673d25fa54629ab538c4bec4d7f1.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\0e9d673d25fa54629ab538c4bec4d7f1.wav",
+    "size": 827754,
+    "createdAt": 1763517555008,
+    "accessCount": 0,
+    "lastAccessed": 1763517555008,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "a969147276ddd64b11149673722d7c31": {
+    "text": "¡Claro! Aquí tienes un menú sencillo para una cena para seis personas, perfecto para el 29:. **Entrada: **. **Ensalada Caprese: ** Tomates frescos en rodajas, mozzarella y albahaca, aderezados con aceite de oliva y balsámico. **Plato Principal: **. **Pasta Carbonara: ** Espaguetis con una cremosa salsa de huevo, queso parmesano, panceta y pimienta negra. **Postre: **. **Tiramisú: ** Capas de bizcocho empapado en café, con una crema suave de mascarpone y cacao espolvoreado. Si necesitas recetas detalladas o algún ajuste, ¡házmelo saber!",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "a969147276ddd64b11149673722d7c31.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\a969147276ddd64b11149673722d7c31.wav",
+    "size": 1044842,
+    "createdAt": 1763517559611,
+    "accessCount": 0,
+    "lastAccessed": 1763517559611,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "87d5ecfc179945e6e98a44caf93d356d": {
+    "text": "¡Hola! Espero que estés bien. Veo que deseas reservar un alojamiento en El Cabanyal. Sin embargo, en los datos que tengo, no aparece un alojamiento específico en esa ubicación, sino en Bétera, Valencia. Aquí tienes las opciones disponibles:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible. Si estás interesado en este alojamiento o necesitas más información, házmelo saber. Si prefieres que busque otras opciones, también puedo ayudarte con eso.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "87d5ecfc179945e6e98a44caf93d356d.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\87d5ecfc179945e6e98a44caf93d356d.wav",
+    "size": 1075562,
+    "createdAt": 1763518646274,
+    "accessCount": 0,
+    "lastAccessed": 1763518646274,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "13a571a0f087980d62b027ea546f0c9f": {
+    "text": "Claro, puedo ayudarte con varias cosas. Por favor, aclárame a qué te refieres:. **Reservas o citas**: ¿Estás buscando reservar algo específico, como un hotel o una mesa en un restaurante. **Proyectos o tareas**: ¿Necesitas ayuda para planificar algo específico que debas entregar o completar en dos días. **Eventos o actividades**: ¿Te interesa asistir a algún evento o actividad en particular. Déjame saber para poder asistirte mejor.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "13a571a0f087980d62b027ea546f0c9f.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\13a571a0f087980d62b027ea546f0c9f.wav",
+    "size": 837994,
+    "createdAt": 1763518647912,
+    "accessCount": 0,
+    "lastAccessed": 1763518647912,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "13830ededff0c183462dab8c51f4e353": {
+    "text": "¿Te refieres a reservar alojamiento en un lugar llamado \"Las Obras Buenas\" para el 29 de noviembre durante dos noches? Si es así, te sugiero:. **Verificar Disponibilidad**: Contactar directamente al lugar para confirmar que haya habitaciones disponibles en las fechas que necesitas. **Reservar**: Una vez confirmada la disponibilidad, procede a hacer la reserva. Esto puede hacerse a través de su sitio web, teléfono o plataformas de reserva en línea. **Confirmación**: Asegúrate de recibir una confirmación de la reserva por correo electrónico o mensaje para tener un respaldo. Si necesitas ayuda con algo más específico, házmelo saber.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "13830ededff0c183462dab8c51f4e353.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\13830ededff0c183462dab8c51f4e353.wav",
+    "size": 1272170,
+    "createdAt": 1763519771440,
+    "accessCount": 0,
+    "lastAccessed": 1763519771440,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "b5ed388eb508a9ecda19dd1c3850e954": {
+    "text": "Aquí tienes las opciones de alojamiento disponibles en la Comunidad Valenciana a través de Guests-Valencia:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Disponible. Dado que los datos proporcionados son de ejemplo, te recomiendo contactar directamente con Guests-Valencia para obtener más detalles o verificar la disponibilidad y precios actualizados.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "b5ed388eb508a9ecda19dd1c3850e954.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\b5ed388eb508a9ecda19dd1c3850e954.wav",
+    "size": 913770,
+    "createdAt": 1763534383369,
+    "accessCount": 0,
+    "lastAccessed": 1763534383369,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "9c47a0994c2820e37e113e61192f3b83": {
+    "text": "Parece que hay disponibilidad en Valencia para el próximo mes con Guests-Valencia. Aquí tienes las opciones disponibles:. **Precioso apartamento a minutos del metro**. **Ubicación: ** Bétera, Valencia. **Precio: ** Desde 70€/noche. **Disponibilidad: ** Sí. Todos los alojamientos mostrados están disponibles para el próximo mes. Si necesitas más detalles o tienes alguna pregunta específica, házmelo saber.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "9c47a0994c2820e37e113e61192f3b83.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\9c47a0994c2820e37e113e61192f3b83.wav",
+    "size": 821610,
+    "createdAt": 1763534384667,
+    "accessCount": 0,
+    "lastAccessed": 1763534384667,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "52b256cb07ce3b9af32b41065412c90e": {
+    "text": "¡Hola! Estoy aquí para ayudarte en lo que necesites. ¿Hay algo en particular en lo que pueda asistirte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "52b256cb07ce3b9af32b41065412c90e.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\52b256cb07ce3b9af32b41065412c90e.wav",
+    "size": 174442,
+    "createdAt": 1763595291720,
+    "accessCount": 0,
+    "lastAccessed": 1763595291720,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "b03973e78efce7138ce3f3fd5eff4223": {
+    "text": "Claro, ¿sobre qué tema te gustaría que te hable? Estoy aquí para ayudarte con cualquier información o consejo que necesites.",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "b03973e78efce7138ce3f3fd5eff4223.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\b03973e78efce7138ce3f3fd5eff4223.wav",
+    "size": 217450,
+    "createdAt": 1763595305319,
+    "accessCount": 0,
+    "lastAccessed": 1763595305319,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  },
+  "ce09392e5f46c3a426d1d73af89d93cd": {
+    "text": "Hola, soy Sandra IA, tu asistente profesional. Estoy aquí para ayudarte con tus consultas, ofrecerte información y apoyarte en tus tareas diarias. ¿En qué puedo ayudarte hoy?",
+    "voiceId": "a34aec03-0f17-4fff-903f-d9458a8a92a6",
+    "filename": "ce09392e5f46c3a426d1d73af89d93cd.wav",
+    "filepath": "C:\\Sandra-IA-8.0-Pro\\.voice-cache\\ce09392e5f46c3a426d1d73af89d93cd.wav",
+    "size": 364906,
+    "createdAt": 1763595309722,
+    "accessCount": 0,
+    "lastAccessed": 1763595309722,
+    "metadata": {
+      "model": "sonic-multilingual",
+      "sampleRate": 22050
+    }
+  }
+}

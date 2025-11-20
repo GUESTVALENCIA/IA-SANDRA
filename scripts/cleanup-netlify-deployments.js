@@ -1,0 +1,217 @@
+/**
+ * Script para limpiar deployments pendientes/pausados en Netlify
+ * Elimina todos los deployments innecesarios para liberar créditos
+ */
+
+const axios = require('axios');
+const path = require('path');
+
+// Cargar variables de entorno desde .env.pro
+require('dotenv').config({ path: path.join(__dirname, '..', '.env.pro') });
+
+const NETLIFY_TOKEN = process.env.NETLIFY_TOKEN || process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN;
+const NETLIFY_SITE_ID = process.env.NETLIFY_SITE_ID;
+
+if (!NETLIFY_TOKEN) {
+  console.error('❌ Error: NETLIFY_AUTH_TOKEN o NETLIFY_TOKEN debe estar configurado');
+  console.error('   Obtén tu token en: https://app.netlify.com/user/applications');
+  process.exit(1);
+}
+
+const API_BASE = 'https://api.netlify.com/api/v1';
+
+async function getSites() {
+  try {
+    console.log('📋 Obteniendo sitios de Netlify...\n');
+    const response = await axios.get(`${API_BASE}/sites`, {
+      headers: { 
+        'Authorization': `Bearer ${NETLIFY_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      params: { per_page: 100 }
+    });
+    return response.data || [];
+  } catch (e) {
+    if (e.response?.status === 401) {
+      console.error('❌ Error de autenticación: Token inválido o expirado');
+      console.error('   Verifica tu NETLIFY_TOKEN en .env.pro');
+    } else {
+      console.error('Error obteniendo sitios:', e.response?.data || e.message);
+    }
+    throw e;
+  }
+}
+
+async function getDeployments(siteId) {
+  try {
+    const response = await axios.get(`${API_BASE}/sites/${siteId}/deploys`, {
+      headers: { 'Authorization': `Bearer ${NETLIFY_TOKEN}` },
+      params: { per_page: 100 }
+    });
+    return response.data;
+  } catch (e) {
+    console.error(`Error obteniendo deployments para ${siteId}:`, e.response?.data || e.message);
+    return [];
+  }
+}
+
+async function cancelDeployment(siteId, deployId) {
+  try {
+    await axios.post(
+      `${API_BASE}/sites/${siteId}/deploys/${deployId}/cancel`,
+      {},
+      {
+        headers: { 'Authorization': `Bearer ${NETLIFY_TOKEN}` }
+      }
+    );
+    return true;
+  } catch (e) {
+    // Si ya está cancelado o no se puede cancelar, intentar eliminar
+    if (e.response?.status === 404 || e.response?.status === 422) {
+      return await deleteDeployment(siteId, deployId);
+    }
+    console.error(`Error cancelando deployment ${deployId}:`, e.response?.data || e.message);
+    return false;
+  }
+}
+
+async function deleteDeployment(siteId, deployId) {
+  try {
+    await axios.delete(
+      `${API_BASE}/sites/${siteId}/deploys/${deployId}`,
+      {
+        headers: { 'Authorization': `Bearer ${NETLIFY_TOKEN}` }
+      }
+    );
+    return true;
+  } catch (e) {
+    console.error(`Error eliminando deployment ${deployId}:`, e.response?.data || e.message);
+    return false;
+  }
+}
+
+function getDeploymentState(deploy) {
+  // Estados que queremos limpiar
+  if (deploy.state === 'error' || deploy.state === 'canceled' || deploy.state === 'failed') {
+    return 'error/canceled';
+  }
+  if (deploy.state === 'building' || deploy.state === 'enqueued' || deploy.state === 'processing' || deploy.state === 'new') {
+    return 'pending';
+  }
+  if (deploy.state === 'ready' && !deploy.published_at) {
+    return 'ready-not-published';
+  }
+  // También limpiar deployments muy antiguos (más de 30 días)
+  if (deploy.created_at) {
+    const daysOld = (Date.now() - new Date(deploy.created_at).getTime()) / (1000 * 60 * 60 * 24);
+    if (daysOld > 30 && !deploy.published_at) {
+      return 'old-unpublished';
+    }
+  }
+  return 'published';
+}
+
+async function cleanupSite(site) {
+  console.log(`\n🔍 Procesando sitio: ${site.name} (${site.id})`);
+  
+  const deployments = await getDeployments(site.id);
+  
+  if (deployments.length === 0) {
+    console.log('   ✅ No hay deployments');
+    return { canceled: 0, deleted: 0, total: 0 };
+  }
+  
+  console.log(`   📊 Total deployments: ${deployments.length}`);
+  
+  // Filtrar deployments a limpiar (todos excepto los publicados recientemente)
+  const toCleanup = deployments.filter(d => {
+    const state = getDeploymentState(d);
+    // Limpiar: pendientes, errores, cancelados, listos pero no publicados, y antiguos
+    return state !== 'published';
+  });
+  
+  console.log(`   🧹 Deployments a limpiar: ${toCleanup.length}`);
+  
+  let canceled = 0;
+  let deleted = 0;
+  
+  for (const deploy of toCleanup) {
+    const state = getDeploymentState(deploy);
+    const deployId = deploy.id.substring(0, 12);
+    const deployState = deploy.state || 'unknown';
+    const deployDate = deploy.created_at ? new Date(deploy.created_at).toLocaleDateString() : 'N/A';
+    
+    console.log(`   ${state === 'pending' ? '⏸️' : '🗑️'} ${deployId}... (${deployState}) - ${deployDate}`);
+    
+    try {
+      if (state === 'pending') {
+        const canceledResult = await cancelDeployment(site.id, deploy.id);
+        if (canceledResult) {
+          canceled++;
+          console.log(`      ✅ Cancelado`);
+        }
+      } else {
+        const deletedResult = await deleteDeployment(site.id, deploy.id);
+        if (deletedResult) {
+          deleted++;
+          console.log(`      ✅ Eliminado`);
+        }
+      }
+    } catch (e) {
+      console.log(`      ⚠️  Error: ${e.message}`);
+    }
+    
+    // Pequeña pausa para no sobrecargar la API
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+  
+  return { canceled, deleted, total: toCleanup.length };
+}
+
+async function main() {
+  console.log('🧹 Limpieza de Deployments en Netlify\n');
+  console.log('='.repeat(50) + '\n');
+  
+  try {
+    const sites = NETLIFY_SITE_ID 
+      ? [{ id: NETLIFY_SITE_ID }]
+      : await getSites();
+    
+    if (sites.length === 0) {
+      console.log('⚠️  No se encontraron sitios');
+      return;
+    }
+    
+    console.log(`📦 Sitios encontrados: ${sites.length}\n`);
+    
+    let totalCanceled = 0;
+    let totalDeleted = 0;
+    let totalProcessed = 0;
+    
+    for (const site of sites) {
+      if (!site.id && NETLIFY_SITE_ID) {
+        site.id = NETLIFY_SITE_ID;
+      }
+      
+      const result = await cleanupSite(site);
+      totalCanceled += result.canceled;
+      totalDeleted += result.deleted;
+      totalProcessed += result.total;
+    }
+    
+    console.log('\n' + '='.repeat(50));
+    console.log('\n✅ Limpieza completada:\n');
+    console.log(`   Cancelados: ${totalCanceled}`);
+    console.log(`   Eliminados: ${totalDeleted}`);
+    console.log(`   Total procesado: ${totalProcessed}\n`);
+    
+  } catch (e) {
+    console.error('\n❌ Error:', e.message);
+    if (e.response?.data) {
+      console.error('   Detalles:', JSON.stringify(e.response.data, null, 2));
+    }
+    process.exit(1);
+  }
+}
+
+main();
