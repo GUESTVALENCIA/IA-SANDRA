@@ -1,0 +1,25 @@
+name: Build PWA & push artefact (deploy/pwa)
+on:
+  push:
+    branches: [main]
+    paths:
+      - "guests-pwa/**"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - run: pnpm --filter guests-pwa build:pwa
+      - name: Push artefact branch
+        run: |
+          git config user.name  "BuildBot"
+          git config user.email "bot@guestsvalencia.es"
+          git switch --force-create deploy/pwa
+          rm -rf *
+          cp -R guests-pwa/dist/* .
+          git add -A
+          git commit -m "bot: artefact $(date +%F_%T)" || true
+          git push -f origin deploy/pwa
